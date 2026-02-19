@@ -303,6 +303,7 @@
         <select id="f-format">
           <option value="75cl">75 cl (standard)</option>
           <option value="37.5cl">37,5 cl (demi)</option>
+          <option value="62cl">62 cl (jaune)</option>
           <option value="150cl">150 cl (Magnum)</option>
           <option value="300cl">300 cl (Double Magnum)</option>
           <option value="autre">Autre</option>
@@ -412,8 +413,7 @@ let currentCave = 1;
 let addingToSlot = null;
 
 const TYPE_LABELS   = { rouge:'Rouge', blanc:'Blanc', 'rosé':'Rosé', effervescent:'Effervescent', vdn:'VDN', magnum:'Magnum' };
-const FORMAT_LABELS = { '75cl':'75 cl','37.5cl':'37,5 cl','150cl':'Magnum 150 cl','300cl':'Double Magnum','autre':'Autre' };
-
+const FORMAT_LABELS = { '75cl':'75 cl','37.5cl':'37,5 cl','62cl':'62 cl','150cl':'Magnum 150 cl','300cl':'Double Magnum','autre':'Autre' };
 const WINE_COLORS = {
   rouge:        { fill:'#8a1828', stroke:'#c04060', small:'#5a1020' },
   blanc:        { fill:'#a88018', stroke:'#e0c060', small:'#6a5010' },
