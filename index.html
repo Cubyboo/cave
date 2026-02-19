@@ -633,21 +633,23 @@ function renderCave2D() {
         const wine  = getWineAtSlot(currentCave, floor.id, slot);
         const col   = wine ? (WINE_COLORS[wine.type] || WINE_COLORS.empty) : WINE_COLORS.empty;
         const empty = !wine;
-        const cx    = PAD_H + p.cx;
-        const cy    = yCenter;
-        const r     = p.r;
+        const cx      = PAD_H + p.cx;
+        const cy      = yCenter;
+        // Couche supérieure (layer=1) : on inverse cul/goulot pour l'imbrication
+        const isFront = floor.double && layer === 1 ? !p.isFront : p.isFront;
+        const r       = isFront ? R_BIG : R_SMALL;
 
         // Cercle principal
         html += `<circle cx="${cx}" cy="${cy}" r="${r}"
           fill="${col.fill}" stroke="${col.stroke}"
-          stroke-width="${empty ? 0.7 : (p.isFront ? 1.5 : 1.1)}"
+          stroke-width="${empty ? 0.7 : (isFront ? 1.5 : 1.1)}"
           opacity="${empty ? 0.45 : 1}"
           ${(!empty) ? 'filter="url(#softglow)"' : ''}
           style="cursor:pointer"
           onclick="openSlotModal(${currentCave},${floor.id},${slot})"
           data-cave="${currentCave}" data-floor="${floor.id}" data-slot="${slot}"/>`;
 
-        if(p.isFront) {
+        if(isFront) {
           // Creux central du cul
           html += `<circle cx="${cx}" cy="${cy}" r="${r*0.28}"
             fill="${empty ? '#100a0e' : col.small}"
