@@ -181,8 +181,8 @@
   .form-full { grid-column: 1/-1; }
 
   /* Notifications */
-  #notif { position: fixed; top: 76px; right: 20px; background: var(--bg2); border: 1px solid var(--green2); color: var(--green2); padding: 12px 20px; border-radius: 3px; font-size: 0.9rem; z-index: 500; transform: translateX(110%); transition: transform 0.3s; }
-  #notif.show { transform: translateX(0); }
+  #notif { position: fixed; top: 76px; right: 20px; background: var(--bg2); border: 1px solid var(--green2); color: var(--green2); padding: 12px 20px; border-radius: 3px; font-size: 0.9rem; z-index: 500; transform: translateX(130%); opacity: 0; visibility: hidden; transition: transform 0.3s, opacity 0.3s; }
+  #notif.show { transform: translateX(0); opacity: 1; visibility: visible; }
   #notif.error { border-color: var(--wine3); color: var(--wine3); }
 </style>
 </head>
