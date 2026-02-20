@@ -254,6 +254,7 @@
   <div class="tab" onclick="switchTab('stats',this)">📊 Statistiques</div>
   <div class="tab" onclick="switchTab('add',this)">➕ Ajouter</div>
   <div class="tab" onclick="switchTab('historique',this)">📜 Historique</div>
+  <div class="tab" onclick="switchTab('accords',this)">🍽 Accords</div>
 </div>
 
 <!-- ===== 2D CAVE VIEW ===== -->
@@ -434,6 +435,39 @@
   </div>
   <div id="histo-empty" style="display:none;text-align:center;padding:60px 0;color:var(--text2);font-style:italic">Aucune bouteille bue pour l'instant</div>
   <div id="histo-list"></div>
+</div>
+
+<!-- ===== ACCORDS VIEW ===== -->
+<div id="accords" class="content">
+  <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:28px">
+
+    <!-- Recherche plat -> vin -->
+    <div style="flex:1;min-width:280px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:22px">
+      <h3 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.15rem;margin-bottom:6px">🍽 J'ai un plat, quel vin ?</h3>
+      <p style="color:var(--text2);font-size:0.85rem;margin-bottom:16px">Tapez un plat ou un ingrédient</p>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="accord-plat-input" placeholder="ex: agneau, fromage, saumon..."
+          style="flex:1;padding:9px 12px;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:'Cormorant Garamond',serif;font-size:1rem;border-radius:2px;outline:none"
+          onkeydown="if(event.key==='Enter') rechercherParPlat()"
+          onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">
+        <button onclick="rechercherParPlat()" style="padding:9px 18px;background:var(--wine);border:none;color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:1rem;cursor:pointer;border-radius:2px">Chercher</button>
+      </div>
+      <div id="accord-plat-results" style="margin-top:16px"></div>
+    </div>
+
+    <!-- Recherche vin -> plat -->
+    <div style="flex:1;min-width:280px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:22px">
+      <h3 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.15rem;margin-bottom:6px">🍷 J'ai un vin, quel plat ?</h3>
+      <p style="color:var(--text2);font-size:0.85rem;margin-bottom:16px">Choisissez un vin de votre cave</p>
+      <select id="accord-vin-select"
+        style="width:100%;padding:9px 12px;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:'Cormorant Garamond',serif;font-size:1rem;border-radius:2px;outline:none"
+        onchange="rechercherParVin(this.value)">
+        <option value="">— Choisir un vin —</option>
+      </select>
+      <div id="accord-vin-results" style="margin-top:16px"></div>
+    </div>
+
+  </div>
 </div>
 
 <!-- MODAL -->
@@ -654,6 +688,7 @@ function switchTab(id, el) {
   if(el) el.classList.add('active');
   if(id==='list')  renderList();
   if(id==='stats') renderStats();
+  if(id==='accords') populateVinSelect();
   if(id==='add')   updateEtageSelect();
   if(id==='view2d') renderCave2D();
 }
@@ -936,6 +971,7 @@ function openSlotModal(cave, floor, slot) {
             <div class="info-cell"><div class="lbl">Note</div><div class="val rating-stars" style="font-size:1rem">${stars}</div></div>
           </div>
           ${wine.notes?`<div style="color:var(--text2);font-style:italic;margin-bottom:16px;line-height:1.6;font-size:0.95rem">"${wine.notes}"</div>`:''}
+          ${wine.accords?`<div style="margin-bottom:14px"><div style="font-size:0.68rem;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Accords mets-vins</div><div style="color:var(--gold2);font-size:0.9rem">🍽 ${wine.accords}</div></div>`:''}
           <div class="modal-actions">
             <button class="btn-outline" data-edit-id="${wine.id}" onclick="openEditModal(this.dataset.editId)">✏ Modifier</button>
             <button class="btn-danger"  data-rm-id="${wine.id}"   onclick="removeWine(this.dataset.rmId)">🗑 Retirer</button>
@@ -993,6 +1029,7 @@ function openEditModal(id) {
   document.getElementById('f-prix').value        = wine.prix||'';
   document.getElementById('f-note').value        = wine.note||'';
   document.getElementById('f-notes').value       = wine.notes||'';
+  const accordsField = document.getElementById('f-accords'); if(accordsField) accordsField.value = wine.accords||'';
   const imgField = document.getElementById('f-image'); if(imgField) imgField.value = wine.image||'';
   document.getElementById('f-cave').value        = wine.cave;
   addingToSlot = {editing:String(id), cave:wine.cave, floor:wine.floor, slot:wine.slot};
@@ -1119,12 +1156,13 @@ function addWine() {
     prix:        document.getElementById('f-prix').value,
     note:        document.getElementById('f-note').value,
     notes:       document.getElementById('f-notes').value.trim(),
+    accords:     document.getElementById('f-accords') ? document.getElementById('f-accords').value.trim() : '',
     image:       document.getElementById('f-image') ? document.getElementById('f-image').value.trim() : '',
     cave:  parseInt(cave), floor: parseInt(floor), slot: parseInt(slot),
     dateAjout: new Date().toISOString().split('T')[0]
   });
   saveData(); addingToSlot = null;
-  ['f-nom','f-appellation','f-domaine','f-region','f-annee','f-prix','f-notes','f-image'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  ['f-nom','f-appellation','f-domaine','f-region','f-annee','f-prix','f-notes','f-image','f-accords'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
   document.getElementById('f-note').value='';
   document.getElementById('f-type').value='rouge';
   document.getElementById('f-format').value='75cl';
@@ -1446,6 +1484,108 @@ function renderHistorique() {
       </div>
     </div>`;
   }).join('');
+}
+
+
+// =====================================================================
+// ACCORDS METS-VINS
+// =====================================================================
+
+// Accords automatiques par type de vin
+const ACCORDS_AUTO = {
+  rouge: {
+    plats: ['Agneau rôti','Boeuf bourguignon','Magret de canard','Côte de boeuf','Gibier','Fromages affinés','Charcuterie','Cassoulet','Tajine d'agneau','Entrecôte grillée'],
+    mots:  ['agneau','boeuf','canard','gibier','viande rouge','fromage','charcuterie','cassoulet','entrecôte','magret','cochon','porc rôti']
+  },
+  blanc: {
+    plats: ['Poisson grillé','Fruits de mer','Saumon','Saint-Jacques','Volaille en sauce','Risotto','Chèvre frais','Asperges','Huîtres','Sole meunière'],
+    mots:  ['poisson','saumon','sole','bar','dorade','fruits de mer','coquille','homard','crabe','volaille','poulet','veau','asperge','huître']
+  },
+  'rosé': {
+    plats: ['Grillades','Salade niçoise','Pizza','Charcuterie','Ratatouille','Pissaladière','Bouillabaisse','Brochettes','Tapenade'],
+    mots:  ['grillades','salade','pizza','charcuterie','ratatouille','brochette','barbecue','tapas','méditerranéen']
+  },
+  effervescent: {
+    plats: ['Apéritif','Huîtres','Sushi','Caviar','Saumon fumé','Risotto aux champignons','Desserts légers','Macarons'],
+    mots:  ['apéritif','huître','sushi','caviar','saumon fumé','risotto','champignon','dessert','macaron','fête']
+  },
+  vdn: {
+    plats: ['Foie gras','Desserts au chocolat','Roquefort','Tarte tatin','Gâteau au chocolat','Crème brûlée'],
+    mots:  ['foie gras','chocolat','roquefort','dessert','tarte','gâteau','crème','sucré']
+  },
+  magnum: {
+    plats: ['Grandes occasions','Repas de fête','Viandes rôties','Fromages variés'],
+    mots:  ['fête','occasion','repas','viande','fromage']
+  }
+};
+
+function populateVinSelect() {
+  const sel = document.getElementById('accord-vin-select');
+  if(!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— Choisir un vin —</option>';
+  [...wineData].sort((a,b)=>(a.nom||'').localeCompare(b.nom||'')).forEach(w => {
+    const opt = document.createElement('option');
+    opt.value = w.id;
+    opt.textContent = (w.nom||'Sans nom') + (w.annee?' '+w.annee:'') + (w.domaine?' — '+w.domaine:'');
+    sel.appendChild(opt);
+  });
+  if(current) sel.value = current;
+}
+
+function rechercherParPlat() {
+  const query = document.getElementById('accord-plat-input').value.trim().toLowerCase();
+  const results = document.getElementById('accord-plat-results');
+  if(!query) { results.innerHTML = ''; return; }
+
+  // Chercher dans les accords manuels + suggestions auto
+  const matches = wineData.filter(w => {
+    // Accord manuel saisi sur le vin
+    if(w.accords && w.accords.toLowerCase().includes(query)) return true;
+    // Accord automatique par type
+    const auto = ACCORDS_AUTO[w.type];
+    if(auto && auto.mots.some(m => query.includes(m) || m.includes(query))) return true;
+    return false;
+  });
+
+  if(!matches.length) {
+    results.innerHTML = '<div style="color:var(--text2);font-style:italic;padding:10px 0">Aucun vin trouvé pour ce plat dans votre cave</div>';
+    return;
+  }
+
+  results.innerHTML = '<div style="font-size:0.78rem;color:var(--text2);margin-bottom:10px;letter-spacing:1px">' + matches.length + ' VIN' + (matches.length>1?'S':'') + ' SUGGÉRÉ' + (matches.length>1?'S':'') + '</div>' +
+    matches.map(w => wineCardHtml(w)).join('');
+}
+
+function rechercherParVin(id) {
+  const results = document.getElementById('accord-vin-results');
+  if(!id) { results.innerHTML = ''; return; }
+  const wine = wineData.find(w=>String(w.id)===String(id));
+  if(!wine) return;
+
+  const auto   = ACCORDS_AUTO[wine.type] || ACCORDS_AUTO.rouge;
+  const plats  = wine.accords
+    ? [...new Set([...wine.accords.split(',').map(s=>s.trim()), ...auto.plats])]
+    : auto.plats;
+
+  results.innerHTML = `
+    <div style="font-size:0.78rem;color:var(--text2);margin-bottom:10px;letter-spacing:1px">ACCORDS SUGGÉRÉS</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      ${plats.map(p=>`<span style="padding:5px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;font-size:0.85rem;color:var(--cream)">🍽 ${p}</span>`).join('')}
+    </div>`;
+}
+
+function wineCardHtml(w) {
+  const tLabel = {rouge:'Rouge',blanc:'Blanc','rosé':'Rosé',effervescent:'Effervescent',vdn:'VDN',magnum:'Magnum'}[w.type] || w.type;
+  return `<div style="display:flex;gap:12px;align-items:center;padding:10px;background:var(--bg3);border-radius:3px;margin-bottom:8px;border:1px solid var(--border)">
+    ${w.image?`<img src="${w.image}" style="width:36px;height:50px;object-fit:contain;border-radius:2px;flex-shrink:0">`:'<div style="width:36px;height:50px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">🍷</div>'}
+    <div style="flex:1;min-width:0">
+      <div style="color:var(--cream);font-size:0.95rem">${w.nom||'—'}${w.annee?' <span style="color:var(--text2);font-size:0.8rem">'+w.annee+'</span>':''}</div>
+      <div style="color:var(--text2);font-size:0.78rem;margin-top:2px">${[w.domaine,w.region].filter(Boolean).join(' · ')}</div>
+      ${w.accords?`<div style="color:var(--gold2);font-size:0.75rem;margin-top:3px">🍽 ${w.accords}</div>`:''}
+    </div>
+    <span style="padding:2px 8px;border-radius:10px;font-size:0.7rem;background:var(--wine);color:var(--cream);flex-shrink:0">${tLabel}</span>
+  </div>`;
 }
 
 </script>
