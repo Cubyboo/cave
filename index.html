@@ -510,6 +510,36 @@
   <div id="apogee-list"></div>
 </div>
 
+<!-- MODAL DEPLACEMENT -->
+<div class="modal-overlay" id="modalDeplacer">
+  <div class="modal" style="max-width:480px">
+    <button class="modal-close" onclick="closeModal('modalDeplacer')">✕</button>
+    <h2>📦 Déplacer la bouteille</h2>
+    <p id="deplacer-wine-name" style="color:var(--cream);font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:20px"></p>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Cave</label>
+        <select id="dep-cave" onchange="updateDepEtage()">
+          <option value="1">Cave 1</option>
+          <option value="2">Cave 2</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Étage</label>
+        <select id="dep-etage" onchange="updateDepSlot()"></select>
+      </div>
+      <div class="form-row form-full">
+        <label>Emplacement</label>
+        <select id="dep-slot"></select>
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:20px">
+      <button class="btn-wine" onclick="confirmerDeplacement()">📦 Confirmer le déplacement</button>
+      <button class="btn-outline" onclick="closeModal('modalDeplacer')">Annuler</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL HISTORIQUE (retirer un vin) -->
 <div class="modal-overlay" id="modalHistorique">
   <div class="modal" style="max-width:480px">
@@ -1000,6 +1030,7 @@ function openSlotModal(cave, floor, slot) {
           ${(wine.apogeeDebut||wine.apogeeFin)?`<div style="margin-bottom:14px"><div style="font-size:0.68rem;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Fenêtre d'apogée</div><div style="font-size:0.95rem">${getApogeeLabel(wine)}</div></div>`:''}"
           <div class="modal-actions">
             <button class="btn-outline" data-edit-id="${wine.id}" onclick="openEditModal(this.dataset.editId)">✏ Modifier</button>
+            <button class="btn-outline" data-mv-id="${wine.id}"   onclick="openDeplacerModal(this.dataset.mvId)">📦 Déplacer</button>
             <button class="btn-danger"  data-rm-id="${wine.id}"   onclick="removeWine(this.dataset.rmId)">🗑 Retirer</button>
             <button class="btn-wine"    onclick="closeModal('modalSlot')">Fermer</button>
           </div>
@@ -2258,6 +2289,100 @@ function renderApogee(filtre) {
       </div>
     </div>`;
   }).join("");
+}
+
+
+// =====================================================================
+// DEPLACEMENT DE BOUTEILLES
+// =====================================================================
+let deplacerWineId = null;
+
+function openDeplacerModal(id) {
+  deplacerWineId = id;
+  const wine = wineData.find(w => String(w.id) === String(id));
+  if(!wine) return;
+  closeModal('modalSlot');
+  document.getElementById('deplacer-wine-name').textContent = (wine.nom||'') + (wine.annee ? ' ' + wine.annee : '');
+  // Pré-sélectionner la cave actuelle
+  document.getElementById('dep-cave').value = wine.cave || 1;
+  updateDepEtage(wine.floor);
+  document.getElementById('modalDeplacer').classList.add('open');
+}
+
+function updateDepEtage(selectedFloor) {
+  const cave    = parseInt(document.getElementById('dep-cave').value) || 1;
+  const sel     = document.getElementById('dep-etage');
+  sel.innerHTML = '';
+  CAVE_CONFIG[cave].floors.forEach(f => {
+    const opt = document.createElement('option');
+    opt.value = f.id;
+    opt.textContent = f.label + (f.isMagnum ? ' · Magnums' : '');
+    sel.appendChild(opt);
+  });
+  if(selectedFloor) sel.value = selectedFloor;
+  updateDepSlot();
+}
+
+function updateDepSlot() {
+  const cave    = parseInt(document.getElementById('dep-cave').value) || 1;
+  const floor   = parseInt(document.getElementById('dep-etage').value) || 1;
+  const floorData = CAVE_CONFIG[cave].floors.find(f => f.id === floor);
+  const sel     = document.getElementById('dep-slot');
+  sel.innerHTML = '';
+  if(!floorData) return;
+  const wine = wineData.find(w => String(w.id) === String(deplacerWineId));
+  for(let i = 1; i <= floorData.slots; i++) {
+    const occupant = getWineAtSlot(cave, floor, i);
+    // Exclure l'emplacement actuel du vin
+    if(occupant && String(occupant.id) === String(deplacerWineId)) continue;
+    const opt = document.createElement('option');
+    opt.value = i;
+    if(occupant) {
+      opt.textContent = 'Empl. ' + i + ' — ' + (occupant.nom||'?') + (occupant.annee?' '+occupant.annee:'') + ' (échange)';
+      opt.style.color = '#c9a84c';
+    } else {
+      opt.textContent = 'Empl. ' + i + ' — Libre';
+    }
+    sel.appendChild(opt);
+  }
+  if(!sel.options.length) {
+    const opt = document.createElement('option');
+    opt.textContent = 'Aucun emplacement disponible';
+    opt.disabled = true;
+    sel.appendChild(opt);
+  }
+}
+
+function confirmerDeplacement() {
+  const wine = wineData.find(w => String(w.id) === String(deplacerWineId));
+  if(!wine) return;
+  const newCave  = parseInt(document.getElementById('dep-cave').value);
+  const newFloor = parseInt(document.getElementById('dep-etage').value);
+  const newSlot  = parseInt(document.getElementById('dep-slot').value);
+  if(!newSlot) { showNotif('Choisissez un emplacement', true); return; }
+
+  // Vérifier si emplacement occupé → échange
+  const occupant = getWineAtSlot(newCave, newFloor, newSlot);
+  if(occupant && String(occupant.id) !== String(wine.id)) {
+    // Échange : mettre l'occupant à l'ancienne place du vin déplacé
+    occupant.cave  = wine.cave;
+    occupant.floor = wine.floor;
+    occupant.slot  = wine.slot;
+    showNotif('Échange effectué : ' + (occupant.nom||'vin') + ' ↔ ' + (wine.nom||'vin') + ' ✓');
+  } else {
+    showNotif('Bouteille déplacée ✓');
+  }
+
+  // Déplacer le vin
+  wine.cave  = newCave;
+  wine.floor = newFloor;
+  wine.slot  = newSlot;
+
+  saveData();
+  closeModal('modalDeplacer');
+  renderCave2D();
+  renderList();
+  deplacerWineId = null;
 }
 
 </script>
