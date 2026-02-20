@@ -353,6 +353,7 @@
 
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 </head>
 <body>
 
@@ -2745,148 +2746,10 @@ function mobileBubbleOpenFiche() {
 
 
 // =====================================================================
-// CARTE DES VIGNOBLES EUROPÉENS — Régions viticoles détaillées
-// =====================================================================
 
-const REGIONS_CARTE = [
-  // FRANCE — grandes régions
-  { key:"Bourgogne",          lon:4.85,   lat:47.05, label:"Bourgogne" },
-  { key:"Côte de Nuits",      lon:4.95,   lat:47.20, label:"Côte de Nuits" },
-  { key:"Côte de Beaune",     lon:4.85,   lat:47.00, label:"Côte de Beaune" },
-  { key:"Chablis",            lon:3.80,   lat:47.82, label:"Chablis" },
-  { key:"Mâconnais",          lon:4.83,   lat:46.30, label:"Mâconnais" },
-  { key:"Côte Chalonnaise",   lon:4.80,   lat:46.65, label:"Chalonnaise" },
-  { key:"Jura",               lon:5.75,   lat:46.70, label:"Jura" },
-  { key:"Bordeaux",           lon:-0.57,  lat:44.84, label:"Bordeaux" },
-  { key:"Médoc",              lon:-0.90,  lat:45.15, label:"Médoc" },
-  { key:"Saint-Émilion",      lon:-0.15,  lat:44.90, label:"Saint-Émilion" },
-  { key:"Sauternes",          lon:-0.33,  lat:44.55, label:"Sauternes" },
-  { key:"Champagne",          lon:4.03,   lat:49.05, label:"Champagne" },
-  { key:"Montagne de Reims",  lon:4.05,   lat:49.20, label:"Montagne Reims" },
-  { key:"Vallée de la Marne", lon:3.60,   lat:49.05, label:"Vallée Marne" },
-  { key:"Côte des Blancs",    lon:4.00,   lat:48.90, label:"Côte des Blancs" },
-  { key:"Alsace",             lon:7.35,   lat:48.20, label:"Alsace" },
-  { key:"Alsace Grand Cru",   lon:7.32,   lat:48.15, label:"Alsace GC" },
-  { key:"Rhône",              lon:4.83,   lat:45.05, label:"Rhône" },
-  { key:"Rhône Nord",         lon:4.75,   lat:45.35, label:"Rhône Nord" },
-  { key:"Rhône Sud",          lon:4.80,   lat:44.20, label:"Rhône Sud" },
-  { key:"Côtes du Rhône",     lon:4.80,   lat:44.40, label:"Côtes du Rhône" },
-  { key:"Châteauneuf-du-Pape",lon:4.83,   lat:44.06, label:"Châteauneuf" },
-  { key:"Gigondas",           lon:5.00,   lat:44.15, label:"Gigondas" },
-  { key:"Loire",              lon:0.10,   lat:47.40, label:"Loire" },
-  { key:"Muscadet",           lon:-1.50,  lat:47.25, label:"Muscadet" },
-  { key:"Anjou",              lon:-0.55,  lat:47.35, label:"Anjou" },
-  { key:"Saumur",             lon:-0.07,  lat:47.27, label:"Saumur" },
-  { key:"Touraine",           lon:0.70,   lat:47.40, label:"Touraine" },
-  { key:"Sancerre",           lon:2.83,   lat:47.33, label:"Sancerre" },
-  { key:"Pouilly-Fumé",       lon:2.95,   lat:47.30, label:"Pouilly-Fumé" },
-  { key:"Provence",           lon:5.90,   lat:43.55, label:"Provence" },
-  { key:"Bandol",             lon:5.75,   lat:43.13, label:"Bandol" },
-  { key:"Cassis",             lon:5.54,   lat:43.21, label:"Cassis" },
-  { key:"Palette",            lon:5.45,   lat:43.52, label:"Palette" },
-  { key:"Languedoc",          lon:3.50,   lat:43.60, label:"Languedoc" },
-  { key:"Faugères",           lon:3.28,   lat:43.58, label:"Faugères" },
-  { key:"Saint-Chinian",      lon:2.93,   lat:43.43, label:"St-Chinian" },
-  { key:"Pic Saint-Loup",     lon:3.78,   lat:43.80, label:"Pic St-Loup" },
-  { key:"Minervois",          lon:2.70,   lat:43.30, label:"Minervois" },
-  { key:"Corbières",          lon:2.63,   lat:43.10, label:"Corbières" },
-  { key:"Fitou",              lon:2.90,   lat:42.90, label:"Fitou" },
-  { key:"Sud-Ouest",          lon:0.50,   lat:43.65, label:"Sud-Ouest" },
-  { key:"Cahors",             lon:1.45,   lat:44.45, label:"Cahors" },
-  { key:"Madiran",            lon:-0.05,  lat:43.53, label:"Madiran" },
-  { key:"Bergerac",           lon:0.48,   lat:44.85, label:"Bergerac" },
-  { key:"Jurançon",           lon:-0.37,  lat:43.30, label:"Jurançon" },
-  { key:"Gaillac",            lon:1.90,   lat:43.90, label:"Gaillac" },
-  { key:"Savoie",             lon:6.10,   lat:45.55, label:"Savoie" },
-  { key:"Bugey",              lon:5.35,   lat:45.85, label:"Bugey" },
-  { key:"Roussillon",         lon:2.78,   lat:42.68, label:"Roussillon" },
-  { key:"Banyuls",            lon:3.12,   lat:42.48, label:"Banyuls" },
-  { key:"Maury",              lon:2.80,   lat:42.82, label:"Maury" },
-  { key:"Collioure",          lon:3.08,   lat:42.52, label:"Collioure" },
-  { key:"Corse",              lon:9.10,   lat:42.15, label:"Corse" },
-  { key:"Patrimonio",         lon:9.37,   lat:42.67, label:"Patrimonio" },
-  { key:"Ajaccio",            lon:8.73,   lat:41.93, label:"Ajaccio" },
-  // ESPAGNE
-  { key:"Rioja",              lon:-2.40,  lat:42.46, label:"Rioja" },
-  { key:"Rioja Alta",         lon:-2.65,  lat:42.48, label:"Rioja Alta" },
-  { key:"Rioja Alavesa",      lon:-2.75,  lat:42.58, label:"Rioja Alavesa" },
-  { key:"Ribera del Duero",   lon:-3.80,  lat:41.65, label:"Ribera del Duero" },
-  { key:"Priorat",            lon:0.75,   lat:41.20, label:"Priorat" },
-  { key:"Penedès",            lon:1.70,   lat:41.33, label:"Penedès" },
-  { key:"Cava",               lon:1.72,   lat:41.35, label:"Cava" },
-  { key:"Rías Baixas",        lon:-8.65,  lat:42.50, label:"Rías Baixas" },
-  { key:"Bierzo",             lon:-6.80,  lat:42.60, label:"Bierzo" },
-  { key:"Toro",               lon:-5.40,  lat:41.50, label:"Toro" },
-  { key:"Rueda",              lon:-4.96,  lat:41.35, label:"Rueda" },
-  { key:"Jerez",              lon:-6.14,  lat:36.68, label:"Jerez / Sherry" },
-  { key:"Málaga",             lon:-4.42,  lat:36.72, label:"Málaga" },
-  { key:"Montilla-Moriles",   lon:-4.64,  lat:37.60, label:"Montilla" },
-  // PORTUGAL
-  { key:"Porto",              lon:-8.10,  lat:41.15, label:"Porto / Douro" },
-  { key:"Douro",              lon:-7.50,  lat:41.20, label:"Douro" },
-  { key:"Minho",              lon:-8.40,  lat:41.80, label:"Minho / Vinho Verde" },
-  { key:"Alentejo",           lon:-7.90,  lat:38.55, label:"Alentejo" },
-  { key:"Dão",                lon:-7.75,  lat:40.50, label:"Dão" },
-  { key:"Bairrada",           lon:-8.52,  lat:40.38, label:"Bairrada" },
-  { key:"Setúbal",            lon:-8.90,  lat:38.52, label:"Setúbal" },
-  { key:"Lisboa",             lon:-9.14,  lat:38.97, label:"Lisboa" },
-  { key:"Madère",             lon:-16.90, lat:32.75, label:"Madère" },
-  // ITALIE
-  { key:"Toscane",            lon:11.25,  lat:43.40, label:"Toscane" },
-  { key:"Chianti",            lon:11.26,  lat:43.50, label:"Chianti" },
-  { key:"Brunello",           lon:11.49,  lat:43.06, label:"Brunello" },
-  { key:"Bolgheri",           lon:10.60,  lat:43.20, label:"Bolgheri" },
-  { key:"Montepulciano",      lon:11.78,  lat:43.10, label:"Montepulciano" },
-  { key:"Piedmont",           lon:7.95,   lat:44.70, label:"Piémont" },
-  { key:"Barolo",             lon:7.94,   lat:44.61, label:"Barolo" },
-  { key:"Barbaresco",         lon:8.05,   lat:44.72, label:"Barbaresco" },
-  { key:"Moscato d'Asti",     lon:8.20,   lat:44.80, label:"Moscato Asti" },
-  { key:"Veneto",             lon:11.55,  lat:45.40, label:"Vénétie" },
-  { key:"Soave",              lon:11.25,  lat:45.42, label:"Soave" },
-  { key:"Valpolicella",       lon:10.95,  lat:45.52, label:"Valpolicella" },
-  { key:"Amarone",            lon:10.90,  lat:45.55, label:"Amarone" },
-  { key:"Prosecco",           lon:12.08,  lat:45.88, label:"Prosecco" },
-  { key:"Frioul",             lon:13.40,  lat:46.05, label:"Frioul" },
-  { key:"Alto Adige",         lon:11.35,  lat:46.50, label:"Alto Adige" },
-  { key:"Campanie",           lon:14.65,  lat:40.85, label:"Campanie" },
-  { key:"Taurasi",            lon:14.97,  lat:41.03, label:"Taurasi" },
-  { key:"Sicile",             lon:14.25,  lat:37.60, label:"Sicile" },
-  { key:"Etna",               lon:15.00,  lat:37.73, label:"Etna" },
-  { key:"Marsala",            lon:12.43,  lat:37.80, label:"Marsala" },
-  { key:"Sardaigne",          lon:9.00,   lat:40.15, label:"Sardaigne" },
-  { key:"Abruzzo",            lon:14.00,  lat:42.35, label:"Abruzzo" },
-  { key:"Ombrie",             lon:12.60,  lat:42.95, label:"Ombrie" },
-  // ALLEMAGNE
-  { key:"Moselle",            lon:7.00,   lat:49.95, label:"Moselle" },
-  { key:"Rhin",               lon:8.30,   lat:49.80, label:"Rhin" },
-  { key:"Rheingau",           lon:8.05,   lat:50.00, label:"Rheingau" },
-  { key:"Rhénanie-Palatinat", lon:7.80,   lat:49.60, label:"Rhénanie Palatinat" },
-  { key:"Bade",               lon:7.85,   lat:48.30, label:"Bade" },
-  { key:"Wurtemberg",         lon:9.20,   lat:49.00, label:"Wurtemberg" },
-  { key:"Franconie",          lon:9.95,   lat:49.80, label:"Franconie" },
-  { key:"Nahe",               lon:7.80,   lat:49.80, label:"Nahe" },
-  { key:"Ahr",                lon:7.00,   lat:50.52, label:"Ahr" },
-  // AUTRICHE
-  { key:"Wachau",             lon:15.45,  lat:48.38, label:"Wachau" },
-  { key:"Kamptal",            lon:15.60,  lat:48.60, label:"Kamptal" },
-  { key:"Burgenland",         lon:16.90,  lat:47.55, label:"Burgenland" },
-  { key:"Styrie",             lon:15.45,  lat:46.85, label:"Styrie" },
-  // GRÈCE
-  { key:"Crète",              lon:24.90,  lat:35.20, label:"Crète" },
-  { key:"Péloponnèse",        lon:22.00,  lat:37.60, label:"Péloponnèse" },
-  { key:"Macédoine",          lon:22.30,  lat:40.70, label:"Macédoine (GR)" },
-  { key:"Santorin",           lon:25.43,  lat:36.40, label:"Santorin" },
-  // HONGRIE
-  { key:"Tokaj",              lon:21.40,  lat:48.12, label:"Tokaj" },
-  { key:"Eger",               lon:20.37,  lat:47.90, label:"Eger" },
-  // ROUMANIE
-  { key:"Dealu Mare",         lon:26.10,  lat:45.10, label:"Dealu Mare" },
-  { key:"Moldova (RO)",       lon:27.50,  lat:46.50, label:"Moldova (RO)" },
-  // SUISSE
-  { key:"Valais",             lon:7.55,   lat:46.22, label:"Valais" },
-  { key:"Vaud",               lon:6.65,   lat:46.60, label:"Vaud" },
-  { key:"Genève",             lon:6.15,   lat:46.20, label:"Genève" },
-];
+// =====================================================================
+// CARTE DES VIGNOBLES — Mapping régions
+// =====================================================================
 
 const REGION_MAP = {
   // Bourgogne et sous-régions
@@ -3007,6 +2870,242 @@ const REGION_MAP = {
   "valais":"Valais","vaud":"Vaud","genève":"Genève","geneve":"Genève","lavaux":"Vaud","dézaley":"Vaud",
 };
 
+const WINE_REGION_POLYGONS = {
+  // FRANCE
+  "Bordeaux": {
+    label:"Bordeaux", country:"France", color:"#8a1828",
+    coords:[[-1.28,45.52],[-0.48,45.60],[-0.08,45.30],[-0.02,44.98],[-0.18,44.52],[-0.75,44.38],[-1.20,44.62],[-1.32,45.00],[-1.28,45.52]]
+  },
+  "Médoc": {
+    label:"Médoc", country:"France", color:"#9e2a3f",
+    coords:[[-1.28,45.52],[-1.10,45.70],[-0.95,45.70],[-0.80,45.48],[-0.70,45.10],[-0.98,45.00],[-1.20,45.10],[-1.28,45.52]]
+  },
+  "Saint-Émilion": {
+    label:"Saint-Émilion / Pomerol", country:"France", color:"#7b1c2e",
+    coords:[[-0.30,44.98],[-0.08,45.02],[-0.02,44.90],[-0.12,44.80],[-0.30,44.82],[-0.30,44.98]]
+  },
+  "Sauternes": {
+    label:"Sauternes / Barsac", country:"France", color:"#c9a84c",
+    coords:[[-0.55,44.62],[-0.38,44.62],[-0.30,44.48],[-0.42,44.38],[-0.60,44.45],[-0.55,44.62]]
+  },
+  "Bourgogne": {
+    label:"Bourgogne", country:"France", color:"#7b1c2e",
+    coords:[[4.60,47.80],[5.10,47.90],[5.35,47.60],[5.30,47.20],[5.05,46.90],[4.72,46.82],[4.55,47.00],[4.58,47.50],[4.60,47.80]]
+  },
+  "Côte de Nuits": {
+    label:"Côte de Nuits", country:"France", color:"#9e2a3f",
+    coords:[[4.88,47.38],[4.98,47.38],[5.05,47.22],[4.98,47.08],[4.88,47.10],[4.82,47.22],[4.88,47.38]]
+  },
+  "Côte de Beaune": {
+    label:"Côte de Beaune", country:"France", color:"#a03348",
+    coords:[[4.80,47.08],[4.95,47.08],[5.02,46.92],[4.95,46.78],[4.82,46.78],[4.76,46.92],[4.80,47.08]]
+  },
+  "Chablis": {
+    label:"Chablis", country:"France", color:"#c9a84c",
+    coords:[[3.60,47.95],[4.00,47.98],[4.10,47.80],[3.98,47.65],[3.72,47.65],[3.60,47.78],[3.60,47.95]]
+  },
+  "Mâconnais": {
+    label:"Mâconnais", country:"France", color:"#b89040",
+    coords:[[4.65,46.65],[4.95,46.68],[5.08,46.50],[4.98,46.28],[4.72,46.22],[4.55,46.38],[4.62,46.55],[4.65,46.65]]
+  },
+  "Champagne": {
+    label:"Champagne", country:"France", color:"#c9a84c",
+    coords:[[3.52,49.38],[4.25,49.48],[4.55,49.25],[4.48,48.90],[4.10,48.72],[3.62,48.78],[3.42,49.00],[3.52,49.38]]
+  },
+  "Alsace": {
+    label:"Alsace", country:"France", color:"#c9a84c",
+    coords:[[7.18,48.85],[7.52,48.95],[7.80,48.78],[7.90,48.52],[7.85,47.88],[7.60,47.60],[7.28,47.60],[7.12,47.85],[7.10,48.32],[7.18,48.85]]
+  },
+  "Loire": {
+    label:"Vallée de la Loire", country:"France", color:"#c9a84c",
+    coords:[[-2.10,47.42],[-1.55,47.50],[0.00,47.58],[1.00,47.52],[1.80,47.38],[2.98,47.22],[3.12,47.08],[2.85,46.92],[2.60,47.00],[1.80,47.15],[0.80,47.28],[0.00,47.40],[-1.30,47.30],[-2.00,47.22],[-2.10,47.42]]
+  },
+  "Sancerre": {
+    label:"Sancerre / Pouilly-Fumé", country:"France", color:"#c9a84c",
+    coords:[[2.65,47.42],[3.08,47.45],[3.18,47.22],[3.02,47.08],[2.68,47.10],[2.55,47.28],[2.65,47.42]]
+  },
+  "Rhône Nord": {
+    label:"Rhône Septentrional", country:"France", color:"#8a1828",
+    coords:[[4.55,45.62],[4.90,45.72],[5.05,45.55],[5.02,45.22],[4.88,45.08],[4.68,45.10],[4.55,45.30],[4.55,45.62]]
+  },
+  "Rhône Sud": {
+    label:"Rhône Méridional", country:"France", color:"#9e2a3f",
+    coords:[[4.42,44.62],[4.98,44.72],[5.15,44.52],[5.12,44.08],[4.88,43.88],[4.55,43.95],[4.30,44.12],[4.28,44.42],[4.42,44.62]]
+  },
+  "Châteauneuf-du-Pape": {
+    label:"Châteauneuf-du-Pape", country:"France", color:"#7b1c2e",
+    coords:[[4.68,44.20],[4.88,44.22],[4.98,44.08],[4.92,43.95],[4.75,43.92],[4.62,44.02],[4.68,44.20]]
+  },
+  "Provence": {
+    label:"Provence", country:"France", color:"#c06080",
+    coords:[[5.12,43.88],[5.80,43.98],[6.52,43.82],[7.08,43.72],[7.12,43.52],[6.85,43.28],[6.12,43.10],[5.42,43.12],[4.98,43.22],[4.90,43.45],[5.12,43.88]]
+  },
+  "Bandol": {
+    label:"Bandol", country:"France", color:"#d06090",
+    coords:[[5.62,43.25],[5.88,43.28],[5.98,43.12],[5.82,43.02],[5.62,43.05],[5.55,43.15],[5.62,43.25]]
+  },
+  "Languedoc": {
+    label:"Languedoc", country:"France", color:"#7b1c2e",
+    coords:[[2.12,43.90],[2.88,44.02],[3.52,43.88],[4.22,43.70],[4.52,43.48],[4.22,43.22],[3.52,43.12],[2.88,43.10],[2.18,43.28],[1.92,43.55],[2.12,43.90]]
+  },
+  "Roussillon": {
+    label:"Roussillon", country:"France", color:"#9040c0",
+    coords:[[2.10,42.90],[2.75,42.95],[3.12,42.72],[3.15,42.48],[2.88,42.35],[2.42,42.38],[2.05,42.52],[1.98,42.72],[2.10,42.90]]
+  },
+  "Sud-Ouest": {
+    label:"Sud-Ouest", country:"France", color:"#7b1c2e",
+    coords:[[-0.92,44.52],[-0.30,44.62],[0.52,44.82],[1.08,44.62],[1.55,44.18],[1.52,43.78],[1.12,43.58],[0.52,43.48],[-0.12,43.38],[-0.60,43.38],[-1.02,43.62],[-0.92,44.52]]
+  },
+  "Cahors": {
+    label:"Cahors", country:"France", color:"#8a1828",
+    coords:[[1.22,44.62],[1.72,44.68],[1.82,44.42],[1.68,44.22],[1.28,44.18],[1.05,44.32],[1.22,44.62]]
+  },
+  "Jura": {
+    label:"Jura", country:"France", color:"#c9a84c",
+    coords:[[5.48,47.08],[5.85,47.12],[5.98,46.88],[5.92,46.58],[5.72,46.42],[5.48,46.48],[5.38,46.70],[5.38,46.95],[5.48,47.08]]
+  },
+  "Savoie": {
+    label:"Savoie", country:"France", color:"#c9a84c",
+    coords:[[5.72,46.08],[6.05,46.18],[6.42,46.10],[6.75,45.88],[6.72,45.55],[6.45,45.38],[6.08,45.42],[5.82,45.62],[5.70,45.88],[5.72,46.08]]
+  },
+  "Corse": {
+    label:"Corse", country:"France", color:"#7b1c2e",
+    coords:[[8.55,42.88],[9.10,43.02],[9.55,42.88],[9.72,42.48],[9.60,41.98],[9.28,41.55],[8.78,41.35],[8.52,41.55],[8.55,42.08],[8.72,42.52],[8.55,42.88]]
+  },
+  // ESPAGNE
+  "Rioja": {
+    label:"Rioja", country:"Espagne", color:"#8a1828",
+    coords:[[-3.08,42.72],[-2.28,42.92],[-1.88,42.78],[-1.72,42.52],[-1.82,42.28],[-2.28,42.18],[-2.88,42.25],[-3.12,42.42],[-3.08,42.72]]
+  },
+  "Ribera del Duero": {
+    label:"Ribera del Duero", country:"Espagne", color:"#7b1c2e",
+    coords:[[-4.52,41.88],[-3.48,41.98],[-3.08,41.82],[-2.88,41.58],[-3.08,41.35],[-3.72,41.28],[-4.28,41.38],[-4.62,41.58],[-4.52,41.88]]
+  },
+  "Priorat": {
+    label:"Priorat", country:"Espagne", color:"#9e2a3f",
+    coords:[[0.62,41.42],[0.98,41.48],[1.08,41.28],[0.95,41.08],[0.68,41.05],[0.52,41.18],[0.62,41.42]]
+  },
+  "Penedès": {
+    label:"Penedès / Cava", country:"Espagne", color:"#c9a84c",
+    coords:[[1.28,41.62],[1.92,41.72],[2.12,41.52],[2.05,41.28],[1.72,41.15],[1.32,41.22],[1.12,41.42],[1.28,41.62]]
+  },
+  "Rías Baixas": {
+    label:"Rías Baixas", country:"Espagne", color:"#c9a84c",
+    coords:[[-8.90,42.72],[-8.38,42.85],[-8.12,42.65],[-8.22,42.38],[-8.62,42.28],[-8.92,42.45],[-8.90,42.72]]
+  },
+  "Jerez": {
+    label:"Jerez / Sherry", country:"Espagne", color:"#c9a84c",
+    coords:[[-6.42,37.08],[-5.88,37.18],[-5.65,36.92],[-5.78,36.65],[-6.18,36.55],[-6.52,36.68],[-6.42,37.08]]
+  },
+  "Rueda": {
+    label:"Rueda / Toro", country:"Espagne", color:"#c9a84c",
+    coords:[[-5.38,41.58],[-4.62,41.68],[-4.38,41.45],[-4.52,41.22],[-5.08,41.12],[-5.45,41.28],[-5.38,41.58]]
+  },
+  // PORTUGAL
+  "Douro": {
+    label:"Douro / Porto", country:"Portugal", color:"#7b1c2e",
+    coords:[[-8.28,41.52],[-7.55,41.62],[-7.08,41.48],[-6.92,41.18],[-7.12,40.88],[-7.68,40.88],[-8.12,41.08],[-8.28,41.52]]
+  },
+  "Minho": {
+    label:"Vinho Verde / Minho", country:"Portugal", color:"#c9a84c",
+    coords:[[-8.92,41.92],[-8.38,42.08],[-8.05,41.88],[-8.12,41.52],[-8.52,41.38],[-8.92,41.58],[-8.92,41.92]]
+  },
+  "Alentejo": {
+    label:"Alentejo", country:"Portugal", color:"#8a1828",
+    coords:[[-8.82,38.92],[-7.98,39.05],[-7.05,38.88],[-6.85,38.38],[-7.12,37.88],[-7.88,37.78],[-8.58,37.98],[-8.88,38.45],[-8.82,38.92]]
+  },
+  "Dão": {
+    label:"Dão", country:"Portugal", color:"#7b1c2e",
+    coords:[[-8.05,40.72],[-7.48,40.82],[-7.22,40.62],[-7.28,40.30],[-7.68,40.20],[-8.05,40.38],[-8.05,40.72]]
+  },
+  "Bairrada": {
+    label:"Bairrada", country:"Portugal", color:"#8a1828",
+    coords:[[-8.62,40.72],[-8.28,40.82],[-8.12,40.58],[-8.22,40.35],[-8.52,40.30],[-8.72,40.48],[-8.62,40.72]]
+  },
+  // ITALIE
+  "Barolo": {
+    label:"Barolo / Barbaresco", country:"Italie", color:"#7b1c2e",
+    coords:[[7.72,44.82],[8.08,44.88],[8.22,44.68],[8.12,44.48],[7.78,44.42],[7.58,44.58],[7.72,44.82]]
+  },
+  "Chianti": {
+    label:"Chianti Classico", country:"Italie", color:"#9e2a3f",
+    coords:[[11.02,43.72],[11.38,43.80],[11.55,43.55],[11.48,43.28],[11.18,43.18],[10.95,43.35],[11.02,43.72]]
+  },
+  "Brunello": {
+    label:"Brunello di Montalcino", country:"Italie", color:"#7b1c2e",
+    coords:[[11.30,43.18],[11.58,43.22],[11.68,43.02],[11.55,42.85],[11.28,42.82],[11.12,42.98],[11.30,43.18]]
+  },
+  "Bolgheri": {
+    label:"Bolgheri / Super Toscans", country:"Italie", color:"#8a1828",
+    coords:[[10.45,43.38],[10.75,43.42],[10.85,43.22],[10.72,43.05],[10.45,43.08],[10.35,43.22],[10.45,43.38]]
+  },
+  "Valpolicella": {
+    label:"Valpolicella / Amarone", country:"Italie", color:"#7b1c2e",
+    coords:[[10.72,45.62],[11.12,45.70],[11.28,45.52],[11.18,45.32],[10.88,45.28],[10.65,45.42],[10.72,45.62]]
+  },
+  "Soave": {
+    label:"Soave", country:"Italie", color:"#c9a84c",
+    coords:[[11.08,45.50],[11.32,45.55],[11.45,45.38],[11.35,45.22],[11.08,45.22],[10.98,45.35],[11.08,45.50]]
+  },
+  "Prosecco": {
+    label:"Prosecco / Conegliano", country:"Italie", color:"#c9a84c",
+    coords:[[11.82,45.92],[12.18,45.98],[12.42,45.78],[12.32,45.55],[11.98,45.48],[11.72,45.62],[11.82,45.92]]
+  },
+  "Toscane": {
+    label:"Toscane", country:"Italie", color:"#8a1828",
+    coords:[[9.98,44.52],[10.72,44.58],[11.62,44.38],[12.18,43.98],[11.88,43.12],[11.28,42.75],[10.48,42.65],[9.92,43.08],[9.85,43.72],[9.98,44.52]]
+  },
+  "Campanie": {
+    label:"Campanie / Taurasi", country:"Italie", color:"#8a1828",
+    coords:[[13.78,41.32],[14.52,41.48],[15.22,41.18],[15.18,40.68],[14.72,40.28],[14.05,40.22],[13.65,40.52],[13.78,41.32]]
+  },
+  "Sicile": {
+    label:"Sicile", country:"Italie", color:"#9e2a3f",
+    coords:[[12.45,37.92],[13.38,38.22],[14.55,38.28],[15.52,37.98],[15.68,37.58],[15.22,37.00],[14.08,36.65],[12.85,36.65],[12.12,37.08],[12.45,37.92]]
+  },
+  // ALLEMAGNE
+  "Moselle": {
+    label:"Moselle", country:"Allemagne", color:"#c9a84c",
+    coords:[[6.52,50.18],[6.88,50.28],[7.22,50.08],[7.28,49.72],[7.08,49.42],[6.72,49.38],[6.45,49.62],[6.52,50.18]]
+  },
+  "Rheingau": {
+    label:"Rheingau / Rhénanie", country:"Allemagne", color:"#b89040",
+    coords:[[7.72,50.18],[8.28,50.28],[8.52,50.08],[8.42,49.82],[7.98,49.72],[7.62,49.88],[7.72,50.18]]
+  },
+  "Bade": {
+    label:"Bade", country:"Allemagne", color:"#c9a84c",
+    coords:[[7.52,48.78],[8.05,48.98],[8.38,48.72],[8.28,48.08],[7.98,47.78],[7.62,47.82],[7.48,48.22],[7.52,48.78]]
+  },
+  // AUTRICHE
+  "Wachau": {
+    label:"Wachau / Basse-Autriche", country:"Autriche", color:"#c9a84c",
+    coords:[[15.02,48.52],[15.58,48.60],[15.88,48.38],[15.78,48.12],[15.32,48.02],[15.02,48.18],[15.02,48.52]]
+  },
+  "Burgenland": {
+    label:"Burgenland", country:"Autriche", color:"#b89040",
+    coords:[[16.42,47.88],[17.08,47.98],[17.22,47.68],[17.08,47.35],[16.62,47.22],[16.28,47.42],[16.28,47.72],[16.42,47.88]]
+  },
+  // HONGRIE
+  "Tokaj": {
+    label:"Tokaj", country:"Hongrie", color:"#c9a84c",
+    coords:[[21.08,48.30],[21.62,48.38],[21.88,48.12],[21.72,47.88],[21.22,47.80],[20.98,48.00],[21.08,48.30]]
+  },
+  // GRÈCE
+  "Santorin": {
+    label:"Santorin", country:"Grèce", color:"#c9a84c",
+    coords:[[25.32,36.50],[25.52,36.55],[25.48,36.35],[25.28,36.30],[25.18,36.42],[25.32,36.50]]
+  },
+  "Péloponnèse": {
+    label:"Péloponnèse / Nemea", country:"Grèce", color:"#8a1828",
+    coords:[[21.22,38.22],[22.28,38.42],[23.08,37.98],[22.82,37.28],[22.08,37.05],[21.18,37.22],[20.85,37.72],[21.22,38.22]]
+  },
+  // SUISSE
+  "Valais": {
+    label:"Valais", country:"Suisse", color:"#c9a84c",
+    coords:[[6.98,46.28],[7.55,46.38],[8.02,46.22],[8.12,46.00],[7.85,45.78],[7.22,45.72],[6.88,45.92],[6.98,46.28]]
+  }
+};
+
 const TYPE_COLORS_CARTE = {
   rouge:"#9e2a3f", blanc:"#c9a84c", "rosé":"#c06080",
   effervescent:"#5090c0", vdn:"#9040c0", magnum:"#9060c0"
@@ -3021,229 +3120,203 @@ function getRegionKey(wine) {
   return null;
 }
 
-let carteSelectedRegion = null;
-let carteSvgEl = null, carteGEl = null;
-let carteZoom = 1, cartePanX = 0, cartePanY = 0;
-let carteW = 1000, carteH = 500;
-let isDragging = false, dragStartX = 0, dragStartY = 0, panStartX = 0, panStartY = 0;
+// =====================================================================
+// D3 MAP ENGINE
+// =====================================================================
 
-// Projection Mercator centrée sur l'Europe
-const MAP_LON_MIN = -11, MAP_LON_MAX = 42;
-const MAP_LAT_MIN = 34,  MAP_LAT_MAX = 62;
-
-function project(lon, lat) {
-  const latRad    = lat * Math.PI / 180;
-  const latMinRad = MAP_LAT_MIN * Math.PI / 180;
-  const latMaxRad = MAP_LAT_MAX * Math.PI / 180;
-  const mercN     = Math.log(Math.tan(Math.PI/4 + latRad/2));
-  const mercMin   = Math.log(Math.tan(Math.PI/4 + latMinRad/2));
-  const mercMax   = Math.log(Math.tan(Math.PI/4 + latMaxRad/2));
-  const x = ((lon - MAP_LON_MIN) / (MAP_LON_MAX - MAP_LON_MIN)) * carteW;
-  const y = (1 - (mercN - mercMin) / (mercMax - mercMin)) * carteH;
-  return { x, y };
-}
-
-// Zoom centré sur le milieu du viewport
-function applyZoomCentered(newZoom) {
-  const cx = carteW / 2;
-  const cy = carteH / 2;
-  cartePanX = cx - (cx - cartePanX) * (newZoom / carteZoom);
-  cartePanY = cy - (cy - cartePanY) * (newZoom / carteZoom);
-  carteZoom = newZoom;
-  applyTransform();
-}
-
-function applyTransform() {
-  if(carteGEl) carteGEl.setAttribute('transform', `translate(${cartePanX},${cartePanY}) scale(${carteZoom})`);
-  updateCartePoints();
-}
-
-function carteZoomIn()  { applyZoomCentered(Math.min(20, carteZoom * 1.5)); }
-function carteZoomOut() { applyZoomCentered(Math.max(0.3, carteZoom / 1.5)); }
-function carteReset()   { zoomToFrance(); }
-
-function zoomToFrance() {
-  const ptTL = project(-5.5, 51.5);
-  const ptBR = project(9.5,  41.8);
-  const fw = ptBR.x - ptTL.x;
-  const fh = ptBR.y - ptTL.y;
-  const scaleX = carteW / fw * 0.82;
-  const scaleY = carteH / fh * 0.82;
-  const scale  = Math.min(scaleX, scaleY);
-  const ptCenter = project(2.3, 46.5);
-  cartePanX = carteW/2 - ptCenter.x * scale;
-  cartePanY = carteH/2 - ptCenter.y * scale;
-  carteZoom = scale;
-  applyTransform();
-}
-
-async function renderCarte() {
-  const svgEl = document.getElementById('carte-svg');
-  if(!svgEl) return;
-  carteSvgEl = svgEl;
-
-  const wrap = document.getElementById('carte-wrap');
-  carteW = wrap.clientWidth  || 900;
-  carteH = wrap.clientHeight || 500;
-  svgEl.setAttribute('viewBox', `0 0 ${carteW} ${carteH}`);
-
-  svgEl.innerHTML = `
-    <rect width="${carteW}" height="${carteH}" fill="#0d1a2a"/>
-    <g id="carte-map-g"></g>
-    <g id="carte-points-g"></g>
-  `;
-  carteGEl = document.getElementById('carte-map-g');
-
-  // Charger GeoJSON Natural Earth
-  try {
-    const resp = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
-    const topo  = await resp.json();
-    if(typeof topojson !== 'undefined') {
+function renderCarte() {
+  const container = document.getElementById('carte-wrap');
+  if(!container) return;
+  
+  // Nettoyer
+  d3.select('#carte-svg').selectAll('*').remove();
+  
+  carteW = container.clientWidth  || 900;
+  carteH = container.clientHeight || 500;
+  
+  const svg = d3.select('#carte-svg')
+    .attr('viewBox', `0 0 ${carteW} ${carteH}`)
+    .style('background', '#0d1a2a')
+    .style('cursor', 'grab');
+  
+  carteSvg = svg;
+  
+  // Projection Mercator correcte sur l'Europe, auto-fit
+  carteProjection = d3.geoMercator()
+    .center([10, 48])
+    .scale(carteW * 0.98)
+    .translate([carteW / 2, carteH / 2]);
+  
+  cartePath = d3.geoPath().projection(carteProjection);
+  
+  // Groupe principal (cible du zoom)
+  const g = svg.append('g').attr('id', 'carte-map-g');
+  
+  // Tooltip
+  const tooltip = d3.select('#carte-tooltip');
+  
+  // Zoom & pan D3
+  carteZoomBehavior = d3.zoom()
+    .scaleExtent([0.5, 30])
+    .on('zoom', (event) => {
+      g.attr('transform', event.transform);
+    });
+  
+  svg.call(carteZoomBehavior)
+    .on('dblclick.zoom', null);
+  
+  // Charger les pays (fond)
+  fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+    .then(r => r.json())
+    .then(topo => {
       const countries = topojson.feature(topo, topo.objects.countries);
-      drawCountriesEurope(countries.features);
-    } else {
-      drawFallbackMap();
+      const wineCountryIds = new Set([250,724,620,380,276,756,40,348,528,56,300,100,642,191,705,498,642,616,203,703,826,372,208,578,752,688,807,792,20,442,233,428,440]);
+      
+      // Fond de mer / hors Europe
+      g.append('rect')
+        .attr('width', carteW * 10).attr('height', carteH * 10)
+        .attr('x', -carteW * 4).attr('y', -carteH * 4)
+        .attr('fill', '#0d1a2a');
+      
+      // Pays non-viticoles (fond gris)
+      g.selectAll('.country-other')
+        .data(countries.features.filter(f => !wineCountryIds.has(parseInt(f.id))))
+        .enter().append('path')
+        .attr('class','country-other')
+        .attr('d', cartePath)
+        .attr('fill', '#111e2b')
+        .attr('stroke', '#1a2d3d')
+        .attr('stroke-width', 0.3);
+      
+      // Pays viticoles (fond légèrement plus clair)
+      const countryColors = {
+        250:'#162412', 724:'#162014', 620:'#162014', 380:'#141828',
+        276:'#121a28', 756:'#141828', 40:'#141828', 348:'#141828',
+        300:'#141828', 642:'#141828', 100:'#141828', 191:'#141828',
+        705:'#141828', 498:'#141828', 616:'#141828', 203:'#121a28', 703:'#121a28'
+      };
+      g.selectAll('.country-wine')
+        .data(countries.features.filter(f => wineCountryIds.has(parseInt(f.id))))
+        .enter().append('path')
+        .attr('class','country-wine')
+        .attr('d', cartePath)
+        .attr('fill', f => countryColors[parseInt(f.id)] || '#141828')
+        .attr('stroke', '#253545')
+        .attr('stroke-width', 0.5);
+      
+      // Frontières internes (borders)
+      if(topo.objects.countries) {
+        g.append('path')
+          .datum(topojson.mesh(topo, topo.objects.countries, (a,b) => a !== b))
+          .attr('fill','none')
+          .attr('stroke','#2a3d52')
+          .attr('stroke-width', 0.6)
+          .attr('d', cartePath);
+      }
+    })
+    .catch(() => {
+      g.append('rect').attr('width',carteW).attr('height',carteH)
+        .attr('fill','#12202e');
+    })
+    .finally(() => {
+      drawWineRegionPolygons(g);
+      drawWinePoints(g);
+      renderCarteLegend();
+    });
+  
+  // Zoom par défaut sur la France
+  resetToFrance();
+}
+
+function resetToFrance() {
+  if(!carteSvg || !carteZoomBehavior) return;
+  // France centre ~2.3°E, 46.5°N → trouver les coordonnées pixel
+  const [cx, cy] = carteProjection([2.3, 46.5]);
+  // Zoom ~3.2x, centré sur la France
+  const scale = 3.2;
+  const tx = carteW/2 - cx * scale;
+  const ty = carteH/2 - cy * scale;
+  carteSvg.transition().duration(600)
+    .call(carteZoomBehavior.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+}
+
+function carteZoomIn() {
+  if(!carteSvg || !carteZoomBehavior) return;
+  carteSvg.transition().duration(300)
+    .call(carteZoomBehavior.scaleBy, 1.6);
+}
+function carteZoomOut() {
+  if(!carteSvg || !carteZoomBehavior) return;
+  carteSvg.transition().duration(300)
+    .call(carteZoomBehavior.scaleBy, 0.625);
+}
+function carteReset() { resetToFrance(); }
+
+function drawWineRegionPolygons(g) {
+  // Dessiner les polygones des régions viticoles
+  const layerZones = g.append('g').attr('id','wine-zones-g');
+  const layerLabels = g.append('g').attr('id','wine-labels-g');
+  
+  Object.entries(WINE_REGION_POLYGONS).forEach(([key, region]) => {
+    const geoJson = {
+      type: 'Feature',
+      geometry: { type: 'Polygon', coordinates: [region.coords] }
+    };
+    
+    // Zone colorée
+    layerZones.append('path')
+      .datum(geoJson)
+      .attr('class', 'wine-zone')
+      .attr('data-key', key)
+      .attr('d', cartePath)
+      .attr('fill', region.color)
+      .attr('fill-opacity', 0.22)
+      .attr('stroke', region.color)
+      .attr('stroke-width', 1.2)
+      .attr('stroke-opacity', 0.65)
+      .style('cursor', 'pointer')
+      .on('mouseenter', function(event) {
+        d3.select(this).attr('fill-opacity', 0.42).attr('stroke-width', 2);
+        showRegionTooltip(event, key, region.label);
+      })
+      .on('mousemove', function(event) {
+        updateTooltipPos(event);
+      })
+      .on('mouseleave', function() {
+        const isSel = carteSelectedRegion === key;
+        d3.select(this).attr('fill-opacity', isSel ? 0.42 : 0.22).attr('stroke-width', isSel ? 2 : 1.2);
+        d3.select('#carte-tooltip').style('display','none');
+      })
+      .on('click', function() {
+        // Désélectionner l'ancien
+        d3.selectAll('.wine-zone').each(function() {
+          const k = d3.select(this).attr('data-key');
+          const isSel = k === key;
+          d3.select(this).attr('fill-opacity', isSel ? 0.42 : 0.22).attr('stroke-width', isSel ? 2 : 1.2);
+        });
+        selectCarteRegion(key, region.label);
+      });
+    
+    // Label de la région (centroïde)
+    const centroid = cartePath.centroid(geoJson);
+    if(centroid && !isNaN(centroid[0])) {
+      layerLabels.append('text')
+        .attr('x', centroid[0])
+        .attr('y', centroid[1])
+        .attr('text-anchor','middle')
+        .attr('font-size','5.5')
+        .attr('fill','rgba(255,255,255,0.7)')
+        .attr('font-family','Cormorant Garamond, serif')
+        .style('pointer-events','none')
+        .text(region.label);
     }
-  } catch(e) {
-    drawFallbackMap();
-  }
-
-  drawWineZones();
-  setupCarteInteraction();
-  zoomToFrance();
-  updateCartePoints();
-  renderCarteLegend();
-}
-
-const WINE_COUNTRIES = {
-  250: { fill:'#1a2a1a', stroke:'#3a5a2a' },
-  724: { fill:'#1e2a1e', stroke:'#3a5525' },
-  620: { fill:'#1e2a1e', stroke:'#3a5525' },
-  380: { fill:'#1e2030', stroke:'#353580' },
-  276: { fill:'#1a2435', stroke:'#303878' },
-  756: { fill:'#1e2030', stroke:'#30357a' },
-  40:  { fill:'#1e2030', stroke:'#303580' },
-  348: { fill:'#1e2030', stroke:'#303580' },
-  528: { fill:'#1a2435', stroke:'#303878' },
-  56:  { fill:'#1a2435', stroke:'#303878' },
-  300: { fill:'#1e2030', stroke:'#303580' },
-  100: { fill:'#1e2030', stroke:'#303580' },
-  642: { fill:'#1e2030', stroke:'#303580' },
-  191: { fill:'#1e2030', stroke:'#303580' },
-  705: { fill:'#1e2030', stroke:'#303580' },
-  498: { fill:'#1e2030', stroke:'#303580' },
-  804: { fill:'#182430', stroke:'#283568' },
-  203: { fill:'#1a2435', stroke:'#303878' },
-  703: { fill:'#1a2435', stroke:'#303878' },
-  826: { fill:'#1a2435', stroke:'#303878' },
-  372: { fill:'#1a2435', stroke:'#303878' },
-  208: { fill:'#1a2435', stroke:'#303878' },
-  578: { fill:'#1a2435', stroke:'#303878' },
-  752: { fill:'#1a2435', stroke:'#303878' },
-  616: { fill:'#1a2435', stroke:'#303878' },
-  20:  { fill:'#1a2435', stroke:'#303878' },
-  442: { fill:'#1a2435', stroke:'#303878' },
-  246: { fill:'#1a2435', stroke:'#303878' },
-  233: { fill:'#1a2435', stroke:'#303878' },
-  428: { fill:'#1a2435', stroke:'#303878' },
-  440: { fill:'#1a2435', stroke:'#303878' },
-  804: { fill:'#1a2435', stroke:'#303878' },
-  688: { fill:'#1e2030', stroke:'#303580' },
-  807: { fill:'#1e2030', stroke:'#303580' },
-  792: { fill:'#1a2030', stroke:'#302555' },
-};
-
-function drawCountriesEurope(features) {
-  let pathsHtml = '';
-  // Fond pour la mer (zones non-pays)
-  features.forEach(f => {
-    const id = parseInt(f.id);
-    const style = WINE_COUNTRIES[id];
-    const fill   = style ? style.fill   : '#12202e';
-    const stroke = style ? style.stroke : '#1e2d3d';
-    const d = geoPathToD(f.geometry);
-    if(d) pathsHtml += `<path d="${d}" fill="${fill}" stroke="${stroke}" stroke-width="0.6"/>`;
   });
-  carteGEl.innerHTML = pathsHtml;
 }
 
-function geoPathToD(geometry) {
-  if(!geometry) return '';
-  const coords2path = (coords) => {
-    if(!coords || !coords.length) return '';
-    return coords.map((ring) => {
-      const pts = ring.map((pt, i) => {
-        const {x,y} = project(pt[0], pt[1]);
-        if(x < -carteW || x > carteW*2 || y < -carteH || y > carteH*2) return null;
-        return (i===0 ? `M${x.toFixed(1)},${y.toFixed(1)}` : `L${x.toFixed(1)},${y.toFixed(1)}`);
-      }).filter(Boolean);
-      return pts.join('') + 'Z';
-    }).join('');
-  };
-  if(geometry.type === 'Polygon')      return coords2path(geometry.coordinates);
-  if(geometry.type === 'MultiPolygon') return geometry.coordinates.map(poly => coords2path(poly)).join('');
-  return '';
-}
-
-const WINE_ZONES = [
-  { lon:-0.57, lat:44.84, rx:1.8, ry:1.2, color:'#7b1c2e' },
-  { lon: 4.85, lat:47.05, rx:0.8, ry:1.8, color:'#7b1c2e' },
-  { lon: 4.03, lat:49.05, rx:1.2, ry:0.8, color:'#c9a84c' },
-  { lon: 7.35, lat:48.20, rx:0.4, ry:1.2, color:'#c9a84c' },
-  { lon: 0.10, lat:47.40, rx:2.5, ry:0.7, color:'#c9a84c' },
-  { lon: 4.83, lat:44.80, rx:0.6, ry:1.8, color:'#7b1c2e' },
-  { lon: 5.90, lat:43.55, rx:1.6, ry:0.8, color:'#c06080' },
-  { lon: 3.20, lat:43.50, rx:1.8, ry:0.9, color:'#7b1c2e' },
-  { lon: 0.50, lat:43.65, rx:1.2, ry:0.8, color:'#7b1c2e' },
-  { lon: 5.75, lat:46.70, rx:0.4, ry:0.6, color:'#c9a84c' },
-  { lon: 6.10, lat:45.55, rx:0.6, ry:0.5, color:'#c9a84c' },
-  { lon: 2.78, lat:42.68, rx:0.8, ry:0.5, color:'#9040c0' },
-  { lon: 9.10, lat:42.15, rx:0.5, ry:0.7, color:'#7b1c2e' },
-  { lon:-2.40, lat:42.46, rx:1.0, ry:0.5, color:'#7b1c2e' },
-  { lon:-3.80, lat:41.65, rx:1.2, ry:0.5, color:'#7b1c2e' },
-  { lon: 0.75, lat:41.20, rx:0.4, ry:0.4, color:'#7b1c2e' },
-  { lon:-8.65, lat:42.50, rx:0.7, ry:0.4, color:'#c9a84c' },
-  { lon:-6.14, lat:36.68, rx:0.6, ry:0.4, color:'#c9a84c' },
-  { lon:-7.80, lat:41.20, rx:0.8, ry:0.5, color:'#7b1c2e' },
-  { lon:-7.90, lat:38.55, rx:1.0, ry:0.8, color:'#7b1c2e' },
-  { lon:-8.40, lat:41.80, rx:0.7, ry:0.4, color:'#c9a84c' },
-  { lon:11.25, lat:43.40, rx:1.2, ry:1.0, color:'#7b1c2e' },
-  { lon: 7.95, lat:44.70, rx:0.8, ry:0.5, color:'#7b1c2e' },
-  { lon:11.55, lat:45.40, rx:1.0, ry:0.5, color:'#c9a84c' },
-  { lon:14.25, lat:37.60, rx:1.0, ry:0.6, color:'#7b1c2e' },
-  { lon:14.65, lat:40.85, rx:0.6, ry:0.5, color:'#7b1c2e' },
-  { lon: 7.00, lat:49.95, rx:0.4, ry:0.8, color:'#c9a84c' },
-  { lon: 8.05, lat:50.00, rx:0.5, ry:0.4, color:'#c9a84c' },
-  { lon: 7.85, lat:48.30, rx:0.6, ry:0.7, color:'#c9a84c' },
-  { lon:15.45, lat:48.38, rx:0.6, ry:0.3, color:'#c9a84c' },
-  { lon:21.40, lat:48.12, rx:0.5, ry:0.4, color:'#c9a84c' },
-  { lon:22.00, lat:37.60, rx:1.2, ry:0.7, color:'#c9a84c' },
-  { lon: 9.00, lat:40.15, rx:0.6, ry:0.8, color:'#7b1c2e' },
-  { lon:14.00, lat:42.35, rx:0.5, ry:0.4, color:'#7b1c2e' },
-];
-
-function drawWineZones() {
-  let zonesHtml = '';
-  WINE_ZONES.forEach(z => {
-    const p  = project(z.lon, z.lat);
-    const pEdgeX = project(z.lon + z.rx, z.lat);
-    const pEdgeY = project(z.lon, z.lat - z.ry);
-    const rxPx = Math.abs(pEdgeX.x - p.x);
-    const ryPx = Math.abs(pEdgeY.y - p.y);
-    zonesHtml += `<ellipse cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" rx="${rxPx.toFixed(1)}" ry="${ryPx.toFixed(1)}"
-      fill="${z.color}" opacity="0.13" stroke="${z.color}" stroke-width="0.4" stroke-opacity="0.4" style="pointer-events:none"/>`;
-  });
-  carteGEl.innerHTML = zonesHtml + carteGEl.innerHTML;
-}
-
-function drawFallbackMap() {
-  carteGEl.innerHTML = `<text x="${carteW/2}" y="${carteH/2}" text-anchor="middle" fill="#5a7a9a" font-size="14" font-style="italic">Carte non disponible (mode hors ligne)</text>`;
-}
-
-function updateCartePoints() {
-  const pointsG = document.getElementById('carte-points-g');
-  if(!pointsG) return;
-
+function drawWinePoints(g) {
+  // Points de vins (cercles) par-dessus les zones
+  const layerPoints = g.append('g').attr('id','carte-points-g');
+  
   // Grouper vins par région
   const regionData = {};
   wineData.forEach(w => {
@@ -3252,128 +3325,100 @@ function updateCartePoints() {
     if(!regionData[key]) regionData[key] = [];
     regionData[key].push(w);
   });
-
-  let html = '';
-  REGIONS_CARTE.forEach(reg => {
-    const wines = regionData[reg.key] || [];
-    if(!wines.length) return;
-    const pos = project(reg.lon, reg.lat);
-    // Taille adaptée au zoom (reste lisible)
-    const baseR = Math.max(6, Math.min(22, 6 + wines.length * 1.5));
-    const r = baseR / carteZoom;
-    const strokeW = 1.5 / carteZoom;
-    const fontSize = Math.max(7, 9 / carteZoom);
-
+  
+  // Calculer le centroïde de chaque région pour placer le badge
+  Object.entries(regionData).forEach(([key, wines]) => {
+    const region = WINE_REGION_POLYGONS[key];
+    if(!region) return;
+    
+    const geoJson = { type:'Feature', geometry:{ type:'Polygon', coordinates:[region.coords] } };
+    const centroid = cartePath.centroid(geoJson);
+    if(!centroid || isNaN(centroid[0])) return;
+    
     const typeCount = {};
     wines.forEach(w => { typeCount[w.type] = (typeCount[w.type]||0)+1; });
-    const dom  = Object.entries(typeCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'rouge';
+    const dom = Object.entries(typeCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'rouge';
     const color = TYPE_COLORS_CARTE[dom] || '#9e2a3f';
-    const isSel = carteSelectedRegion === reg.key;
-    // Correction position avec pan/zoom
-    const cx = (pos.x * carteZoom + cartePanX);
-    const cy = (pos.y * carteZoom + cartePanY);
-
-    html += `
-      <circle cx="${pos.x}" cy="${pos.y}" r="${r*1.6}" fill="${color}" opacity="0.15" style="pointer-events:none"/>
-      <circle cx="${pos.x}" cy="${pos.y}" r="${r}" fill="${color}" opacity="${isSel?1:0.88}"
-        stroke="${isSel?'#fff':color}" stroke-width="${strokeW}"
-        style="cursor:pointer" class="carte-pt"
-        data-key="${reg.key}" data-label="${reg.label}" data-count="${wines.length}"/>
-      <text x="${pos.x}" y="${pos.y + r + fontSize*1.2}" text-anchor="middle"
-        font-size="${fontSize}" fill="rgba(255,255,255,0.75)" style="pointer-events:none">${reg.label}</text>
-      <text x="${pos.x}" y="${pos.y + fontSize*0.38}" text-anchor="middle"
-        font-size="${fontSize*0.95}" fill="white" font-weight="bold" style="pointer-events:none">${wines.length}</text>`;
-  });
-
-  pointsG.setAttribute('transform', `translate(${cartePanX},${cartePanY}) scale(${carteZoom})`);
-  pointsG.innerHTML = html;
-
-  // Events sur les points
-  const tt = document.getElementById('carte-tooltip');
-  pointsG.querySelectorAll('.carte-pt').forEach(el => {
-    el.addEventListener('mouseenter', (e) => {
-      const key    = el.dataset.key;
-      const label  = el.dataset.label;
-      const count  = el.dataset.count;
-      const wines  = wineData.filter(w => getRegionKey(w) === key);
-      const tc = {};
-      wines.forEach(w => { tc[w.type]=(tc[w.type]||0)+1; });
-      tt.innerHTML = `
-        <div style="font-family:'Playfair Display',serif;color:var(--gold);margin-bottom:5px">${label}</div>
-        <div style="color:var(--cream)">${count} bouteille${count>1?'s':''}</div>
-        <div style="color:var(--text2);font-size:0.75rem;margin-top:3px">${Object.entries(tc).map(([t,n])=>`${n} ${t}`).join(' · ')}</div>
-        <div style="color:var(--text2);font-size:0.72rem;margin-top:4px;font-style:italic">Cliquer pour voir les vins</div>`;
-      const rect = carteSvgEl.getBoundingClientRect();
-      const px = e.clientX - rect.left + 14;
-      const py = e.clientY - rect.top  - 10;
-      tt.style.left = Math.min(px, rect.width  - 200) + 'px';
-      tt.style.top  = Math.max(10, py)         + 'px';
-      tt.style.display = 'block';
-    });
-    el.addEventListener('mouseleave', () => { tt.style.display = 'none'; });
-    el.addEventListener('click', () => {
-      selectCarteRegion(el.dataset.key, el.dataset.label);
-    });
+    const isSel = carteSelectedRegion === key;
+    
+    const group = layerPoints.append('g')
+      .attr('class','wine-point-g')
+      .attr('data-key', key)
+      .style('cursor','pointer');
+    
+    // Halo
+    group.append('circle')
+      .attr('cx', centroid[0]).attr('cy', centroid[1])
+      .attr('r', 9).attr('fill', color).attr('opacity', 0.18)
+      .style('pointer-events','none');
+    
+    // Cercle principal
+    group.append('circle')
+      .attr('cx', centroid[0]).attr('cy', centroid[1])
+      .attr('r', 6.5)
+      .attr('fill', color)
+      .attr('opacity', isSel ? 1 : 0.9)
+      .attr('stroke', isSel ? 'white' : color)
+      .attr('stroke-width', isSel ? 1.5 : 0.8);
+    
+    // Nombre
+    group.append('text')
+      .attr('x', centroid[0]).attr('y', centroid[1] + 2.2)
+      .attr('text-anchor','middle')
+      .attr('font-size','5').attr('font-weight','bold')
+      .attr('fill','white').style('pointer-events','none')
+      .text(wines.length);
+    
+    group.on('mouseenter', (event) => {
+      showWinePointTooltip(event, key, region.label, wines);
+    })
+    .on('mousemove', updateTooltipPos)
+    .on('mouseleave', () => { d3.select('#carte-tooltip').style('display','none'); })
+    .on('click', () => { selectCarteRegion(key, region.label); });
   });
 }
 
-function setupCarteInteraction() {
-  const svgEl = carteSvgEl;
+function showRegionTooltip(event, key, label) {
+  const wines = wineData.filter(w => getRegionKey(w) === key);
+  const tt = d3.select('#carte-tooltip');
+  tt.style('display','block')
+    .html(`<div style="font-family:'Playfair Display',serif;color:var(--gold);margin-bottom:4px">${label}</div>
+      ${wines.length ? `<div style="color:var(--cream)">${wines.length} bouteille${wines.length>1?'s':''}</div>` : '<div style="color:var(--text2);font-style:italic">Aucun vin stocké</div>'}
+      <div style="color:var(--text2);font-size:0.72rem;margin-top:3px;font-style:italic">Cliquer pour explorer</div>`);
+  updateTooltipPos(event);
+}
 
-  // Zoom molette
-  svgEl.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    const rect  = svgEl.getBoundingClientRect();
-    const mx    = (e.clientX - rect.left) / rect.width  * carteW;
-    const my    = (e.clientY - rect.top)  / rect.height * carteH;
-    const delta = e.deltaY < 0 ? 1.2 : 0.85;
-    const newZ  = Math.min(20, Math.max(0.5, carteZoom * delta));
-    // Zoom centré sur la souris
-    cartePanX = mx - (mx - cartePanX) * (newZ / carteZoom);
-    cartePanY = my - (my - cartePanY) * (newZ / carteZoom);
-    carteZoom = newZ;
-    if(carteGEl) carteGEl.setAttribute('transform', `translate(${cartePanX},${cartePanY}) scale(${carteZoom})`);
-    updateCartePoints();
-  }, { passive: false });
+function showWinePointTooltip(event, key, label, wines) {
+  const tc = {};
+  wines.forEach(w => { tc[w.type]=(tc[w.type]||0)+1; });
+  const tt = d3.select('#carte-tooltip');
+  tt.style('display','block')
+    .html(`<div style="font-family:'Playfair Display',serif;color:var(--gold);margin-bottom:4px">${label}</div>
+      <div style="color:var(--cream)">${wines.length} bouteille${wines.length>1?'s':''}</div>
+      <div style="color:var(--text2);font-size:0.75rem;margin-top:3px">${Object.entries(tc).map(([t,n])=>`${n} ${t}`).join(' · ')}</div>
+      <div style="color:var(--text2);font-size:0.72rem;margin-top:4px;font-style:italic">Cliquer pour voir les vins</div>`);
+  updateTooltipPos(event);
+}
 
-  // Pan souris
-  svgEl.addEventListener('mousedown', (e) => {
-    if(e.target.classList.contains('carte-pt')) return;
-    isDragging = true;
-    dragStartX = e.clientX; dragStartY = e.clientY;
-    panStartX  = cartePanX; panStartY  = cartePanY;
-    svgEl.style.cursor = 'grabbing';
-  });
-  window.addEventListener('mousemove', (e) => {
-    if(!isDragging) return;
-    const rect = svgEl.getBoundingClientRect();
-    const scaleX = carteW / rect.width;
-    const scaleY = carteH / rect.height;
-    cartePanX = panStartX + (e.clientX - dragStartX) * scaleX;
-    cartePanY = panStartY + (e.clientY - dragStartY) * scaleY;
-    if(carteGEl) carteGEl.setAttribute('transform', `translate(${cartePanX},${cartePanY}) scale(${carteZoom})`);
-    updateCartePoints();
-  });
-  window.addEventListener('mouseup', () => { isDragging = false; if(svgEl) svgEl.style.cursor = 'grab'; });
+function updateTooltipPos(event) {
+  const wrap = document.getElementById('carte-wrap');
+  const rect = wrap.getBoundingClientRect();
+  const x = event.clientX - rect.left + 14;
+  const y = event.clientY - rect.top  - 10;
+  d3.select('#carte-tooltip')
+    .style('left', Math.min(x, rect.width - 200) + 'px')
+    .style('top',  Math.max(10, y) + 'px');
+}
 
-  // Pan tactile
-  let touchStartX = 0, touchStartY = 0, touchPanStartX = 0, touchPanStartY = 0;
-  svgEl.addEventListener('touchstart', (e) => {
-    if(e.touches.length === 1) {
-      touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY;
-      touchPanStartX = cartePanX; touchPanStartY = cartePanY;
-    }
-  }, { passive: true });
-  svgEl.addEventListener('touchmove', (e) => {
-    if(e.touches.length === 1) {
-      const rect = svgEl.getBoundingClientRect();
-      const sx = carteW / rect.width, sy = carteH / rect.height;
-      cartePanX = touchPanStartX + (e.touches[0].clientX - touchStartX) * sx;
-      cartePanY = touchPanStartY + (e.touches[0].clientY - touchStartY) * sy;
-      if(carteGEl) carteGEl.setAttribute('transform', `translate(${cartePanX},${cartePanY}) scale(${carteZoom})`);
-      updateCartePoints();
-    }
-  }, { passive: true });
+function updateCartePoints() {
+  // Redessiner les points si la carte est déjà initialisée
+  if(!carteSvg) return;
+  const g = d3.select('#carte-map-g');
+  g.select('#carte-points-g').remove();
+  g.select('#wine-labels-g').remove();
+  g.select('#wine-zones-g').remove();
+  drawWineRegionPolygons(g);
+  drawWinePoints(g);
 }
 
 function renderCarteLegend() {
