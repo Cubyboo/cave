@@ -907,7 +907,7 @@ function updateSlotSelect() {
   for(let i=1; i<=floorData.slots; i++) {
     const taken     = getWineAtSlot(cave,floor,i);
     const editingId = addingToSlot?.editing;
-    const isSelf    = editingId && taken?.id===editingId;
+    const isSelf    = editingId && String(taken?.id)===String(editingId);
     if(taken && !isSelf) continue;
     const opt = document.createElement('option');
     opt.value = i;
