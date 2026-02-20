@@ -232,7 +232,97 @@
     0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)}
   }
 
-</style>
+
+  /* ============================================================
+     RESPONSIVE MOBILE
+     ============================================================ */
+  @media (max-width: 768px) {
+    header {
+      padding: 12px 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .logo { font-size: 1.2rem; }
+    .stats-bar {
+      gap: 10px;
+      font-size: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .tabs {
+      padding: 0 8px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      flex-wrap: nowrap;
+      align-items: center;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab {
+      font-size: 0.78rem;
+      padding: 10px 10px;
+      white-space: nowrap;
+      letter-spacing: 0;
+    }
+    .search-wrap { max-width: 140px; margin: 4px 6px !important; }
+    .search-input { font-size: 0.85rem; padding: 6px 10px 6px 28px; }
+    .search-results-panel { left: 10px; right: 10px; top: 100px; }
+
+    .content { padding: 16px 14px; }
+
+    /* Cave 2D — scroll horizontal */
+    #caveSvg { display: block; max-width: 100%; overflow: visible; }
+    .cave-selector {
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px 14px;
+    }
+    .cave-legend {
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    #cave-svg-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      background: var(--bg2);
+    }
+
+    /* Stats */
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .charts-row { grid-template-columns: 1fr; }
+
+    /* Formulaires */
+    .form-grid { grid-template-columns: 1fr; }
+    .form-full { grid-column: 1; }
+
+    /* Modal */
+    .modal {
+      width: 96vw;
+      max-width: 96vw;
+      padding: 18px 14px;
+      margin: 10px auto;
+    }
+    .modal-info-panel { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .modal-actions { flex-wrap: wrap; gap: 8px; }
+    .modal-actions button { flex: 1; min-width: 120px; font-size: 0.88rem; padding: 9px 10px; }
+
+    /* Historique */
+    .bar-label { width: 70px; font-size: 0.72rem; }
+
+    /* Liste */
+    table { font-size: 0.82rem; }
+    th, td { padding: 8px 6px; }
+  }
+
+  @media (max-width: 480px) {
+    .logo { font-size: 1rem; }
+    .stats-bar { display: none; }
+    .stats-grid { grid-template-columns: 1fr; }
+    .modal-info-panel { grid-template-columns: 1fr; }
+  }
+
+  </style>
 </head>
 <body>
 
@@ -297,7 +387,7 @@
     </div>
   </div>
   <div class="cave-2d-wrap" id="cave2dWrap">
-    <svg id="caveSvg" style="display:block;"></svg>
+    <div id="cave-svg-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch"><svg id="caveSvg" style="display:block;"></svg></div>
   </div>
 </div>
 
