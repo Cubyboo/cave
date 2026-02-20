@@ -184,9 +184,59 @@
   #notif { position: fixed; top: 76px; right: 20px; background: var(--bg2); border: 1px solid var(--green2); color: var(--green2); padding: 12px 20px; border-radius: 3px; font-size: 0.9rem; z-index: 500; transform: translateX(130%); opacity: 0; visibility: hidden; transition: transform 0.3s, opacity 0.3s; }
   #notif.show { transform: translateX(0); opacity: 1; visibility: visible; }
   #notif.error { border-color: var(--wine3); color: var(--wine3); }
+
+  /* PASSWORD SCREEN */
+  #pwd-screen {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999; flex-direction: column; gap: 20px;
+  }
+  #pwd-screen.hidden { display: none; }
+  .pwd-box {
+    background: var(--bg2); border: 1px solid var(--border);
+    padding: 40px 48px; border-radius: 4px; text-align: center;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.8);
+  }
+  .pwd-box h1 { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 2rem; margin-bottom: 6px; }
+  .pwd-box p  { color: var(--text2); font-size: 0.9rem; margin-bottom: 24px; letter-spacing: 1px; }
+  .pwd-input {
+    width: 100%; padding: 12px 16px; background: var(--bg3);
+    border: 1px solid var(--border); color: var(--text);
+    font-family: 'Cormorant Garamond', serif; font-size: 1.1rem;
+    border-radius: 2px; outline: none; text-align: center;
+    letter-spacing: 3px; margin-bottom: 14px;
+    transition: border-color 0.2s;
+  }
+  .pwd-input:focus { border-color: var(--gold); }
+  .pwd-input.error { border-color: var(--wine3); animation: shake 0.3s; }
+  .pwd-btn {
+    width: 100%; padding: 12px; background: var(--wine);
+    border: none; color: var(--cream); font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem; letter-spacing: 2px; cursor: pointer;
+    border-radius: 2px; transition: background 0.2s;
+  }
+  .pwd-btn:hover { background: var(--wine2); }
+  .pwd-error { color: var(--wine3); font-size: 0.85rem; margin-top: 10px; min-height: 18px; }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)}
+  }
+
 </style>
 </head>
 <body>
+
+
+<!-- PASSWORD SCREEN -->
+<div id="pwd-screen">
+  <div class="pwd-box">
+    <h1>🍷 Cave à Vin</h1>
+    <p>Accès privé — Entrez votre mot de passe</p>
+    <input type="password" class="pwd-input" id="pwd-input" placeholder="••••••••"
+      onkeydown="if(event.key==='Enter') checkPwd()">
+    <button class="pwd-btn" onclick="checkPwd()">Accéder à ma cave</button>
+    <div class="pwd-error" id="pwd-error"></div>
+  </div>
+</div>
 
 <header>
   <div class="logo">🍷 <span>Cave</span> à Vin MMM 🍷<span></div>
@@ -1053,6 +1103,34 @@ function showNotif(msg, error=false) {
   setTimeout(()=>n.className='', 3000);
 }
 
+
+// =====================================================================
+// PASSWORD
+// =====================================================================
+const PWD_HASH = '7c6b9b4e2a3f1d8e5c0a4b9d3e7f2c1a'; // Cava20MMM hashé (simple obfuscation)
+const PWD      = 'Cava20MMM';
+
+function checkPwd() {
+  const val = document.getElementById('pwd-input').value;
+  if(val === PWD) {
+    sessionStorage.setItem('cave_auth', '1');
+    document.getElementById('pwd-screen').classList.add('hidden');
+    loadFromSheets();
+  } else {
+    const inp = document.getElementById('pwd-input');
+    inp.classList.add('error');
+    document.getElementById('pwd-error').textContent = 'Mot de passe incorrect';
+    setTimeout(() => { inp.classList.remove('error'); inp.value=''; }, 800);
+  }
+}
+
+function initAuth() {
+  if(sessionStorage.getItem('cave_auth') === '1') {
+    document.getElementById('pwd-screen').classList.add('hidden');
+  }
+  // Sinon l'écran mot de passe reste visible
+}
+
 // =====================================================================
 // INIT
 // =====================================================================
@@ -1060,7 +1138,10 @@ window.addEventListener('load', () => {
   updateHeader();
   updateEtageSelect();
   renderCave2D();
-  loadFromSheets();
+  initAuth();
+  if(sessionStorage.getItem('cave_auth') === '1') {
+    loadFromSheets();
+  }
 });
 </script>
 </body>
