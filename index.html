@@ -844,7 +844,7 @@ function openAddToSlot(cave, floor, slot) {
 }
 
 function openEditModal(id) {
-  const wine = wineData.find(w=>w.id===id);
+  const wine = wineData.find(w=>String(w.id)===String(id));
   if(!wine) return;
   closeModal('modalSlot');
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===3));
@@ -872,7 +872,7 @@ function openEditModal(id) {
 
 function removeWine(id) {
   if(!confirm('Retirer ce vin de la cave ?')) return;
-  wineData = wineData.filter(w=>w.id!==id);
+  wineData = wineData.filter(w=>String(w.id)!==String(id));
   saveData(); closeModal('modalSlot');
   renderCave2D(); renderList();
   showNotif('Vin retiré ✓');
@@ -929,7 +929,7 @@ function addWine() {
   if(!nom)  { showNotif('Le nom est requis', true); return; }
   if(!slot) { showNotif('Aucun emplacement disponible', true); return; }
   const editingId = addingToSlot?.editing;
-  if(editingId) wineData = wineData.filter(w=>w.id!==editingId);
+  if(editingId) wineData = wineData.filter(w=>String(w.id)!==String(editingId));
   wineData.push({
     id: editingId || Date.now().toString(),
     nom,
