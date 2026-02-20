@@ -103,6 +103,35 @@
   }
 
   /* Tooltip */
+  /* Bulle mobile tap */
+  #mobile-bubble {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    border-radius: 12px 12px 0 0;
+    padding: 16px 20px 24px;
+    z-index: 300;
+    display: none;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+    transform: translateY(100%);
+    transition: transform 0.25s ease;
+  }
+  #mobile-bubble.open {
+    display: block;
+    transform: translateY(0);
+  }
+  #mobile-bubble .mb-handle {
+    width: 36px; height: 4px; background: var(--border);
+    border-radius: 2px; margin: 0 auto 14px;
+  }
+  #mobile-bubble .mb-name {
+    font-family: 'Playfair Display', serif;
+    color: var(--gold); font-size: 1.1rem; margin-bottom: 4px;
+  }
+  #mobile-bubble .mb-info { color: var(--text2); font-size: 0.85rem; line-height: 1.7; }
+  #mobile-bubble .mb-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  #mobile-bubble .mb-actions button { flex: 1; min-width: 100px; }
   #tooltip {
     position: fixed;
     background: rgba(8,4,6,0.97);
@@ -1015,7 +1044,7 @@ function renderCave2D() {
           opacity="${empty ? 0.45 : 1}"
           ${(!empty) ? 'filter="url(#softglow)"' : ''}
           style="cursor:pointer"
-          onclick="openSlotModal(${currentCave},${floor.id},${slot})"
+          onclick="handleBottleClick(event,${currentCave},${floor.id},${slot})"
           data-cave="${currentCave}" data-floor="${floor.id}" data-slot="${slot}"/>`;
 
         if(isFront) {
@@ -2586,6 +2615,116 @@ function goToWine(cave, floor, slot) {
   setTimeout(() => openSlotModal(cave, floor, slot), 150);
 }
 
+
+// =====================================================================
+// BULLE MOBILE — 1 tap = bulle, 2 taps = fiche complète
+// =====================================================================
+let lastTapTime   = 0;
+let lastTapTarget = null;
+let mobileBubbleCave  = null;
+let mobileBubbleFloor = null;
+let mobileBubbleSlot  = null;
+
+function isMobile() {
+  return window.matchMedia('(max-width: 768px)').matches || ('ontouchstart' in window);
+}
+
+function handleBottleClick(e, cave, floor, slot) {
+  if(!isMobile()) {
+    // Desktop : comportement normal
+    openSlotModal(cave, floor, slot);
+    return;
+  }
+
+  const now = Date.now();
+  const sameTarget = (mobileBubbleCave === cave && mobileBubbleFloor === floor && mobileBubbleSlot === slot);
+
+  if(sameTarget && now - lastTapTime < 400) {
+    // Double tap sur la même bouteille → fiche complète
+    closeMobileBubble();
+    openSlotModal(cave, floor, slot);
+    lastTapTime = 0;
+    return;
+  }
+
+  // 1er tap → bulle rapide
+  lastTapTime   = now;
+  mobileBubbleCave  = cave;
+  mobileBubbleFloor = floor;
+  mobileBubbleSlot  = slot;
+  showMobileBubble(cave, floor, slot);
+}
+
+function showMobileBubble(cave, floor, slot) {
+  const wine      = getWineAtSlot(cave, floor, slot);
+  const floorData = CAVE_CONFIG[cave].floors.find(f => f.id === floor);
+  const bubble    = document.getElementById('mobile-bubble');
+  const overlay   = document.getElementById('mobile-bubble-overlay');
+
+  if(wine) {
+    document.getElementById('mb-name').textContent = wine.nom || '—';
+    const stars = wine.note ? '★'.repeat(parseInt(wine.note)) + '☆'.repeat(5 - parseInt(wine.note)) : '';
+    document.getElementById('mb-info').innerHTML = [
+      wine.annee ? `<b>${wine.annee}</b>` : '',
+      wine.domaine || '',
+      wine.appellation || '',
+      wine.region || '',
+      wine.prix ? wine.prix + ' €' : '',
+      stars ? `<span style="color:var(--gold)">${stars}</span>` : '',
+      `<span style="color:var(--text2);font-size:0.75rem">Cave ${cave} · Ét.${floor} · #${slot} — double tap pour la fiche</span>`
+    ].filter(Boolean).join('<br>');
+    const imgWrap = document.getElementById('mb-img-wrap');
+    const imgEl   = document.getElementById('mb-img');
+    if(wine.image) { imgEl.src = wine.image; imgWrap.style.display = 'block'; }
+    else           { imgWrap.style.display = 'none'; }
+    document.getElementById('mb-btn-fiche').style.display = 'block';
+  } else {
+    document.getElementById('mb-name').textContent = 'Emplacement vide';
+    document.getElementById('mb-info').innerHTML = `${floorData?.label} · #${slot}<br><span style="color:var(--text2);font-size:0.75rem">Double tap pour ajouter un vin</span>`;
+    document.getElementById('mb-img-wrap').style.display = 'none';
+    document.getElementById('mb-btn-fiche').style.display = 'block';
+  }
+
+  overlay.style.display = 'block';
+  bubble.style.display  = 'block';
+  requestAnimationFrame(() => bubble.classList.add('open'));
+}
+
+function closeMobileBubble() {
+  const bubble  = document.getElementById('mobile-bubble');
+  const overlay = document.getElementById('mobile-bubble-overlay');
+  bubble.classList.remove('open');
+  overlay.style.display = 'none';
+  setTimeout(() => { bubble.style.display = 'none'; }, 250);
+  mobileBubbleCave = mobileBubbleFloor = mobileBubbleSlot = null;
+  lastTapTime = 0;
+}
+
+function mobileBubbleOpenFiche() {
+  if(mobileBubbleCave !== null) {
+    const c = mobileBubbleCave, f = mobileBubbleFloor, s = mobileBubbleSlot;
+    closeMobileBubble();
+    setTimeout(() => openSlotModal(c, f, s), 280);
+  }
+}
+
 </script>
+<div id="mobile-bubble">
+  <div class="mb-handle"></div>
+  <div style="display:flex;gap:14px;align-items:flex-start">
+    <div id="mb-img-wrap" style="display:none">
+      <img id="mb-img" src="" style="width:44px;height:62px;object-fit:contain;border-radius:2px;border:1px solid var(--border)">
+    </div>
+    <div style="flex:1">
+      <div class="mb-name" id="mb-name"></div>
+      <div class="mb-info" id="mb-info"></div>
+    </div>
+  </div>
+  <div class="mb-actions">
+    <button class="btn-wine" id="mb-btn-fiche" onclick="mobileBubbleOpenFiche()">📋 Fiche complète</button>
+    <button class="btn-outline" onclick="closeMobileBubble()">Fermer</button>
+  </div>
+</div>
+<div id="mobile-bubble-overlay" style="display:none;position:fixed;inset:0;z-index:299;background:rgba(0,0,0,0.3)" onclick="closeMobileBubble()"></div>
 </body>
 </html>
