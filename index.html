@@ -7,9 +7,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0608;
-    --bg2: #110c0e;
-    --bg3: #1a1214;
+    --bg: #18100f;
+    --bg2: #221518;
+    --bg3: #2c1c20;
     --wine: #7b1c2e;
     --wine2: #9e2a3f;
     --wine3: #c4364f;
@@ -98,7 +98,7 @@
     border: 1px solid var(--gold);
     padding: 12px 16px; border-radius: 3px;
     font-size: 0.84rem; pointer-events: none;
-    display: none; z-index: 999; max-width: 300px;
+    display: none; z-index: 999; max-width: 280px;
     box-shadow: 0 4px 24px rgba(0,0,0,0.9);
   }
   #tooltip .tt-name { font-family: 'Playfair Display', serif; color: var(--gold); margin-bottom: 4px; font-size: 0.95rem; }
@@ -108,7 +108,7 @@
   /* Modal */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 200; align-items: center; justify-content: center; }
   .modal-overlay.open { display: flex; }
-  .modal { background: var(--bg2); border: 1px solid var(--border); padding: 32px; width: 480px; max-width: 96vw; border-radius: 4px; position: relative; max-height: 90vh; overflow-y: auto; }
+  .modal { background: var(--bg2); border: 1px solid var(--border); padding: 32px; width: 760px; max-width: 96vw; border-radius: 4px; position: relative; max-height: 90vh; overflow-y: auto; }
   .modal h2 { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 1.35rem; margin-bottom: 18px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
   .modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; color: var(--text2); font-size: 1.4rem; cursor: pointer; }
   .form-row { margin-bottom: 13px; }
@@ -345,6 +345,10 @@
         <label>Notes personnelles</label>
         <textarea id="f-notes" rows="3" placeholder="Arômes, accords mets-vins, occasion..."></textarea>
       </div>
+      <div class="form-row form-full">
+        <label>Photo étiquette (URL)</label>
+        <input type="text" id="f-image" placeholder="https://i.imgur.com/... ou lien direct vers une image">
+      </div>
     </div>
     <div style="margin-top:20px">
       <button class="btn-wine" onclick="addWine()">Ajouter à la cave</button>
@@ -362,9 +366,13 @@
 </div>
 
 <div id="tooltip">
+  <div id="tt-img-wrap" style="margin-bottom:8px;display:none">
+    <img id="tt-img" src="" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:3px;border:1px solid var(--border)">
+  </div>
   <div class="tt-name" id="tt-name"></div>
   <div class="tt-info" id="tt-info"></div>
 </div>
+<iframe name="hidden-sync-frame" style="display:none"></iframe>
 <div id="notif"></div>
 
 <script>
@@ -424,45 +432,66 @@ const WINE_COLORS = {
   empty:        { fill:'#1a1014', stroke:'#4a3040', small:'#2a1a22' }
 };
 
-async function saveData() {
+// Sauvegarde via form POST (contourne CORS)
+function saveData() {
   localStorage.setItem('caveData', JSON.stringify(wineData));
   updateHeader();
   try {
-    await fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'save', data: wineData })
-    });
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = SCRIPT_URL;
+    form.target = 'hidden-sync-frame';
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'payload';
+    input.value = JSON.stringify({ action: 'save', data: wineData });
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+    setTimeout(() => document.body.removeChild(form), 2000);
   } catch(e) { console.warn('Sync Google Sheets échouée', e); }
 }
 
-async function loadFromSheets() {
+// Chargement via JSONP (contourne CORS)
+function loadFromSheets() {
   showNotif('Synchronisation en cours…');
-  try {
-    const res = await fetch(SCRIPT_URL + '?t=' + Date.now());
-    const data = await res.json();
-    if(Array.isArray(data) && data.length > 0) {
-      wineData = data.map(w => ({
-        ...w,
-        cave:  parseInt(w.cave)  || 1,
-        floor: parseInt(w.floor) || 1,
-        slot:  parseInt(w.slot)  || 1,
-        annee: parseInt(w.annee) || '',
-        prix:  parseFloat(w.prix) || '',
-        note:  w.note || ''
-      }));
-      localStorage.setItem('caveData', JSON.stringify(wineData));
-      updateHeader();
-      renderCave2D();
-      showNotif('Cave synchronisée ✓');
-    } else {
-      showNotif('Sheet vide — données locales conservées');
+  const cbName = 'caveCallback_' + Date.now();
+  window[cbName] = function(data) {
+    try {
+      if(Array.isArray(data) && data.length > 0) {
+        wineData = data.map(w => ({
+          ...w,
+          cave:  parseInt(w.cave)  || 1,
+          floor: parseInt(w.floor) || 1,
+          slot:  parseInt(w.slot)  || 1,
+          annee: parseInt(w.annee) || '',
+          prix:  parseFloat(w.prix) || '',
+          note:  w.note || ''
+        }));
+        localStorage.setItem('caveData', JSON.stringify(wineData));
+        updateHeader();
+        renderCave2D();
+        showNotif('Cave synchronisée ✓');
+      } else {
+        showNotif('Sheet vide — données locales conservées');
+      }
+    } catch(e) {
+      showNotif('Erreur de données', true);
+    } finally {
+      delete window[cbName];
+      const s = document.getElementById('jsonp-script');
+      if(s) s.remove();
     }
-  } catch(e) {
-    console.warn('Chargement Sheets échoué', e);
+  };
+  const script = document.createElement('script');
+  script.id = 'jsonp-script';
+  script.src = SCRIPT_URL + '?callback=' + cbName + '&t=' + Date.now();
+  script.onerror = function() {
     showNotif('Mode hors ligne — données locales', true);
-  }
+    delete window[cbName];
+    this.remove();
+  };
+  document.head.appendChild(script);
 }
 
 function getWineAtSlot(cave, floor, slot) { return wineData.find(w => w.cave==cave && w.floor==floor && w.slot==slot); }
@@ -702,14 +731,18 @@ function renderCave2D() {
       if(wine) {
         document.getElementById('tt-name').textContent = wine.nom;
         document.getElementById('tt-info').innerHTML =
-          `${wine.image ? `<img src="${wine.image}" style="width:100%;height:120px;object-fit:cover;border-radius:2px;margin-bottom:6px;display:block;" onerror="this.style.display='none'">` : ''}
-          <span class="type-badge badge-${wine.type}" style="font-size:0.7rem">${TYPE_LABELS[wine.type]||wine.type}</span>
+          `<span class="type-badge badge-${wine.type}" style="font-size:0.7rem">${TYPE_LABELS[wine.type]||wine.type}</span>
           ${wine.appellation ? `<br><i>${wine.appellation}</i>` : ''}
           <br>${wine.annee||'—'} · ${wine.region||'—'}
           ${wine.prix ? `<br>${wine.prix} €` : ''}
           ${wine.note ? `<br>${'★'.repeat(parseInt(wine.note))}` : ''}
           <br><small style="color:#4a3840">Ét.${floor} · #${slot}</small>`;
+        const imgWrap = document.getElementById('tt-img-wrap');
+        const imgEl   = document.getElementById('tt-img');
+        if(wine.image) { imgEl.src = wine.image; imgWrap.style.display = 'block'; }
+        else { imgWrap.style.display = 'none'; }
       } else {
+        document.getElementById('tt-img-wrap').style.display = 'none';
         document.getElementById('tt-name').innerHTML = '<span class="tt-empty">Emplacement vide</span>';
         document.getElementById('tt-info').innerHTML =
           `${floorData?.label} · #${slot}<br><small style="color:#5a4050">Cliquer pour ajouter</small>`;
@@ -743,25 +776,30 @@ function openSlotModal(cave, floor, slot) {
     const tLabel = TYPE_LABELS[wine.type] || wine.type;
     const fLabel = FORMAT_LABELS[wine.format] || (wine.format||'75 cl');
     body.innerHTML = `
-      <div class="modal-info-panel">
-        <div class="info-cell" style="grid-column:1/-1">
-          <div class="lbl">Nom</div>
-          <div class="val" style="font-size:1.15rem">${wine.nom}</div>
-          ${wine.appellation?`<div style="font-size:0.85rem;color:var(--text2);font-style:italic;margin-top:2px">${wine.appellation}</div>`:''}
+      <div style="display:flex;gap:20px;align-items:flex-start">
+        ${wine.image ? `<div style="flex-shrink:0"><img src="${wine.image}" alt="Étiquette" style="width:140px;height:200px;object-fit:cover;border-radius:4px;border:1px solid var(--border);box-shadow:0 4px 16px rgba(0,0,0,0.6)"></div>` : ''}
+        <div style="flex:1">
+          <div class="modal-info-panel">
+            <div class="info-cell" style="grid-column:1/-1">
+              <div class="lbl">Nom</div>
+              <div class="val" style="font-size:1.15rem">${wine.nom}</div>
+              ${wine.appellation?`<div style="font-size:0.85rem;color:var(--text2);font-style:italic;margin-top:2px">${wine.appellation}</div>`:''}
+            </div>
+            <div class="info-cell"><div class="lbl">Type</div><div class="val"><span class="type-badge badge-${wine.type}">${tLabel}</span></div></div>
+            <div class="info-cell"><div class="lbl">Format</div><div class="val"><span class="format-badge">${fLabel}</span></div></div>
+            <div class="info-cell"><div class="lbl">Millésime</div><div class="val">${wine.annee||'—'}</div></div>
+            <div class="info-cell"><div class="lbl">Prix</div><div class="val">${wine.prix?wine.prix+'€':'—'}</div></div>
+            <div class="info-cell"><div class="lbl">Domaine</div><div class="val">${wine.domaine||'—'}</div></div>
+            <div class="info-cell"><div class="lbl">Région</div><div class="val">${wine.region||'—'}</div></div>
+            <div class="info-cell"><div class="lbl">Note</div><div class="val rating-stars" style="font-size:1rem">${stars}</div></div>
+          </div>
+          ${wine.notes?`<div style="color:var(--text2);font-style:italic;margin-bottom:16px;line-height:1.6;font-size:0.95rem">"${wine.notes}"</div>`:''}
+          <div class="modal-actions">
+            <button class="btn-outline" onclick="openEditModal('${wine.id}')">✏ Modifier</button>
+            <button class="btn-danger"  onclick="removeWine('${wine.id}')">🗑 Retirer</button>
+            <button class="btn-wine"    onclick="closeModal('modalSlot')">Fermer</button>
+          </div>
         </div>
-        <div class="info-cell"><div class="lbl">Type</div><div class="val"><span class="type-badge badge-${wine.type}">${tLabel}</span></div></div>
-        <div class="info-cell"><div class="lbl">Format</div><div class="val"><span class="format-badge">${fLabel}</span></div></div>
-        <div class="info-cell"><div class="lbl">Millésime</div><div class="val">${wine.annee||'—'}</div></div>
-        <div class="info-cell"><div class="lbl">Prix</div><div class="val">${wine.prix?wine.prix+'€':'—'}</div></div>
-        <div class="info-cell"><div class="lbl">Domaine</div><div class="val">${wine.domaine||'—'}</div></div>
-        <div class="info-cell"><div class="lbl">Région</div><div class="val">${wine.region||'—'}</div></div>
-        <div class="info-cell"><div class="lbl">Note</div><div class="val rating-stars" style="font-size:1rem">${stars}</div></div>
-      </div>
-      ${wine.notes?`<div style="color:var(--text2);font-style:italic;margin-bottom:16px;line-height:1.6;font-size:0.95rem">"${wine.notes}"</div>`:''}
-      <div class="modal-actions">
-        <button class="btn-outline" onclick="openEditModal('${wine.id}')">✏ Modifier</button>
-        <button class="btn-danger"  onclick="removeWine('${wine.id}')">🗑 Retirer</button>
-        <button class="btn-wine"    onclick="closeModal('modalSlot')">Fermer</button>
       </div>`;
   } else {
     body.innerHTML = `
@@ -800,9 +838,9 @@ function openEditModal(id) {
   const wine = wineData.find(w=>w.id===id);
   if(!wine) return;
   closeModal('modalSlot');
-  // Basculer proprement sur l'onglet Ajouter via switchTab
-  const tabAdd = document.querySelectorAll('.tab')[3];
-  switchTab('add', tabAdd);
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===3));
+  document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('add').classList.add('active');
   document.getElementById('f-nom').value         = wine.nom;
   document.getElementById('f-appellation').value = wine.appellation||'';
   document.getElementById('f-domaine').value     = wine.domaine||'';
@@ -813,7 +851,6 @@ function openEditModal(id) {
   document.getElementById('f-prix').value        = wine.prix||'';
   document.getElementById('f-note').value        = wine.note||'';
   document.getElementById('f-notes').value       = wine.notes||'';
-  document.getElementById('f-image').value       = wine.image||'';
   document.getElementById('f-cave').value        = wine.cave;
   updateEtageSelect();
   document.getElementById('f-etage').value = wine.floor;
@@ -895,11 +932,12 @@ function addWine() {
     prix:        document.getElementById('f-prix').value,
     note:        document.getElementById('f-note').value,
     notes:       document.getElementById('f-notes').value.trim(),
+    image:       document.getElementById('f-image') ? document.getElementById('f-image').value.trim() : '',
     cave:  parseInt(cave), floor: parseInt(floor), slot: parseInt(slot),
     dateAjout: new Date().toISOString().split('T')[0]
   });
   saveData(); addingToSlot = null;
-  ['f-nom','f-appellation','f-domaine','f-region','f-annee','f-prix','f-notes'].forEach(id=>document.getElementById(id).value='');
+  ['f-nom','f-appellation','f-domaine','f-region','f-annee','f-prix','f-notes','f-image'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
   document.getElementById('f-note').value='';
   document.getElementById('f-type').value='rouge';
   document.getElementById('f-format').value='75cl';
