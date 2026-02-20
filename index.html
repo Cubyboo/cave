@@ -44,6 +44,18 @@
   .logo span { color: var(--cream); font-style: italic; }
   .stats-bar { display: flex; gap: 28px; font-size: 0.85rem; color: var(--text2); letter-spacing: 1px; }
   .stats-bar b { color: var(--gold); font-size: 1.05rem; }
+  .search-bar-wrap { padding: 10px 40px; background: var(--bg2); border-bottom: 1px solid var(--border); display:flex; align-items:center; gap:12px; }
+  .search-input { flex:1; max-width:480px; padding:8px 14px 8px 36px; background:var(--bg3); border:1px solid var(--border); color:var(--text); font-family:'Cormorant Garamond',serif; font-size:1rem; border-radius:2px; outline:none; transition: border-color 0.2s; }
+  .search-input:focus { border-color:var(--gold); }
+  .search-wrap { position:relative; flex:1; max-width:480px; }
+  .search-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--text2); font-size:0.95rem; pointer-events:none; }
+  .search-clear { position:absolute; right:10px; top:50%; transform:translateY(-50%); color:var(--text2); cursor:pointer; font-size:0.9rem; display:none; }
+  .search-results-overlay { position:fixed; top:0; left:0; right:0; bottom:0; z-index:200; display:none; }
+  .search-results-panel { position:fixed; top:120px; left:40px; right:40px; max-width:640px; margin:0 auto; background:var(--bg2); border:1px solid var(--border); border-radius:4px; z-index:201; max-height:70vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.5); }
+  .search-result-item { display:flex; gap:12px; align-items:center; padding:12px 16px; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.15s; }
+  .search-result-item:hover { background:var(--bg3); }
+  .search-result-item:last-child { border-bottom:none; }
+  .search-count { font-size:0.78rem; color:var(--text2); letter-spacing:1px; padding:8px 16px; border-bottom:1px solid var(--border); }
 
   /* TABS */
   .tabs { display: flex; border-bottom: 1px solid var(--border); padding: 0 40px; background: var(--bg2); }
@@ -247,6 +259,18 @@
     <div>Valeur estimée : <b id="hdr-val">0 €</b></div>
   </div>
 </header>
+
+<div class="search-bar-wrap">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" id="global-search" type="text" placeholder="Rechercher un vin, domaine, appellation, région…"
+      oninput="handleSearch(this.value)"
+      onkeydown="if(event.key==='Escape') clearSearch()">
+    <span class="search-clear" id="search-clear" onclick="clearSearch()">✕</span>
+  </div>
+</div>
+<div class="search-results-overlay" id="search-overlay" onclick="clearSearch()"></div>
+<div class="search-results-panel" id="search-panel" style="display:none"></div>
 
 <div class="tabs">
   <div class="tab active" onclick="switchTab('view2d',this)">🗺 Vue Cave</div>
@@ -2383,6 +2407,95 @@ function confirmerDeplacement() {
   renderCave2D();
   renderList();
   deplacerWineId = null;
+}
+
+
+// =====================================================================
+// RECHERCHE GLOBALE
+// =====================================================================
+function handleSearch(query) {
+  const panel   = document.getElementById('search-panel');
+  const overlay = document.getElementById('search-overlay');
+  const clear   = document.getElementById('search-clear');
+  const q = query.trim().toLowerCase();
+
+  clear.style.display = q ? 'block' : 'none';
+
+  if(!q) {
+    panel.style.display   = 'none';
+    overlay.style.display = 'none';
+    return;
+  }
+
+  const results = wineData.filter(w => {
+    return [w.nom, w.domaine, w.appellation, w.region, w.annee, w.type, w.notes, w.accords]
+      .some(val => val && String(val).toLowerCase().includes(q));
+  });
+
+  overlay.style.display = 'block';
+
+  if(!results.length) {
+    panel.style.display = 'block';
+    panel.innerHTML = `<div class="search-count">Aucun résultat pour "${query}"</div>`;
+    return;
+  }
+
+  const typeColors = {rouge:'#9e2a3f',blanc:'#c9a84c','rosé':'#c06080',effervescent:'#5090c0',vdn:'#9040c0',magnum:'#9060c0'};
+
+  panel.style.display = 'block';
+  panel.innerHTML = `<div class="search-count">${results.length} résultat${results.length>1?'s':''} pour "${query}"</div>` +
+    results.map(w => {
+      const color  = typeColors[w.type] || 'var(--text2)';
+      const loc    = `Cave ${w.cave} · Étage ${w.floor} · Empl. ${w.slot}`;
+      const detail = [w.appellation, w.region].filter(Boolean).join(' · ');
+      // Highlight matching text
+      const nom    = highlight(w.nom||'—', q);
+      const dom    = w.domaine ? highlight(w.domaine, q) : '';
+      return `<div class="search-result-item" onclick="goToWine(${w.cave},${w.floor},${w.slot})">
+        ${w.image ? `<img src="${w.image}" style="width:36px;height:50px;object-fit:contain;border-radius:2px;flex-shrink:0">` : `<div style="width:36px;height:50px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">🍷</div>`}
+        <div style="flex:1;min-width:0">
+          <div style="color:var(--cream);font-size:0.98rem">${nom}${w.annee?` <span style="color:var(--text2);font-size:0.82rem">${w.annee}</span>`:''}</div>
+          ${dom ? `<div style="color:var(--text2);font-size:0.78rem;margin-top:1px">${dom}</div>` : ''}
+          ${detail ? `<div style="color:var(--text2);font-size:0.78rem">${detail}</div>` : ''}
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="color:${color};font-size:0.75rem;text-transform:capitalize">${w.type||''}</div>
+          <div style="color:var(--text2);font-size:0.72rem;margin-top:3px">${loc}</div>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function highlight(text, query) {
+  if(!text || !query) return text;
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return String(text).replace(new RegExp('(' + escaped + ')', 'gi'),
+    '<mark style="background:var(--gold);color:#1a0a10;border-radius:2px;padding:0 2px">$1</mark>');
+}
+
+function clearSearch() {
+  const input   = document.getElementById('global-search');
+  const panel   = document.getElementById('search-panel');
+  const overlay = document.getElementById('search-overlay');
+  const clear   = document.getElementById('search-clear');
+  if(input)   input.value = '';
+  if(panel)   panel.style.display   = 'none';
+  if(overlay) overlay.style.display = 'none';
+  if(clear)   clear.style.display   = 'none';
+}
+
+function goToWine(cave, floor, slot) {
+  clearSearch();
+  // Switcher vers vue cave et ouvrir la fiche
+  const tab = document.querySelector(".tab");
+  switchTab('view2d', tab);
+  // Sélectionner la bonne cave si besoin
+  if(cave !== currentCave) {
+    const btn = document.querySelectorAll('.cave-btn')[cave-1];
+    selectCave(cave, btn);
+  }
+  // Ouvrir la modal après un court délai pour laisser le rendu se faire
+  setTimeout(() => openSlotModal(cave, floor, slot), 150);
 }
 
 </script>
