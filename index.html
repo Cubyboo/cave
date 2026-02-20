@@ -253,6 +253,7 @@
   <div class="tab" onclick="switchTab('list',this)">📋 Liste</div>
   <div class="tab" onclick="switchTab('stats',this)">📊 Statistiques</div>
   <div class="tab" onclick="switchTab('add',this)">➕ Ajouter</div>
+  <div class="tab" onclick="switchTab('historique',this)">📜 Historique</div>
 </div>
 
 <!-- ===== 2D CAVE VIEW ===== -->
@@ -413,6 +414,18 @@
   </div>
 </div>
 
+<!-- ===== HISTORIQUE VIEW ===== -->
+<div id="historique" class="content">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+    <h2 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem">📜 Historique des dégustations</h2>
+    <div style="display:flex;gap:10px;align-items:center">
+      <span id="histo-count" style="color:var(--text2);font-size:0.85rem"></span>
+    </div>
+  </div>
+  <div id="histo-empty" style="display:none;text-align:center;padding:60px 0;color:var(--text2);font-style:italic">Aucune bouteille bue pour l'instant</div>
+  <div id="histo-list"></div>
+</div>
+
 <!-- MODAL -->
 <div class="modal-overlay" id="modalSlot">
   <div class="modal">
@@ -429,6 +442,47 @@
   <div class="tt-name" id="tt-name"></div>
   <div class="tt-info" id="tt-info"></div>
 </div>
+<!-- MODAL HISTORIQUE (retirer un vin) -->
+<div class="modal-overlay" id="modalHistorique">
+  <div class="modal" style="max-width:480px">
+    <button class="modal-close" onclick="document.getElementById('modalHistorique').classList.remove('open')">✕</button>
+    <h2>🍷 Retirer de la cave</h2>
+    <p style="color:var(--text2);margin-bottom:20px;font-size:0.95rem">
+      Voulez-vous enregistrer <b id="histo-wine-name" style="color:var(--cream)"></b> dans l'historique avant de la retirer ?
+    </p>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Date de dégustation</label>
+        <input type="date" id="histo-date">
+      </div>
+      <div class="form-row">
+        <label>Note sur 5</label>
+        <select id="histo-note">
+          <option value="">—</option>
+          <option value="1">★ 1</option>
+          <option value="2">★★ 2</option>
+          <option value="3">★★★ 3</option>
+          <option value="4">★★★★ 4</option>
+          <option value="5">★★★★★ 5</option>
+        </select>
+      </div>
+      <div class="form-row form-full">
+        <label>Occasion</label>
+        <input type="text" id="histo-occasion" placeholder="Repas en famille, anniversaire, seul...">
+      </div>
+      <div class="form-row form-full">
+        <label>Commentaire de dégustation</label>
+        <textarea id="histo-commentaire" rows="3" placeholder="Arômes, texture, accord, impression générale..."></textarea>
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:20px">
+      <button class="btn-wine" onclick="confirmRetirer(true)">📜 Enregistrer et retirer</button>
+      <button class="btn-outline" onclick="confirmRetirer(false)">🗑 Retirer sans enregistrer</button>
+      <button class="btn-outline" onclick="document.getElementById('modalHistorique').classList.remove('open')">Annuler</button>
+    </div>
+  </div>
+</div>
+
 <iframe name="hidden-sync-frame" style="display:none"></iframe>
 <div id="notif"></div>
 
@@ -552,6 +606,7 @@ function loadFromSheets() {
         updateHeader();
         renderCave2D();
         showNotif('Cave synchronisée ✓');
+        loadHistoriqueFromSheets();
       } else {
         showNotif('Sheet vide — données locales conservées');
       }
@@ -949,11 +1004,55 @@ function openEditModal(id) {
 }
 
 function removeWine(id) {
-  if(!confirm('Retirer ce vin de la cave ?')) return;
-  wineData = wineData.filter(w=>String(w.id)!==String(id));
-  saveData(); closeModal('modalSlot');
-  renderCave2D(); renderList();
-  showNotif('Vin retiré ✓');
+  const wine = wineData.find(w=>String(w.id)===String(id));
+  if(!wine) return;
+  openHistoriqueModal(wine);
+}
+
+function openHistoriqueModal(wine) {
+  const mo = document.getElementById('modalHistorique');
+  document.getElementById('histo-wine-name').textContent = (wine.nom||'') + (wine.annee?' '+wine.annee:'');
+  document.getElementById('histo-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('histo-note').value = wine.note || '';
+  document.getElementById('histo-commentaire').value = '';
+  document.getElementById('histo-occasion').value = '';
+  mo._wine = wine;
+  mo.classList.add('open');
+}
+
+function confirmRetirer(saveToHisto) {
+  const mo = document.getElementById('modalHistorique');
+  const wine = mo._wine;
+  if(!wine) return;
+
+  if(saveToHisto) {
+    const entry = {
+      id:           'h_' + Date.now(),
+      date:         document.getElementById('histo-date').value,
+      nom:          wine.nom || '',
+      appellation:  wine.appellation || '',
+      domaine:      wine.domaine || '',
+      region:       wine.region || '',
+      annee:        wine.annee || '',
+      type:         wine.type || '',
+      note:         document.getElementById('histo-note').value,
+      commentaire:  document.getElementById('histo-commentaire').value,
+      occasion:     document.getElementById('histo-occasion').value,
+      image:        wine.image || ''
+    };
+    historiqueData.unshift(entry);
+    saveHistoriqueToSheets(entry);
+    showNotif('Dégustation enregistrée ✓');
+  }
+
+  mo.classList.remove('open');
+  wineData = wineData.filter(w=>String(w.id)!==String(wine.id));
+  saveData();
+  closeModal('modalSlot');
+  renderCave2D();
+  renderList();
+  renderHistorique();
+  if(!saveToHisto) showNotif('Vin retiré ✓');
 }
 
 // =====================================================================
@@ -1224,6 +1323,85 @@ function searchVivino() {
     <span style="color:var(--cream)">3.</span> Clic droit sur l'étiquette → <i>Copier l'adresse de l'image</i><br>
     <span style="color:var(--cream)">4.</span> Collez l'URL dans le champ ci-dessus
   </div>`;
+}
+
+
+// =====================================================================
+// HISTORIQUE
+// =====================================================================
+let historiqueData = [];
+
+function saveHistoriqueToSheets(entry) {
+  try {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = SCRIPT_URL;
+    form.target = 'hidden-sync-frame';
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'payload';
+    input.value = JSON.stringify({ action: 'saveHistorique', data: entry });
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+    setTimeout(() => { if(form.parentNode) document.body.removeChild(form); }, 2000);
+  } catch(e) { console.warn('Sync historique échouée', e); }
+}
+
+function loadHistoriqueFromSheets() {
+  const cbName = 'histoCallback_' + Date.now();
+  const timeout = setTimeout(() => { delete window[cbName]; }, 8000);
+  window[cbName] = function(data) {
+    clearTimeout(timeout);
+    delete window[cbName];
+    if(Array.isArray(data)) {
+      historiqueData = data.map(h => ({...h}));
+      renderHistorique();
+    }
+  };
+  const script = document.createElement('script');
+  script.src = SCRIPT_URL + '?sheet=Historique&callback=' + cbName + '&t=' + Date.now();
+  document.body.appendChild(script);
+}
+
+function renderHistorique() {
+  const container = document.getElementById('histo-list');
+  const empty     = document.getElementById('histo-empty');
+  const count     = document.getElementById('histo-count');
+  if(!container) return;
+  if(!historiqueData.length) {
+    empty.style.display = 'block';
+    container.innerHTML = '';
+    count.textContent = '';
+    return;
+  }
+  empty.style.display = 'none';
+  count.textContent = historiqueData.length + ' bouteille' + (historiqueData.length>1?'s':'') + ' bue' + (historiqueData.length>1?'s':'');
+
+  const TYPE_COLORS = { rouge:'#7b1c2e', blanc:'#c9a84c', rose:'#d4607a', champagne:'#e8c870', other:'#555' };
+
+  container.innerHTML = historiqueData.map((h,i) => {
+    const stars  = '★'.repeat(parseInt(h.note)||0) + '☆'.repeat(5-(parseInt(h.note)||0));
+    const tColor = TYPE_COLORS[h.type] || TYPE_COLORS.other;
+    const imgHtml = h.image ? `<img src="${h.image}" alt="" style="width:50px;height:70px;object-fit:contain;border-radius:3px;flex-shrink:0;border:1px solid var(--border)">` : `<div style="width:50px;height:70px;background:var(--bg3);border-radius:3px;flex-shrink:0;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:1.4rem">🍷</div>`;
+    return `<div style="display:flex;gap:16px;align-items:flex-start;padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;margin-bottom:10px">
+      ${imgHtml}
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--cream)">${h.nom||'—'}${h.annee?' <span style="color:var(--text2);font-size:0.9rem">'+h.annee+'</span>':''}</div>
+            <div style="font-size:0.82rem;color:var(--text2);margin-top:2px">${[h.domaine,h.appellation,h.region].filter(Boolean).join(' · ')}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:0.75rem;color:var(--text2)">${h.date||''}</div>
+            <div style="color:var(--gold);font-size:0.9rem;margin-top:2px">${stars}</div>
+          </div>
+        </div>
+        ${h.occasion?`<div style="margin-top:6px;font-size:0.8rem;color:var(--text2);font-style:italic">📍 ${h.occasion}</div>`:''}
+        ${h.commentaire?`<div style="margin-top:6px;font-size:0.88rem;color:var(--text2);line-height:1.5;font-style:italic">"${h.commentaire}"</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 </script>
