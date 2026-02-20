@@ -255,6 +255,7 @@
   <div class="tab" onclick="switchTab('add',this)">➕ Ajouter</div>
   <div class="tab" onclick="switchTab('historique',this)">📜 Historique</div>
   <div class="tab" onclick="switchTab('accords',this)">🍽 Accords</div>
+  <div class="tab" onclick="switchTab('apogee',this)">🔔 Apogée</div>
 </div>
 
 <!-- ===== 2D CAVE VIEW ===== -->
@@ -407,6 +408,14 @@
         <label>Notes personnelles</label>
         <textarea id="f-notes" rows="3" placeholder="Arômes, accords mets-vins, occasion..."></textarea>
       </div>
+      <div class="form-row">
+        <label>Début apogée (année)</label>
+        <input type="number" id="f-apogee-debut" placeholder="ex: 2026" min="2000" max="2060">
+      </div>
+      <div class="form-row">
+        <label>Fin apogée (année)</label>
+        <input type="number" id="f-apogee-fin" placeholder="ex: 2035" min="2000" max="2060">
+      </div>
       <div class="form-row form-full">
         <label>Photo étiquette (URL)</label>
         <div style="display:flex;gap:8px;align-items:center">
@@ -486,6 +495,21 @@
   <div class="tt-name" id="tt-name"></div>
   <div class="tt-info" id="tt-info"></div>
 </div>
+<!-- ===== APOGEE VIEW ===== -->
+<div id="apogee" class="content">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+    <h2 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem">🔔 Alertes d'apogée</h2>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="filtreApogee('tous')" id="btn-ap-tous" class="cave-btn active">Tous</button>
+      <button onclick="filtreApogee('maintenant')" id="btn-ap-maintenant" class="cave-btn">🟢 À boire</button>
+      <button onclick="filtreApogee('bientot')" id="btn-ap-bientot" class="cave-btn">🟡 Bientôt</button>
+      <button onclick="filtreApogee('jeune')" id="btn-ap-jeune" class="cave-btn">🔵 Trop jeune</button>
+      <button onclick="filtreApogee('depasse')" id="btn-ap-depasse" class="cave-btn">🔴 Dépassé</button>
+    </div>
+  </div>
+  <div id="apogee-list"></div>
+</div>
+
 <!-- MODAL HISTORIQUE (retirer un vin) -->
 <div class="modal-overlay" id="modalHistorique">
   <div class="modal" style="max-width:480px">
@@ -689,6 +713,7 @@ function switchTab(id, el) {
   if(id==='list')  renderList();
   if(id==='stats') renderStats();
   if(id==='accords') populateVinSelect();
+  if(id==='apogee') renderApogee('tous');
   if(id==='add')   updateEtageSelect();
   if(id==='view2d') renderCave2D();
 }
@@ -972,6 +997,7 @@ function openSlotModal(cave, floor, slot) {
           </div>
           ${wine.notes?`<div style="color:var(--text2);font-style:italic;margin-bottom:16px;line-height:1.6;font-size:0.95rem">"${wine.notes}"</div>`:''}
           ${wine.accords?`<div style="margin-bottom:14px"><div style="font-size:0.68rem;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Accords mets-vins</div><div style="color:var(--gold2);font-size:0.9rem">🍽 ${wine.accords}</div></div>`:''}
+          ${(wine.apogeeDebut||wine.apogeeFin)?`<div style="margin-bottom:14px"><div style="font-size:0.68rem;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Fenêtre d'apogée</div><div style="font-size:0.95rem">${getApogeeLabel(wine)}</div></div>`:''}"
           <div class="modal-actions">
             <button class="btn-outline" data-edit-id="${wine.id}" onclick="openEditModal(this.dataset.editId)">✏ Modifier</button>
             <button class="btn-danger"  data-rm-id="${wine.id}"   onclick="removeWine(this.dataset.rmId)">🗑 Retirer</button>
@@ -1030,6 +1056,8 @@ function openEditModal(id) {
   document.getElementById('f-note').value        = wine.note||'';
   document.getElementById('f-notes').value       = wine.notes||'';
   const accordsField = document.getElementById('f-accords'); if(accordsField) accordsField.value = wine.accords||'';
+  const apDebut = document.getElementById('f-apogee-debut'); if(apDebut) apDebut.value = wine.apogeeDebut||'';
+  const apFin   = document.getElementById('f-apogee-fin');   if(apFin)   apFin.value   = wine.apogeeFin||'';
   const imgField = document.getElementById('f-image'); if(imgField) imgField.value = wine.image||'';
   document.getElementById('f-cave').value        = wine.cave;
   addingToSlot = {editing:String(id), cave:wine.cave, floor:wine.floor, slot:wine.slot};
@@ -1157,12 +1185,14 @@ function addWine() {
     note:        document.getElementById('f-note').value,
     notes:       document.getElementById('f-notes').value.trim(),
     accords:     document.getElementById('f-accords') ? document.getElementById('f-accords').value.trim() : '',
+    apogeeDebut: document.getElementById('f-apogee-debut') ? document.getElementById('f-apogee-debut').value : '',
+    apogeeFin:   document.getElementById('f-apogee-fin')   ? document.getElementById('f-apogee-fin').value   : '',
     image:       document.getElementById('f-image') ? document.getElementById('f-image').value.trim() : '',
     cave:  parseInt(cave), floor: parseInt(floor), slot: parseInt(slot),
     dateAjout: new Date().toISOString().split('T')[0]
   });
   saveData(); addingToSlot = null;
-  ['f-nom','f-appellation','f-domaine','f-region','f-annee','f-prix','f-notes','f-image','f-accords'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  ['f-nom','f-appellation','f-domaine','f-region','f-annee','f-prix','f-notes','f-image','f-accords','f-apogee-debut','f-apogee-fin'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
   document.getElementById('f-note').value='';
   document.getElementById('f-type').value='rouge';
   document.getElementById('f-format').value='75cl';
@@ -2009,6 +2039,225 @@ function wineCardHtml(w) {
     </div>
     <span style="padding:2px 8px;border-radius:10px;font-size:0.7rem;background:var(--wine);color:var(--cream);flex-shrink:0">${tLabel}</span>
   </div>`;
+}
+
+
+// =====================================================================
+// APOGEE
+// =====================================================================
+
+// Fenêtres d'apogée automatiques par appellation (années après millésime)
+const APOGEE_AUTO = {
+  // Bourgogne Grands Crus rouges
+  "Gevrey-Chambertin":     { min: 8,  max: 25 },
+  "Chambolle-Musigny":     { min: 6,  max: 20 },
+  "Vosne-Romanee":         { min: 8,  max: 25 },
+  "Nuits-Saint-Georges":   { min: 6,  max: 18 },
+  "Pommard":               { min: 6,  max: 18 },
+  "Volnay":                { min: 5,  max: 15 },
+  "Beaune":                { min: 5,  max: 15 },
+  "Aloxe-Corton":          { min: 6,  max: 18 },
+  "Marsannay":             { min: 4,  max: 12 },
+  // Bourgogne blancs
+  "Meursault":             { min: 5,  max: 15 },
+  "Puligny-Montrachet":    { min: 5,  max: 15 },
+  "Chassagne-Montrachet":  { min: 5,  max: 15 },
+  "Chablis Grand Cru":     { min: 5,  max: 20 },
+  "Chablis Premier Cru":   { min: 4,  max: 12 },
+  "Chablis":               { min: 3,  max: 8  },
+  "Pouilly-Fuisse":        { min: 3,  max: 10 },
+  "Macon-Villages":        { min: 2,  max: 6  },
+  // Jura
+  "Chateau-Chalon":        { min: 10, max: 40 },
+  "Arbois Vin Jaune":      { min: 10, max: 40 },
+  "Arbois":                { min: 4,  max: 15 },
+  "Arbois Pupillin":       { min: 4,  max: 12 },
+  "Cotes du Jura":         { min: 3,  max: 10 },
+  "L'Etoile":              { min: 4,  max: 12 },
+  "Macvin du Jura":        { min: 3,  max: 15 },
+  // Porto / Douro
+  "Porto Vintage":         { min: 15, max: 50 },
+  "Porto LBV":             { min: 5,  max: 20 },
+  "Porto Tawny":           { min: 0,  max: 5  },
+  "Porto Ruby":            { min: 0,  max: 5  },
+  "Douro":                 { min: 4,  max: 15 },
+  // Bordeaux
+  "Pomerol":               { min: 8,  max: 25 },
+  "Saint-Emilion":         { min: 6,  max: 20 },
+  "Pauillac":              { min: 10, max: 30 },
+  "Saint-Julien":          { min: 8,  max: 25 },
+  "Margaux":               { min: 8,  max: 25 },
+  "Medoc":                 { min: 6,  max: 18 },
+  "Graves":                { min: 5,  max: 15 },
+  "Pessac-Leognan":        { min: 5,  max: 15 },
+  "Sauternes":             { min: 8,  max: 30 },
+  "Barsac":                { min: 6,  max: 25 },
+  // Rhône
+  "Chateauneuf-du-Pape":   { min: 6,  max: 20 },
+  "Cote-Rotie":            { min: 6,  max: 20 },
+  "Hermitage":             { min: 8,  max: 25 },
+  "Hermitage blanc":       { min: 6,  max: 20 },
+  "Condrieu":              { min: 2,  max: 6  },
+  "Gigondas":              { min: 5,  max: 15 },
+  "Vacqueyras":            { min: 4,  max: 12 },
+  "Crozes-Hermitage":      { min: 4,  max: 12 },
+  // Loire
+  "Sancerre":              { min: 3,  max: 8  },
+  "Pouilly-Fume":          { min: 3,  max: 8  },
+  "Vouvray":               { min: 5,  max: 20 },
+  "Coteaux du Layon":      { min: 8,  max: 25 },
+  "Chinon":                { min: 4,  max: 12 },
+  "Bourgueil":             { min: 4,  max: 12 },
+  "Muscadet":              { min: 1,  max: 4  },
+  // Champagne
+  "Champagne":             { min: 5,  max: 15 },
+  // Alsace
+  "Alsace Riesling":       { min: 5,  max: 15 },
+  "Alsace Gewurztraminer": { min: 4,  max: 12 },
+  "Alsace Pinot Gris":     { min: 4,  max: 12 },
+  // Languedoc
+  "Banyuls":               { min: 5,  max: 20 },
+  "Madiran":               { min: 6,  max: 18 },
+  "Cahors":                { min: 5,  max: 15 },
+  // Provence
+  "Bandol":                { min: 5,  max: 15 },
+  // Fallbacks par type
+  "rouge":                 { min: 4,  max: 12 },
+  "blanc":                 { min: 2,  max: 6  },
+  "rose":                  { min: 1,  max: 3  },
+  "effervescent":          { min: 2,  max: 8  },
+  "vdn":                   { min: 5,  max: 20 },
+};
+
+function getApogeeAuto(wine) {
+  if(!wine.annee) return null;
+  const annee = parseInt(wine.annee);
+  if(!annee) return null;
+  const appellation = (wine.appellation||'').trim();
+  const keys = Object.keys(APOGEE_AUTO);
+  // Chercher par appellation exacte puis partielle puis type
+  let rule = APOGEE_AUTO[appellation];
+  if(!rule) {
+    const matchKey = keys.find(k => appellation.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(appellation.toLowerCase()));
+    if(matchKey) rule = APOGEE_AUTO[matchKey];
+  }
+  if(!rule) rule = APOGEE_AUTO[wine.type] || APOGEE_AUTO["rouge"];
+  return { debut: annee + rule.min, fin: annee + rule.max };
+}
+
+function getApogeeWindows(wine) {
+  // Priorité : manuel, sinon auto
+  if(wine.apogeeDebut || wine.apogeeFin) {
+    return {
+      debut: parseInt(wine.apogeeDebut) || null,
+      fin:   parseInt(wine.apogeeFin)   || null,
+      source: "manuel"
+    };
+  }
+  const auto = getApogeeAuto(wine);
+  if(auto) return { ...auto, source: "auto" };
+  return null;
+}
+
+function getApogeeStatut(wine) {
+  const now = new Date().getFullYear();
+  const ap  = getApogeeWindows(wine);
+  if(!ap || (!ap.debut && !ap.fin)) return null;
+  const debut = ap.debut || 0;
+  const fin   = ap.fin   || 9999;
+  if(now > fin)               return "depasse";
+  if(now >= debut)            return "maintenant";
+  if(debut - now <= 2)        return "bientot";
+  return "jeune";
+}
+
+function getApogeeLabel(wine) {
+  const ap = getApogeeWindows(wine);
+  if(!ap) return "";
+  const now    = new Date().getFullYear();
+  const statut = getApogeeStatut(wine);
+  const range  = ap.debut && ap.fin ? ap.debut + " — " + ap.fin : (ap.debut ? "à partir de " + ap.debut : "jusqu'en " + ap.fin);
+  const badges = {
+    depasse:    `<span style="color:#d44;font-size:0.85rem">🔴 Dépassé</span>`,
+    maintenant: `<span style="color:#3da066;font-size:0.85rem">🟢 À boire maintenant</span>`,
+    bientot:    `<span style="color:#c9a84c;font-size:0.85rem">🟡 Apogée dans ${ap.debut - now} an${ap.debut - now > 1 ? "s" : ""}</span>`,
+    jeune:      `<span style="color:#5090c0;font-size:0.85rem">🔵 Trop jeune encore</span>`
+  };
+  const src = ap.source === "auto" ? `<span style="font-size:0.7rem;color:var(--text2);margin-left:6px">(estimation)</span>` : "";
+  return `${badges[statut]||""} <span style="color:var(--gold2);margin-left:8px">${range}</span>${src}`;
+}
+
+let apogeeFiltre = "tous";
+
+function filtreApogee(filtre) {
+  apogeeFiltre = filtre;
+  ["tous","maintenant","bientot","jeune","depasse"].forEach(f => {
+    const btn = document.getElementById("btn-ap-" + f);
+    if(btn) btn.classList.toggle("active", f === filtre);
+  });
+  renderApogee(filtre);
+}
+
+function renderApogee(filtre) {
+  const container = document.getElementById("apogee-list");
+  if(!container) return;
+  const now = new Date().getFullYear();
+
+  let wines = wineData.filter(w => {
+    const ap = getApogeeWindows(w);
+    if(filtre === "tous") return ap !== null || w.annee;
+    const statut = getApogeeStatut(w);
+    return statut === filtre;
+  });
+
+  // Trier : dépassés en premier, puis à boire, puis bientôt, puis jeunes
+  const order = { depasse: 0, maintenant: 1, bientot: 2, jeune: 3 };
+  wines.sort((a, b) => {
+    const sa = order[getApogeeStatut(a)] ?? 4;
+    const sb = order[getApogeeStatut(b)] ?? 4;
+    if(sa !== sb) return sa - sb;
+    return (parseInt(a.annee)||0) - (parseInt(b.annee)||0);
+  });
+
+  if(!wines.length) {
+    container.innerHTML = `<div style="text-align:center;padding:60px 0;color:var(--text2);font-style:italic">Aucun vin dans cette catégorie</div>`;
+    return;
+  }
+
+  const statLabels = {
+    depasse:    { color: "#d44",    icon: "🔴", label: "Dépassé — à boire rapidement" },
+    maintenant: { color: "#3da066", icon: "🟢", label: "À boire maintenant" },
+    bientot:    { color: "#c9a84c", icon: "🟡", label: "Apogée proche" },
+    jeune:      { color: "#5090c0", icon: "🔵", label: "Encore trop jeune" }
+  };
+
+  container.innerHTML = wines.map(w => {
+    const ap     = getApogeeWindows(w);
+    const statut = getApogeeStatut(w);
+    const st     = statLabels[statut] || { color: "var(--text2)", icon: "⚪", label: "Inconnu" };
+    const range  = ap ? (ap.debut && ap.fin ? ap.debut + " — " + ap.fin : (ap.debut ? "à partir de " + ap.debut : "jusqu'en " + ap.fin)) : "—";
+    const src    = ap && ap.source === "auto" ? " (est.)" : "";
+    const anneeRestante = ap && ap.debut ? ap.debut - now : null;
+
+    return `<div style="display:flex;gap:14px;align-items:center;padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-left:3px solid ${st.color};border-radius:3px;margin-bottom:8px;cursor:pointer"
+      onclick="openSlotModal(${w.cave},${w.floor},${w.slot})">
+      ${w.image ? `<img src="${w.image}" style="width:40px;height:56px;object-fit:contain;border-radius:2px;flex-shrink:0">` : `<div style="width:40px;height:56px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">🍷</div>`}
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">
+          <div>
+            <span style="color:var(--cream);font-size:1rem">${w.nom||"—"}</span>
+            ${w.annee ? `<span style="color:var(--text2);font-size:0.85rem;margin-left:6px">${w.annee}</span>` : ""}
+            <div style="color:var(--text2);font-size:0.78rem;margin-top:2px">${[w.domaine,w.appellation].filter(Boolean).join(" · ")}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="color:${st.color};font-size:0.82rem">${st.icon} ${st.label}</div>
+            <div style="color:var(--gold2);font-size:0.82rem;margin-top:2px">Apogée : ${range}${src}</div>
+            ${statut === "bientot" && anneeRestante ? `<div style="color:var(--text2);font-size:0.75rem">Dans ${anneeRestante} an${anneeRestante>1?"s":""}</div>` : ""}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
 }
 
 </script>
