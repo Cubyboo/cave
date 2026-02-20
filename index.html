@@ -1135,21 +1135,52 @@ function showNotif(msg, error=false) {
 // =====================================================================
 // PASSWORD
 // =====================================================================
-const PWD_HASH = '7c6b9b4e2a3f1d8e5c0a4b9d3e7f2c1a'; // Cava20MMM hashé (simple obfuscation)
-const PWD      = 'Cava20MMM';
+async function checkPwd() {
+  const val = document.getElementById('pwd-input').value.trim();
+  if(!val) return;
 
-function checkPwd() {
-  const val = document.getElementById('pwd-input').value;
-  if(val === PWD) {
-    sessionStorage.setItem('cave_auth', '1');
-    document.getElementById('pwd-screen').classList.add('hidden');
-    loadFromSheets();
-  } else {
-    const inp = document.getElementById('pwd-input');
-    inp.classList.add('error');
-    document.getElementById('pwd-error').textContent = 'Mot de passe incorrect';
-    setTimeout(() => { inp.classList.remove('error'); inp.value=''; }, 800);
-  }
+  // Hasher ce que l'utilisateur a tapé avec SHA-256
+  const encoder = new TextEncoder();
+  const data = encoder.encode(val);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+  // Récupérer le hash stocké dans le Google Sheet
+  const cbName = 'configCallback_' + Date.now();
+  const timeout = setTimeout(() => {
+    delete window[cbName];
+    const s = document.getElementById('config-script');
+    if(s) s.remove();
+    showLoginError();
+  }, 8000);
+
+  window[cbName] = function(config) {
+    clearTimeout(timeout);
+    delete window[cbName];
+    const s = document.getElementById('config-script');
+    if(s) s.remove();
+    const storedHash = config.password_hash || '';
+    if(hashHex === storedHash) {
+      sessionStorage.setItem('cave_auth', '1');
+      document.getElementById('pwd-screen').classList.add('hidden');
+      loadFromSheets();
+    } else {
+      showLoginError();
+    }
+  };
+
+  const script = document.createElement('script');
+  script.id = 'config-script';
+  script.src = SCRIPT_URL + '?action=getConfig&callback=' + cbName + '&t=' + Date.now();
+  document.body.appendChild(script);
+}
+
+function showLoginError() {
+  const inp = document.getElementById('pwd-input');
+  inp.classList.add('error');
+  document.getElementById('pwd-error').textContent = 'Mot de passe incorrect';
+  setTimeout(() => { inp.classList.remove('error'); inp.value = ''; }, 800);
 }
 
 function initAuth() {
