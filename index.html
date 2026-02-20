@@ -2626,10 +2626,14 @@ let mobileBubbleFloor = null;
 let mobileBubbleSlot  = null;
 
 function isMobile() {
-  return window.matchMedia('(max-width: 768px)').matches || ('ontouchstart' in window);
+  // Uniquement basé sur la largeur — pas sur ontouchstart (évite les faux positifs desktop tactile)
+  return window.matchMedia('(max-width: 768px)').matches;
 }
 
 function handleBottleClick(e, cave, floor, slot) {
+  // Masquer le tooltip dans tous les cas
+  document.getElementById('tooltip').style.display = 'none';
+
   if(!isMobile()) {
     // Desktop : comportement normal
     openSlotModal(cave, floor, slot);
@@ -2703,8 +2707,14 @@ function closeMobileBubble() {
 function mobileBubbleOpenFiche() {
   if(mobileBubbleCave !== null) {
     const c = mobileBubbleCave, f = mobileBubbleFloor, s = mobileBubbleSlot;
-    closeMobileBubble();
-    setTimeout(() => openSlotModal(c, f, s), 280);
+    // Fermer la bulle et bloquer tout nouveau tap pendant l'animation
+    const bubble  = document.getElementById('mobile-bubble');
+    const overlay = document.getElementById('mobile-bubble-overlay');
+    bubble.classList.remove('open');
+    overlay.style.display = 'none';
+    mobileBubbleCave = mobileBubbleFloor = mobileBubbleSlot = null;
+    lastTapTime = Date.now() + 2000; // bloquer les taps pendant 2s
+    setTimeout(() => { bubble.style.display = 'none'; openSlotModal(c, f, s); }, 260);
   }
 }
 
