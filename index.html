@@ -1493,29 +1493,552 @@ function renderHistorique() {
 
 // Accords automatiques par type de vin
 const ACCORDS_AUTO = {
+
+  // ============================================================
+  // BOURGOGNE ROUGE - Pinot Noir
+  // ============================================================
+  "Gevrey-Chambertin": {
+    plats: ["Becasse rotie au sang","Lievre a la royale","Chevreuil sauce poivrade","Carre d'agneau en croute d'herbes","Filet de boeuf Rossini","Pigeon roti aux truffes","Faisan aux ceps","Poularde demi-deuil","Ris de veau aux morilles noires","Epoisse affine a coeur","Ami du Chambertin","Langres au marc de Bourgogne"],
+    mots: ["becasse","lievre","chevreuil","agneau","filet boeuf","pigeon","faisan","poularde","ris de veau","morilles","truffe","epoisse","ami chambertin","langres","gibier","volaille"]
+  },
+  "Chambolle-Musigny": {
+    plats: ["Poularde de Bresse a la creme","Filet de sole au beurre blanc","Turbot roti aux asperges","Caille farcie aux raisins","Saint-Jacques a la vapeur","Veau en blanquette fine","Ris de veau poele aux girolles","Citeaux frais","Chaource crémeux"],
+    mots: ["poularde","sole","turbot","asperges","caille","saint-jacques","veau","blanquette","girolles","citeaux","chaource","volaille","poisson","creme"]
+  },
+  "Vosne-Romanee": {
+    plats: ["Becasse rotie entiere","Lievre a la royale version Cardinale","Chevreuil grand veneur","Filet de boeuf en croute sauce Perigueux","Turbot poche beurre noisette","Homard a la nage","Ris de veau aux truffes noires","Foie gras poele aux raisins","Epoisse tres affine","Ami du Chambertin"],
+    mots: ["becasse","lievre","chevreuil","filet boeuf","truffe","homard","turbot","ris de veau","foie gras","epoisse","gibier","grand veneur"]
+  },
+  "Nuits-Saint-Georges": {
+    plats: ["Carre d'agneau roti","Gigot de chevreuil","Pintade aux champignons","Coq au Chambertin","Andouillette de Chablis","Jambon persille de Bourgogne","Epoisse","Soumaintrain affine","Boeuf bourguignon traditionnel"],
+    mots: ["agneau","chevreuil","pintade","coq au vin","andouillette","jambon persille","epoisse","soumaintrain","boeuf bourguignon","champignons"]
+  },
+  "Pommard": {
+    plats: ["Gigot d'agneau de 7 heures","Daube de boeuf provencale","Canard aux olives","Cassoulet de Castelnaudary","Civet de sanglier","Lard fume aux lentilles du Puy","Epoisses","Munster affine","Maroilles"],
+    mots: ["gigot agneau","daube boeuf","canard","cassoulet","sanglier","lentilles","epoisse","munster","maroilles","gibier","charcuterie"]
+  },
+  "Volnay": {
+    plats: ["Carre de veau roti","Poularde pochee sauce supreme","Filet de turbot au beurre blanc","Rouget barbet grille","Ris de veau a la creme","Caille aux raisins de Corinthe","Brillat-Savarin","Chaource","Brie de Meaux affine"],
+    mots: ["veau","poularde","turbot","rouget","ris de veau","caille","brillat savarin","chaource","brie","poisson","volaille"]
+  },
+  "Beaune": {
+    plats: ["Coq au vin rouge de Bourgogne","Poulet roti et pommes dauphine","Lapin a la moutarde","Terrine de gibier","Jambon a l'os persille","Oeufs en meurette","Gateau de foies blonds","Epoisse jeune","Citeaux"],
+    mots: ["coq au vin","poulet","lapin moutarde","terrine gibier","jambon persille","oeufs meurette","foies blonds","epoisse","citeaux"]
+  },
+  "Aloxe-Corton": {
+    plats: ["Carre d'agneau roti au jus","Boeuf braise a la bourguignonne","Pintade aux morilles","Faisan en cocotte","Jambon braise au madere","Soumaintrain","Epoisse","Munster"],
+    mots: ["agneau","boeuf braise","pintade","faisan","jambon braise","soumaintrain","epoisse","munster","gibier"]
+  },
+  "Marsannay": {
+    plats: ["Saucisson chaud lyonnais","Andouillette grillée sauce moutarde","Lapin aux pruneaux","Poulet roti aux herbes","Jambon persille","Fromage de tete","Epoisses jeune","Citeaux"],
+    mots: ["saucisson","andouillette","lapin pruneaux","poulet","jambon","fromage de tete","epoisse","citeaux"]
+  },
+
+  // ============================================================
+  // BOURGOGNE BLANC - Chardonnay
+  // ============================================================
+  "Meursault": {
+    plats: ["Homard bleu beurre blanc","Turbot sauce hollandaise","Saint-Jacques a la creme de corail","Sole meuniere beurre noisette","Ris de veau aux morilles a la creme","Poularde de Bresse a la creme","Feuillete d'escargots au beurre persille","Tarte fine aux asperges blanches","Comte vieux 18 mois","Beurre blanc nantais"],
+    mots: ["homard","turbot","saint-jacques","sole","ris de veau","morilles","poularde","escargots","asperges","comte","creme","beurre blanc","crustaces"]
+  },
+  "Puligny-Montrachet": {
+    plats: ["Homard a la nage","Turbot poche beurre blanc","Sole farcie aux langoustines","Saint-Jacques aux truffes blanches","Langoustines rotis beurre corail","Troncon de turbot a l'oseille","Bar sauvage en croute de sel","Blanc de volaille aux morilles","Feuillete de ris d'agneau"],
+    mots: ["homard","turbot","sole","langoustines","saint-jacques","truffe blanche","bar","volaille","ris agneau","morilles","crustaces","poisson noble"]
+  },
+  "Chassagne-Montrachet": {
+    plats: ["Coquille Saint-Jacques au beurre d'algues","Turbot braise aux champignons","Filet de bar beurre blanc","Sandre au beurre blanc","Poulet de Bresse roti a la creme","Feuillete de homard","Comte affine","Chaource","Poule au pot"],
+    mots: ["saint-jacques","turbot","bar","sandre","poulet bresse","homard","comte","chaource","poule au pot","creme","beurre"]
+  },
+  "Chablis": {
+    plats: ["Huitres de Marenne-Oleron","Huitres de Bretagne numero 3","Palourdes au naturel","Bulots mayonnaise","Crevettes grises","Langoustines pochees","Sole meuniere","Sole normande","Fruits de mer plateau","Andouillette de Chablis","Sandre sauce gribiche"],
+    mots: ["huitres","palourdes","bulots","crevettes","langoustines","sole","fruits de mer","andouillette","sandre","coquillages","plateau mer"]
+  },
+  "Chablis Grand Cru": {
+    plats: ["Huitres speciales de Claire","Homard breton","Langouste mayonnaise","Sole farcie aux truffes","Turbot au beurre blanc","Saint-Jacques au naturel","Caviar Oscietra","Foie gras de canard mi-cuit"],
+    mots: ["huitres speciales","homard","langouste","sole truffee","turbot","saint-jacques","caviar","foie gras","crustaces nobles"]
+  },
+  "Macon-Villages": {
+    plats: ["Grenouilles persillees","Quenelles de brochet sauce Nantua","Gateau de foies blonds","Terrine de brochet","Charcuterie lyonnaise","Saucisson brioché","Fromage blanc aux herbes","Epoisses jeune","Charolais frais"],
+    mots: ["grenouilles","quenelles","brochet","foies blonds","charcuterie lyonnaise","saucisson brioche","fromage blanc","epoisse","charolais"]
+  },
+  "Pouilly-Fuisse": {
+    plats: ["Grenouilles a la creme d'ail","Quenelles de brochet lyonnaises","Ecrevisses a la nage","Sandre au beurre blanc","Tarte aux morilles","Volaille de Bresse en cocotte","Comte jeune 8 mois","Beaufort d'alpage"],
+    mots: ["grenouilles","quenelles","ecrevisses","sandre","morilles","volaille bresse","comte","beaufort","poisson riviere"]
+  },
+  "Saint-Veran": {
+    plats: ["Poisson de riviere grille","Truite aux amandes","Charcuterie fine","Tarte aux legumes","Fromage de chevre frais","Maquee aux herbes","Beurre blanc"],
+    mots: ["truite","poisson riviere","charcuterie fine","tarte legumes","chevre frais","herbes","beurre blanc"]
+  },
+
+  // ============================================================
+  // JURA
+  // ============================================================
+  "Arbois": {
+    plats: ["Poulet aux morilles et vin jaune du Jura","Carre de porc au Comté","Saucisse de Morteau en croute","Jambon du Jura chaud","Croute forestiere au Comté","Tarte aux morilles au vin jaune","Comte 18 mois","Morbier crémeux","Bleu de Gex"],
+    mots: ["poulet morilles","vin jaune","morteau","jambon jura","croute comté","morilles","comte","morbier","bleu gex","porc","charcuterie jurassienne"]
+  },
+  "Arbois Vin Jaune": {
+    plats: ["Poulet de Bresse aux morilles et vin jaune","Comté vieux 24 mois","Homard sauce corail au vin jaune","Ris de veau aux morilles et vin jaune","Foie gras chaud aux morilles","Becasse au vin jaune","Faisan aux morilles et creme de vin jaune","Langouste au vin jaune"],
+    mots: ["poulet morilles","comte vieux","homard","ris de veau","foie gras","becasse","faisan","langouste","morilles","vin jaune"]
+  },
+  "Arbois Pupillin": {
+    plats: ["Saucisse de Morteau lentilles","Jambon du Jura persille","Poulet roti au Jura","Fromage de tete","Morbier","Bleu de Gex","Raclette franc-comtoise"],
+    mots: ["morteau","jambon jura","poulet","fromage tete","morbier","bleu gex","raclette","charcuterie"]
+  },
+  "Chateau-Chalon": {
+    plats: ["Comté Grand Cru 30 mois minimum","Poulet de Bresse aux morilles sauce vin jaune","Homard au vin jaune","Ris de veau aux truffes et vin jaune","Becasse rotie au vin jaune","Foie gras mi-cuit aux figues et vin jaune","Langouste sauce corail","Turbot braise au vin jaune"],
+    mots: ["comte grand cru","poulet morilles","homard","ris de veau truffes","becasse","foie gras","langouste","turbot","vin jaune","morilles"]
+  },
+  "L'Etoile": {
+    plats: ["Quenelles de brochet sauce Nantua","Truite du Doubs aux amandes","Grenouilles a la creme","Feuillete aux morilles","Tarte aux asperges blanches","Comte 12 mois","Gruyere de Comté"],
+    mots: ["quenelles","truite","grenouilles","morilles","asperges","comte","gruyere","poisson riviere"]
+  },
+  "Cotes du Jura": {
+    plats: ["Saucisse de Montbeliard aux lentilles","Fondue comtoise au Comté","Gratin de macaronis au Comté","Poulet roti en cocotte","Lapin a la moutarde","Morbier chaud","Raclette du Jura","Bleu de Gex avec pain de noix"],
+    mots: ["montbeliard","fondue","gratin comté","poulet","lapin moutarde","morbier","raclette","bleu gex","lentilles"]
+  },
+  "Macvin du Jura": {
+    plats: ["Foie gras de canard mi-cuit","Terrine de foie gras aux abricots","Melon de Cavaillon","Roquefort sur pain brule","Tarte aux noix du Périgord","Desserts aux fruits rouges","Fraises au poivre"],
+    mots: ["foie gras","melon","roquefort","tarte noix","desserts","fraises","aperitif","sucre"]
+  },
+
+  // ============================================================
+  // PORTO / DOURO
+  // ============================================================
+  "Porto Ruby": {
+    plats: ["Foie gras poele aux figues fraiches","Terrine de foie gras aux abricots","Stilton 18 mois sur pain de noix","Roquefort sur pain brule","Gateau au chocolat noir 72%","Fondant au chocolat coeur coulant","Tarte aux fruits rouges","Framboises au naturel","Creme brulee aux fruits rouges"],
+    mots: ["foie gras","figues","stilton","roquefort","chocolat noir","fondant","tarte fruits rouges","framboises","creme brulee","fromage persille","sucre"]
+  },
+  "Porto Tawny": {
+    plats: ["Tarte tatin aux pommes beurre sale","Mille-feuille caramel","Tarte aux noix du Perigord","Gateau de riz caramelise","Creme brulee a la vanille de Tahiti","Canele bordelais","Figues confites aux amandes","Stilton vieux","Fourme d'Ambert","Abricots secs aux amandes grillees"],
+    mots: ["tarte tatin","mille feuille","caramel","tarte noix","gateau riz","creme brulee","canele","figues confites","stilton","fourme ambert","abricots"]
+  },
+  "Porto LBV": {
+    plats: ["Gateau au chocolat noir intense 85%","Fondant au chocolat mi-cuit","Tarte au chocolat et fleur de sel","Roquefort vieux sur pain aux noix","Stilton sur crackers","Gateau basque a la cerise noire","Cerises a l'eau de vie","Pruneaux d'Agen au vieux Porto"],
+    mots: ["chocolat noir intense","fondant","tarte chocolat","roquefort","stilton","gateau basque","cerises","pruneaux","fromage persille"]
+  },
+  "Porto Vintage": {
+    plats: ["Stilton Grand Reserve","Roquefort Papillon vieux","Bleu de Termignon","Gateau au chocolat grand cru","Tarte sombrero chocolat-caramel","Figues fraiches au miel de thym","Grenade aux epices douces","Foie gras mi-cuit aux dattes"],
+    mots: ["stilton grand reserve","roquefort vieux","bleu termignon","chocolat grand cru","figues miel","grenade","foie gras dattes","fromage persille vieux"]
+  },
+  "Douro": {
+    plats: ["Bacalhau a bras traditionnel","Bacalhau a Gomes de Sa","Caldo verde au chourico","Leitao da Bairrada au four","Alheira de Mirandela grillée","Cozido a portuguesa","Bifanas au vin rouge","Posta de vitela transmontana","Queijo Serra da Estrela","Queijo Azeitao","Ameijoas a bulhao pato"],
+    mots: ["bacalhau","morue","caldo verde","chourico","leitao","alheira","cozido","bifanas","vitela","queijo","ameijoas","cuisine portugaise","agneau","veau","saucisse"]
+  },
+
+  // ============================================================
+  // ALSACE
+  // ============================================================
+  "Alsace Riesling": {
+    plats: ["Choucroute garnie traditionnelle","Baeckeoffe a l'alsacienne","Tarte a l'oignon aux lardons","Foie gras d'oie au torchon","Sandre a la choucroute","Truite aux amandes","Quiche lorraine","Munster au cumin"],
+    mots: ["choucroute","baeckeoffe","tarte oignon","foie gras oie","sandre","truite","quiche","munster","cuisine alsacienne"]
+  },
+  "Alsace Gewurztraminer": {
+    plats: ["Foie gras d'oie au Gewurztraminer","Munster affine au cumin","Tarte aux mirabelles","Kougelhopf sale aux noix","Canard laque aux epices","Tajine de poulet aux citrons confits","Curry de crevettes a l'indienne","Poulet tikka masala"],
+    mots: ["foie gras oie","munster","mirabelles","kougelhopf","canard laque","tajine","curry","tikka masala","epices","cuisine exotique"]
+  },
+  "Alsace Pinot Gris": {
+    plats: ["Foie gras mi-cuit aux mirabelles","Chou farci a l'alsacienne","Presskopf","Baeckeoffe au porc","Quenelles de brochet","Volaille rotie aux mirabelles","Terrine de gibier","Munster"],
+    mots: ["foie gras","mirabelles","chou farci","presskopf","baeckeoffe","quenelles","volaille","terrine gibier","munster"]
+  },
+  "Alsace Pinot Noir": {
+    plats: ["Presskopf vinaigrette","Tarte flambee aux lardons","Coq au Riesling","Lapin aux pruneaux d'Alsace","Charcuterie alsacienne","Munster jeune","Carré de porc aux mirabelles"],
+    mots: ["presskopf","tarte flambee","coq riesling","lapin pruneaux","charcuterie alsacienne","munster","porc mirabelles"]
+  },
+  "Cremant d'Alsace": {
+    plats: ["Feuillete au fromage blanc","Tarte aux asperges","Terrine de saumon","Saumon fume d'Ecosse","Caviar de hareng","Aperitif alsacien","Munster jeune"],
+    mots: ["feuillete","asperges","saumon fume","caviar hareng","aperitif","munster","bulle","petillant"]
+  },
+
+  // ============================================================
+  // BORDEAUX
+  // ============================================================
+  "Pomerol": {
+    plats: ["Agneau de Pauillac roti","Carre d'agneau aux herbes","Filet de boeuf sauce Perigueux","Cote de boeuf aux ceps","Canard aux cepes de Bordeaux","Foie gras poele aux raisins","Magret aux figues","Truffe noire du Perigord","Fromages a pate dure"],
+    mots: ["agneau pauillac","carre agneau","filet boeuf","truffe noire","ceps","canard cepes","foie gras","magret figues","fromages"]
+  },
+  "Saint-Emilion": {
+    plats: ["Entrecote bordelaise sauce au vin","Cote de boeuf aux cepes","Agneau de lait de Pauillac","Magret de canard aux figues","Foie gras poele","Canard confit aux ceps","Fromages du Perigord","Ossau-Iraty affine"],
+    mots: ["entrecote","boeuf cepes","agneau pauillac","magret canard","foie gras","canard confit","fromages perigord","ossau iraty"]
+  },
+  "Medoc": {
+    plats: ["Entrecote a la bordelaise","Gigot d'agneau roti","Carre d'agneau persillade","Cote de boeuf grille","Canard aux olives","Pintade aux cepes","Fromages a pate pressee"],
+    mots: ["entrecote bordelaise","gigot agneau","carre agneau","cote boeuf","canard","pintade cepes","fromages presses"]
+  },
+  "Pauillac": {
+    plats: ["Agneau de Pauillac en carre","Filet de boeuf en croute truffe","Becasse rotie sur canape","Cote de boeuf maturee","Chevreuil sauce grand veneur","Ris de veau aux truffes","Cantal vieux","Salers affine"],
+    mots: ["agneau pauillac","filet boeuf truffe","becasse","cote boeuf maturee","chevreuil","ris de veau truffes","cantal vieux","salers"]
+  },
+  "Saint-Julien": {
+    plats: ["Carre d'agneau en persillade","Filet de boeuf Wellington","Pintade aux cepes","Magret de canard aux myrtilles","Lievre a la royale","Fromages a pate pressee cuite"],
+    mots: ["carre agneau","filet boeuf wellington","pintade cepes","magret myrtilles","lievre","fromages presses"]
+  },
+  "Margaux": {
+    plats: ["Filet de boeuf en croute sauce truffe","Pigeon roti aux cepes","Carre d'agneau au jus","Sole meuniere beurre noisette","Caille aux raisins","Fromages fins a pate dure"],
+    mots: ["filet boeuf truffe","pigeon cepes","carre agneau","sole","caille raisins","fromages fins"]
+  },
+  "Graves": {
+    plats: ["Lamproie a la bordelaise","Entrecote bordelaise","Alose a l'oseille","Foie de veau a la bordelaise","Jambon de Bayonne","Fromages du Sud-Ouest"],
+    mots: ["lamproie","entrecote","alose","foie veau","jambon bayonne","fromages sud ouest"]
+  },
+  "Pessac-Leognan": {
+    plats: ["Turbot a la bordelaise","Sole sauce bordelaise","Homard en salade tiede","Saint-Jacques poelees","Foie gras de canard mi-cuit","Filet de bar au beurre blanc"],
+    mots: ["turbot","sole","homard","saint-jacques","foie gras","bar","poisson noble","blanc bordeaux"]
+  },
+  "Sauternes": {
+    plats: ["Foie gras d'oie au torchon","Foie gras de canard mi-cuit aux figues","Roquefort Papillon vieux","Stilton sur pain de noix","Tarte tatin aux pommes","Creme brulee a la cardamome","Abricots rotis au miel","Tarte aux peches blanches","Desserts aux fruits jaunes"],
+    mots: ["foie gras oie","foie gras figues","roquefort","stilton","tarte tatin","creme brulee","abricots","peches","desserts fruits","sucre","liquoreux"]
+  },
+  "Barsac": {
+    plats: ["Foie gras mi-cuit","Roquefort sur pain brule","Tarte aux fruits jaunes","Creme brulee vanille","Macarons aux fruits","Desserts legers"],
+    mots: ["foie gras","roquefort","tarte fruits jaunes","creme brulee","macarons","desserts","liquoreux"]
+  },
+
+  // ============================================================
+  // RHONE
+  // ============================================================
+  "Chateauneuf-du-Pape": {
+    plats: ["Gigot d'agneau en croute d'herbes","Daube provencale au vin rouge","Carre d'agneau aux olives et thym","Sanglier aux baies de genievre","Perdrix aux ceps","Taureau de Camargue braise","Tapenade noire","Fromages de brebis des Alpilles","Banon a la feuille"],
+    mots: ["gigot agneau","daube provencale","sanglier","perdrix","taureau camargue","ceps","olives","thym","fromage brebis","banon","herbes provence"]
+  },
+  "Cote-Rotie": {
+    plats: ["Becasse rotie sur canape","Pigeon roti aux olives","Caille farcie aux herbes","Filet d'agneau en croute","Chevreuil sauce poivrade","Fromage de brebis","Pelardon des Cevennes"],
+    mots: ["becasse","pigeon","caille","agneau","chevreuil","fromage brebis","pelardon","gibier","viognier"]
+  },
+  "Hermitage": {
+    plats: ["Becasse au sang","Lievre en civet","Truffes noires du Tricastin","Cote de boeuf maturee","Canard aux olives","Fromages du Massif Central","Bleu des Causses"],
+    mots: ["becasse","lievre","truffes","cote boeuf","canard olives","fromages massif central","bleu causses"]
+  },
+  "Hermitage blanc": {
+    plats: ["Homard a la provencale","Turbot aux herbes","Saint-Jacques au safran","Loup en croute de sel","Brandade de morue","Tapenade verte","Fromage de chevre frais"],
+    mots: ["homard","turbot","saint-jacques","safran","loup","brandade","tapenade verte","chevre frais"]
+  },
+  "Condrieu": {
+    plats: ["Foie gras de canard mi-cuit aux abricots","Homard a la creme de safran","Saint-Jacques a la vanille","Quenelles de brochet sauce Nantua","Poularde de Bresse a la creme","Turbot poche beurre blanc","Fromage de chevre frais du Pilat"],
+    mots: ["foie gras abricots","homard safran","saint-jacques vanille","quenelles","poularde","turbot","chevre frais","viognier","creme"]
+  },
+  "Gigondas": {
+    plats: ["Carre d'agneau aux herbes de Provence","Daube provencale","Sanglier aux airelles","Perdrix aux cepes","Fromages de brebis Provence","Tapenade noire","Magret de canard aux figues"],
+    mots: ["agneau herbes","daube","sanglier","perdrix cepes","fromage brebis","tapenade","magret figues"]
+  },
+  "Vacqueyras": {
+    plats: ["Daube d'agneau aux olives noires","Pieds et paquets marseillais","Sanglier en ragoût","Perdreaux rotis","Fromages de Provence"],
+    mots: ["daube agneau","pieds paquets","sanglier","perdreaux","fromages provence"]
+  },
+  "Crozes-Hermitage": {
+    plats: ["Gratin dauphinois au Raclette","Poulet roti aux olives","Cotes d'agneau grillees","Charcuteries de l'Ardeche","Fromages de chèvre de la Drome"],
+    mots: ["gratin dauphinois","poulet olives","agneau grille","charcuteries ardeche","chevre drome"]
+  },
+  "Saint-Joseph": {
+    plats: ["Carre d'agneau grille","Saucisson de Lyon brioché","Quenelles sauce aurore","Gateau de foies blonds","Fromage de chevre du Pilat"],
+    mots: ["agneau grille","saucisson brioché","quenelles","foies blonds","chevre pilat","charcuterie lyonnaise"]
+  },
+  "Tavel": {
+    plats: ["Bouillabaisse de Marseille","Bourride de lotte","Tapenade et anchoiade","Salade nicoise authentique","Grillades de viandes","Daurade royale grillée","Brandade de morue nimoise"],
+    mots: ["bouillabaisse","bourride","tapenade","anchoiade","salade nicoise","grillades","daurade","brandade","mediterraneen"]
+  },
+  "Muscat de Beaumes-de-Venise": {
+    plats: ["Melon de Cavaillon au jambon cru","Fraises de Carpentras au sucre","Peches blanches au naturel","Tarte aux fruits d'ete","Macarons aux amandes","Nougat de Montelimar","Desserts aux abricots"],
+    mots: ["melon","fraises","peches","tarte fruits","macarons","nougat","abricots","desserts","doux naturel"]
+  },
+
+  // ============================================================
+  // LOIRE
+  // ============================================================
+  "Sancerre": {
+    plats: ["Crottin de Chavignol chaud sur salade","Chevre frais aux herbes","Asperges vertes beurre blanc","Saumon en papillote au fenouil","Sandre au beurre blanc nantais","Truite en papillote","Grenouilles persillees","Terrine de poisson"],
+    mots: ["crottin chavignol","chevre frais","asperges","saumon","sandre","truite","grenouilles","terrine poisson","beurre blanc"]
+  },
+  "Pouilly-Fume": {
+    plats: ["Huitres fines de Bretagne","Saumon fume irlandais","Sandre au beurre blanc","Grenouilles a la creme d'ail","Crottin de Chavignol","Chevre sec de la Loire","Asperges blanches hollandaise"],
+    mots: ["huitres","saumon fume","sandre","grenouilles","crottin","chevre sec","asperges"]
+  },
+  "Vouvray": {
+    plats: ["Rillettes de Tours","Rillons de Touraine","Andouille de Vouvray","Terrine de foie gras","Tarte tatin tourangelle","Tarte aux pommes reinettes","Fromage de chevre de Touraine","Sainte-Maure de Touraine"],
+    mots: ["rillettes","rillons","andouille","foie gras","tarte tatin","tarte pommes","chevre touraine","sainte maure"]
+  },
+  "Muscadet": {
+    plats: ["Huitres de la Baie de Bourgneuf","Moules mariniere","Palourdes farcies","Crevettes roses","Langoustines pochees","Sandre au beurre blanc nantais","Sole normande","Plateau de fruits de mer"],
+    mots: ["huitres","moules","palourdes","crevettes","langoustines","sandre","sole","plateau mer","fruits de mer","beurre blanc nantais"]
+  },
+  "Anjou": {
+    plats: ["Broche de Loire au beurre blanc","Sandre a l'oseille","Carpe en matelote","Terrine de canard","Rillettes d'Anjou","Fromage de chevre de l'Anjou"],
+    mots: ["brochet","sandre","carpe","terrine canard","rillettes","chevre anjou","poisson loire"]
+  },
+  "Bourgueil": {
+    plats: ["Carre d'agneau roti","Rillettes de Tours","Rillons de Touraine","Tarte aux rillettes","Lapin aux pruneaux","Fromages de Touraine"],
+    mots: ["agneau","rillettes","rillons","tarte rillettes","lapin pruneaux","fromages touraine","cabernet franc"]
+  },
+  "Chinon": {
+    plats: ["Rillettes de Tours chaudes","Andouillette de Troyes grillée","Lapin aux pruneaux de Touraine","Sainte-Maure de Touraine","Crottin de Chavignol","Poulet grille aux herbes"],
+    mots: ["rillettes","andouillette","lapin pruneaux","sainte maure","crottin","poulet herbes","touraine","cabernet franc"]
+  },
+  "Coteaux du Layon": {
+    plats: ["Foie gras de canard mi-cuit au Layon","Tarte tatin tourangelle","Tarte aux prunes Reine-Claude","Creme brulee au Cointreau","Fromage blanc a la creme","Sainte-Maure affine","Peches blanches au naturel"],
+    mots: ["foie gras","tarte tatin","prunes","creme brulee","fromage blanc","sainte maure","peches","liquoreux","sucre"]
+  },
+
+  // ============================================================
+  // CHAMPAGNE
+  // ============================================================
+  "Champagne": {
+    plats: ["Huitres speciales de Claire au Champagne","Caviar Oscietra sur blinis","Foie gras de canard mi-cuit","Homard en bellevue","Langoustines pochees au Court-bouillon","Turbot en sauce Champagne","Feuillete de saint-jacques aux truffes","Aperitif raffiné"],
+    mots: ["huitres","caviar","blinis","foie gras","homard","langoustines","turbot","saint-jacques truffes","aperitif","crustaces nobles"]
+  },
+  "Champagne Blanc de Blancs": {
+    plats: ["Huitres fines de Bretagne","Caviar Beluga ou Oscietra","Saumon fume d'Ecosse","Langoustines a la mayonnaise","Saint-Jacques au naturel","Aperitif avec petits fours sales"],
+    mots: ["huitres fines","caviar","saumon fume","langoustines","saint-jacques","aperitif","fours sales"]
+  },
+  "Champagne Blanc de Noirs": {
+    plats: ["Jambon de Reims en gelee","Andouillette de Troyes","Rillettes champenoises","Brie de Meaux affine","Langres au Marc de Bourgogne","Chaource crémeux"],
+    mots: ["jambon reims","andouillette troyes","rillettes champenoises","brie meaux","langres","chaource","charcuterie champagne"]
+  },
+  "Champagne Rose": {
+    plats: ["Carpaccio de boeuf aux truffes","Saumon fume avec creme fraiche","Fraises des bois au Champagne","Macarons aux fruits rouges","Foie gras en terrine","Agneau roti jus court"],
+    mots: ["carpaccio","saumon fume","fraises","macarons fruits rouges","foie gras","agneau roti"]
+  },
+
+  // ============================================================
+  // LANGUEDOC-ROUSSILLON
+  // ============================================================
+  "Banyuls": {
+    plats: ["Gateau au chocolat noir 70% minimum","Fondant mi-cuit au chocolat","Tarte au chocolat fleur de sel","Soufflé au chocolat amer","Anchois de Collioure marines","Gateau catalan","Creme catalane","Figues fraiches au miel"],
+    mots: ["chocolat noir","fondant","tarte chocolat","souffle chocolat","anchois collioure","gateau catalan","creme catalane","figues miel","sucre intense"]
+  },
+  "Rivesaltes": {
+    plats: ["Foie gras de canard aux abricots","Desserts aux fruits secs","Gateau aux pruneaux","Creme brulee a l'orange","Nougat de Montpellier","Desserts catalanes","Formage persille"],
+    mots: ["foie gras abricots","fruits secs","pruneaux","creme brulee orange","nougat","catalan","fromage persille"]
+  },
+  "Minervois": {
+    plats: ["Cassoulet de Castelnaudary","Agneau de Lozere grille","Daube languedocienne","Sanglier aux olives","Fromages du Languedoc","Pelardon des Cevennes"],
+    mots: ["cassoulet","agneau lozere","daube languedoc","sanglier olives","fromages languedoc","pelardon"]
+  },
+  "Corbières": {
+    plats: ["Daurade royale grillée au romarin","Bouillabaisse adaptée","Agneau grille aux herbes","Charcuterie du Languedoc","Fromages de brebis des Corbières","Tapenade et anchoiade"],
+    mots: ["daurade grille","bouillabaisse","agneau herbes","charcuterie languedoc","fromage brebis","tapenade","anchois"]
+  },
+  "Fitou": {
+    plats: ["Sanglier en daube","Lievre aux olives","Agneau des garrigues aux herbes","Fromages corsés du Languedoc","Charcuteries catalanes"],
+    mots: ["sanglier daube","lièvre olives","agneau garrigues","fromages corses","charcuteries catalanes"]
+  },
+
+  // ============================================================
+  // SUD-OUEST
+  // ============================================================
+  "Madiran": {
+    plats: ["Magret de canard aux figues","Confit de canard aux ceps","Cassoulet gersois","Cote de boeuf maturee","Garbure bearnaise","Fromage de brebis Pyrenees","Ossau-Iraty affine 6 mois"],
+    mots: ["magret canard","confit","cassoulet","cote boeuf","garbure","ossau iraty","fromage brebis pyrenees","tannat"]
+  },
+  "Cahors": {
+    plats: ["Magret de canard au miel","Confit de canard aux sarladaises","Foie gras poele","Truffe noire du Perigord","Daube de boeuf querycoise","Fromages du Lot","Rocamadour affine"],
+    mots: ["magret miel","confit canard","foie gras","truffe noire","daube boeuf","rocamadour","fromages lot","malbec"]
+  },
+  "Bergerac": {
+    plats: ["Magret de canard aux pruneaux","Confit aux pommes sarladaises","Foie gras de canard","Noix du Perigord","Fromages de la Dordogne","Cabécou frais"],
+    mots: ["magret pruneaux","confit canard","foie gras","noix perigord","fromages dordogne","cabecou"]
+  },
+  "Monbazillac": {
+    plats: ["Foie gras d'oie au torchon","Foie gras mi-cuit aux raisins","Roquefort vieux","Gateau aux noix du Perigord","Tarte aux prunes","Creme brulee au foie gras","Melon au jambon de Bayonne"],
+    mots: ["foie gras oie","foie gras raisins","roquefort vieux","gateau noix","tarte prunes","melon jambon","liquoreux perigord"]
+  },
+  "Jurancon": {
+    plats: ["Jambon de Bayonne mi-sel","Foie gras de canard frais","Fromage de brebis des Pyrenees","Ossau-Iraty","Truite de montagne","Tarte aux pommes reinettes","Gateaux basques"],
+    mots: ["jambon bayonne","foie gras frais","fromage brebis","ossau iraty","truite montagne","tarte pommes","gateau basque","Manseng"]
+  },
+  "Armagnac": {
+    plats: ["Foie gras de canard","Pruneaux d'Agen a l'Armagnac","Tarte aux pruneaux","Creme brulee a l'Armagnac","Gateau a la broche"],
+    mots: ["foie gras","pruneaux agen armagnac","tarte pruneaux","creme brulee armagnac","gateau broche"]
+  },
+
+  // ============================================================
+  // PROVENCE
+  // ============================================================
+  "Bandol": {
+    plats: ["Daube provencale au vin de Bandol","Gigot d'agneau de Sisteron en croute","Carre d'agneau aux herbes de Provence","Sanglier a la provencale","Perdrix aux olives","Fromages de brebis de Provence","Banon a la feuille"],
+    mots: ["daube","gigot agneau sisteron","sanglier","perdrix olives","fromage brebis","banon","herbes provence","mourvèdre"]
+  },
+  "Bandol Rose": {
+    plats: ["Bouillabaisse de Marseille","Bourride de lotte","Salade nicoise authentique","Grillades de viandes","Tapenade et anchoiade","Fromages de chevre frais de Provence"],
+    mots: ["bouillabaisse","bourride","salade nicoise","grillades","tapenade","anchoiade","chevre frais provence"]
+  },
+  "Cotes de Provence": {
+    plats: ["Grillades de viandes au thym","Salade nicoise","Ratatouille aux herbes","Pissaladiere","Tapenade noire","Fromages de chevre des Alpilles","Fromage de brebis Provence"],
+    mots: ["grillades thym","salade","ratatouille","pissaladiere","tapenade","chevre alpilles","brebis provence","herbes"]
+  },
+  "Cassis": {
+    plats: ["Bouillabaisse royale de Marseille","Bourride de lotte","Loup grille au fenouil","Daurade royale en croute de sel","Soupe de poissons rouille","Brandade de morue de Nimes"],
+    mots: ["bouillabaisse","bourride","loup fenouil","daurade","soupe poissons","brandade","poissons mediterraeens"]
+  },
+
+  // ============================================================
+  // SAVOIE
+  // ============================================================
+  "Roussette de Savoie": {
+    plats: ["Fondue savoyarde au Beaufort","Tartiflette au Reblochon","Raclette de Savoie","Gratin dauphinois","Diots de Savoie","Poisson du lac au beurre blanc","Feras du lac Léman poelées"],
+    mots: ["fondue beaufort","tartiflette","raclette","gratin dauphinois","diots","poisson lac","feras leman","fromages savoie"]
+  },
+  "Cremant de Savoie": {
+    plats: ["Aperitif savoyard","Feuillete au Beaufort","Saumon fume","Truite fumée du lac","Tomates au chevre frais","Tartelettes fines aux asperges"],
+    mots: ["aperitif","feuillete beaufort","saumon fume","truite fumee","chevre frais","asperges"]
+  },
+  "Vin de Savoie": {
+    plats: ["Fondue savoyarde","Raclette","Tartiflette traditionnelle","Gratin de crozets au Beaufort","Diots au vin blanc","Saucisses fumees savoyardes","Beaufort d'alpage","Reblochon fermier"],
+    mots: ["fondue","raclette","tartiflette","gratin crozets","diots","saucisses fumees","beaufort","reblochon"]
+  },
+
+  // ============================================================
+  // Fallback générique
+  // ============================================================
   "rouge": {
-    plats: ["Agneau roti","Boeuf bourguignon","Magret de canard","Cote de boeuf","Gibier","Fromages affines","Charcuterie","Cassoulet","Tajine agneau","Entrecote grille"],
-    mots:  ["agneau","boeuf","canard","gibier","viande rouge","fromage","charcuterie","cassoulet","entrecote","magret","cochon","porc"]
+    plats: ["Carre d'agneau roti","Boeuf en sauce","Gibier a plumes","Fromages affines","Charcuterie fine"],
+    mots: ["agneau","boeuf","gibier","fromage affine","charcuterie","viande rouge"]
   },
   "blanc": {
-    plats: ["Poisson grille","Fruits de mer","Saumon","Saint-Jacques","Volaille en sauce","Risotto","Chevre frais","Asperges","Huitres","Sole meuniere"],
-    mots:  ["poisson","saumon","sole","bar","dorade","fruits de mer","coquille","homard","crabe","volaille","poulet","veau","asperge","huitre"]
+    plats: ["Poisson noble grille","Fruits de mer","Volaille a la creme","Fromage de chevre","Asperges"],
+    mots: ["poisson","fruits de mer","volaille","chevre","asperges","crustaces"]
   },
   "rose": {
-    plats: ["Grillades","Salade nicoise","Pizza","Charcuterie","Ratatouille","Pissaladiere","Bouillabaisse","Brochettes","Tapenade"],
-    mots:  ["grillades","salade","pizza","charcuterie","ratatouille","brochette","barbecue","tapas","mediterraneen"]
+    plats: ["Grillades","Salade composee","Charcuterie","Cuisine provencale"],
+    mots: ["grillades","salade","charcuterie","provencal","aperitif"]
   },
   "effervescent": {
-    plats: ["Aperitif","Huitres","Sushi","Caviar","Saumon fume","Risotto aux champignons","Desserts legers","Macarons"],
-    mots:  ["aperitif","huitre","sushi","caviar","saumon fume","risotto","champignon","dessert","macaron","fete"]
+    plats: ["Aperitif","Fruits de mer","Foie gras","Desserts legers"],
+    mots: ["aperitif","huitres","foie gras","desserts"]
   },
   "vdn": {
-    plats: ["Foie gras","Desserts au chocolat","Roquefort","Tarte tatin","Gateau au chocolat","Creme brulee"],
-    mots:  ["foie gras","chocolat","roquefort","dessert","tarte","gateau","creme","sucre"]
+    plats: ["Foie gras","Chocolat noir","Fromage persille","Desserts"],
+    mots: ["foie gras","chocolat","roquefort","stilton","desserts","sucre"]
   },
   "magnum": {
-    plats: ["Grandes occasions","Repas de fete","Viandes roties","Fromages varies"],
-    mots:  ["fete","occasion","repas","viande","fromage"]
+    plats: ["Grandes tablees","Repas de fete","Viandes rotis","Plateau de fromages"],
+    mots: ["fete","tablée","viande","fromages"]
+  }
+};onst ACCORDS_AUTO = {
+  "rouge": {
+    plats: [
+      // Bourgogne rouge (Pinot Noir) - Gevrey, Pommard, Volnay, Chambolle
+      "Poularde de Bresse rotie au jus",
+      "Filet de boeuf en croute",
+      "Carre d'agneau aux herbes",
+      "Chevreuil sauce grand veneur",
+      "Pigeon roti aux girolles",
+      "Coq au vin de Bourgogne",
+      "Ris de veau poele aux morilles",
+      "Lapin a la moutarde de Dijon",
+      "Tournedos Rossini",
+      "Epoisse affine",
+      "Soumaintrain",
+      "Ami du Chambertin",
+      "Citeaux frais",
+      // Jura rouge (Poulsard, Trousseau, Pinot Noir)
+      "Poulet au vin jaune et morilles",
+      "Saucisse de Morteau aux lentilles",
+      "Jambon du Jura en croute",
+      "Croute aux morilles",
+      "Comtois grille",
+      "Mont d'Or chaud au vin blanc",
+      "Terrine de gibier du Jura",
+      "Becasse rotie",
+      "Faisan aux ceps"
+    ],
+    mots: ["boeuf","agneau","gibier","chevreuil","pigeon","lapin","coq","canard","faisan","becasse",
+           "morilles","girolles","ceps","champignons","foie","ris de veau","poularde","poulet",
+           "epoisse","soumaintrain","citeaux","fromage affine","comté","moutarde","lentilles",
+           "saucisse morteau","jambon jura","terrine"]
+  },
+  "blanc": {
+    plats: [
+      // Bourgogne blanc (Chardonnay) - Meursault, Puligny, Chablis, Macon
+      "Saint-Jacques poelees au beurre blanc",
+      "Homard a l'armoricaine",
+      "Turbot sauce hollandaise",
+      "Sole meuniere au beurre noisette",
+      "Brochet au beurre blanc nantais",
+      "Volaille de Bresse a la creme",
+      "Veau Orloff",
+      "Ris de veau a la creme et aux morilles",
+      "Feuillete d'escargots au beurre persille",
+      "Terrine de foie gras de canard",
+      "Oeufs en meurette",
+      // Jura blanc (Chardonnay, Savagnin ouille)
+      "Quenelle de brochet sauce Nantua",
+      "Truite du Doubs aux amandes",
+      "Grenouilles persillees",
+      "Fondue comtoise",
+      "Raclette franc-comtoise",
+      "Croute au Comté gratinee",
+      "Gateau de foies blonds de volaille",
+      // Vin Jaune du Jura
+      "Poulet aux morilles et vin jaune",
+      "Comté vieux 24 mois minimum",
+      "Homard sauce corail et vin jaune",
+      "Ris de veau aux morilles et vin jaune"
+    ],
+    mots: ["saint-jacques","coquille","homard","turbot","sole","brochet","truite","grenouilles",
+           "escargots","volaille","bresse","veau","ris de veau","foie gras","oeufs meurette",
+           "quenelle","fondue","raclette","comte","morilles","beurre blanc","creme","champignons",
+           "poisson","fruits de mer","crustaces"]
+  },
+  "rose": {
+    plats: [
+      "Jambon persille de Bourgogne",
+      "Andouillette de Chablis gratinee",
+      "Terrine de lapin aux noisettes",
+      "Saumon fume de truite",
+      "Tarte a l'oignon alsacienne",
+      "Salade comtoise aux lardons",
+      "Charcuterie franc-comtoise",
+      "Cervelas trufffe",
+      "Quiche lorraine"
+    ],
+    mots: ["jambon persille","andouillette","terrine","saumon fume","tarte oignon","salade",
+           "charcuterie","cervelas","quiche","lardons","aperitif","entree"]
+  },
+  "effervescent": {
+    plats: [
+      "Cremant du Jura a l'aperitif",
+      "Feuillete au Comté et noix",
+      "Gateau de foies blonds",
+      "Quenelles de brochet legeres",
+      "Tartelettes aux morilles",
+      "Veloute de grenouilles",
+      "Sorbet au marc de Bourgogne",
+      "Fraises de Plougastel"
+    ],
+    mots: ["aperitif","feuillete","comte","noix","quenelle","morilles","grenouilles","sorbet",
+           "fraises","dessert leger","cremant","bulles"]
+  },
+  "vdn": {
+    plats: [
+      // Porto - accords classiques
+      "Stilton affine 18 mois",
+      "Roquefort sur pain de noix",
+      "Gateau au chocolat noir 70%",
+      "Fondant au chocolat coeur coulant",
+      "Tarte aux noix du Perigord",
+      "Millefeuille caramel beurre sale",
+      "Creme brulee a la vanille de Tahiti",
+      "Figues fraiches et amandes grillees",
+      "Porto Ruby avec foie gras poele aux figues",
+      "Porto Tawny avec tarte tatin aux pommes",
+      "Porto Vintage avec fromages persilles",
+      "Porto LBV avec chocolat noir intense",
+      "Saucisson sec aux noisettes",
+      "Terrine de foie gras aux abricots"
+    ],
+    mots: ["stilton","roquefort","bleu","fromage persille","chocolat noir","fondant","tarte noix",
+           "millefeuille","creme brulee","figues","amandes","foie gras","abricots","caramel",
+           "porto","noix","perigord","dessert","sucre","confiture"]
+  },
+  "magnum": {
+    plats: [
+      "Grandes tablees en famille",
+      "Repas de fete avec boeuf en sauce",
+      "Agneau de lait roti pour 8 personnes",
+      "Carre de veau pour une tablée",
+      "Fromages affinés en plateau"
+    ],
+    mots: ["fete","noel","tablée","famille","repas","boeuf","agneau","veau","plateau fromages"]
   }
 };
 
@@ -1533,18 +2056,35 @@ function populateVinSelect() {
   if(current) sel.value = current;
 }
 
+function getAccordsForWine(w) {
+  // Chercher par appellation exacte d'abord, puis par nom, puis par type
+  const appellation = (w.appellation || '').trim();
+  const nom         = (w.nom || '').trim();
+  // Essayer appellation exacte
+  if(appellation && ACCORDS_AUTO[appellation]) return ACCORDS_AUTO[appellation];
+  // Essayer matching partiel sur les clés
+  const keys = Object.keys(ACCORDS_AUTO);
+  const matchKey = keys.find(k => 
+    appellation.toLowerCase().includes(k.toLowerCase()) || 
+    k.toLowerCase().includes(appellation.toLowerCase()) ||
+    nom.toLowerCase().includes(k.toLowerCase())
+  );
+  if(matchKey) return ACCORDS_AUTO[matchKey];
+  // Fallback par type
+  return ACCORDS_AUTO[w.type] || ACCORDS_AUTO["rouge"];
+}
+
 function rechercherParPlat() {
   const query = document.getElementById('accord-plat-input').value.trim().toLowerCase();
   const results = document.getElementById('accord-plat-results');
   if(!query) { results.innerHTML = ''; return; }
 
-  // Chercher dans les accords manuels + suggestions auto
   const matches = wineData.filter(w => {
     // Accord manuel saisi sur le vin
     if(w.accords && w.accords.toLowerCase().includes(query)) return true;
-    // Accord automatique par type
-    const auto = ACCORDS_AUTO[w.type];
-    if(auto && auto.mots.some(m => query.includes(m) || m.includes(query))) return true;
+    // Accord par appellation ou type
+    const auto = getAccordsForWine(w);
+    if(auto && auto.mots.some(m => query.includes(m.toLowerCase()) || m.toLowerCase().includes(query))) return true;
     return false;
   });
 
@@ -1563,13 +2103,22 @@ function rechercherParVin(id) {
   const wine = wineData.find(w=>String(w.id)===String(id));
   if(!wine) return;
 
-  const auto   = ACCORDS_AUTO[wine.type] || ACCORDS_AUTO.rouge;
-  const plats  = wine.accords
+  const auto  = getAccordsForWine(wine);
+  const plats = wine.accords
     ? [...new Set([...wine.accords.split(',').map(s=>s.trim()), ...auto.plats])]
     : auto.plats;
 
+  const sourceLabel = (() => {
+    const appellation = (wine.appellation||'').trim();
+    if(appellation && ACCORDS_AUTO[appellation]) return appellation;
+    const keys = Object.keys(ACCORDS_AUTO);
+    const matchKey = keys.find(k => appellation.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(appellation.toLowerCase()));
+    if(matchKey) return matchKey;
+    return wine.type || 'Général';
+  })();
+
   results.innerHTML = `
-    <div style="font-size:0.78rem;color:var(--text2);margin-bottom:10px;letter-spacing:1px">ACCORDS SUGGÉRÉS</div>
+    <div style="font-size:0.78rem;color:var(--text2);margin-bottom:6px;letter-spacing:1px">ACCORDS SUGGÉRÉS <span style="color:var(--gold);margin-left:6px">— ${sourceLabel}</span></div>
     <div style="display:flex;flex-wrap:wrap;gap:8px">
       ${plats.map(p=>`<span style="padding:5px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;font-size:0.85rem;color:var(--cream)">🍽 ${p}</span>`).join('')}
     </div>`;
