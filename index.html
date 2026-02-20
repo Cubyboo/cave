@@ -44,7 +44,6 @@
   .logo span { color: var(--cream); font-style: italic; }
   .stats-bar { display: flex; gap: 28px; font-size: 0.85rem; color: var(--text2); letter-spacing: 1px; }
   .stats-bar b { color: var(--gold); font-size: 1.05rem; }
-  .search-bar-wrap { padding: 10px 40px; background: var(--bg2); border-bottom: 1px solid var(--border); display:flex; align-items:center; gap:12px; }
   .search-input { flex:1; max-width:480px; padding:8px 14px 8px 36px; background:var(--bg3); border:1px solid var(--border); color:var(--text); font-family:'Cormorant Garamond',serif; font-size:1rem; border-radius:2px; outline:none; transition: border-color 0.2s; }
   .search-input:focus { border-color:var(--gold); }
   .search-wrap { position:relative; flex:1; max-width:480px; }
@@ -260,15 +259,6 @@
   </div>
 </header>
 
-<div class="search-bar-wrap">
-  <div class="search-wrap">
-    <span class="search-icon">🔍</span>
-    <input class="search-input" id="global-search" type="text" placeholder="Rechercher un vin, domaine, appellation, région…"
-      oninput="handleSearch(this.value)"
-      onkeydown="if(event.key==='Escape') clearSearch()">
-    <span class="search-clear" id="search-clear" onclick="clearSearch()">✕</span>
-  </div>
-</div>
 <div class="search-results-overlay" id="search-overlay" onclick="clearSearch()"></div>
 <div class="search-results-panel" id="search-panel" style="display:none"></div>
 
@@ -280,6 +270,14 @@
   <div class="tab" onclick="switchTab('accords',this)">🍽 Accords</div>
   <div class="tab" onclick="switchTab('stats',this)">📊 Statistiques</div>
   <div class="tab" onclick="switchTab('add',this)">➕ Ajouter</div>
+  <div style="flex:1"></div>
+  <div class="search-wrap" style="margin:0 12px;align-self:center">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" id="global-search" type="text" placeholder="Rechercher…"
+      oninput="handleSearch(this.value)"
+      onkeydown="if(event.key==='Escape') clearSearch()">
+    <span class="search-clear" id="search-clear" onclick="clearSearch()">✕</span>
+  </div>
 </div>
 
 <!-- ===== 2D CAVE VIEW ===== -->
