@@ -1176,16 +1176,18 @@ window.addEventListener('load', () => {
 // VIVINO IMAGE SEARCH
 // =====================================================================
 function searchVivino() {
-  const nom   = (document.getElementById('f-nom')?.value || '').trim();
-  const annee = (document.getElementById('f-annee')?.value || '').trim();
-  if(!nom) { showNotif('Entrez le nom du vin', true); return; }
-  const query = encodeURIComponent((nom + ' ' + annee).trim());
+  const nom     = (document.getElementById('f-nom')?.value     || '').trim();
+  const domaine = (document.getElementById('f-domaine')?.value || '').trim();
+  const annee   = (document.getElementById('f-annee')?.value   || '').trim();
+  if(!nom && !domaine) { showNotif('Entrez le nom du vin ou le producteur', true); return; }
+  const queryStr = [domaine, nom, annee].filter(Boolean).join(' ');
+  const query = encodeURIComponent(queryStr);
   const vivinoUrl = 'https://www.vivino.com/search/wines?q=' + query;
   const resultsBox = document.getElementById('vivino-results');
   const gridEl     = document.getElementById('vivino-grid');
   resultsBox.style.display = 'block';
   gridEl.innerHTML = `<div style="color:var(--text2);font-size:0.88rem;line-height:2">
-    <a href="${vivinoUrl}" target="_blank" rel="noopener" style="display:inline-block;margin-bottom:12px;padding:8px 18px;background:var(--wine);color:var(--cream);text-decoration:none;border-radius:2px;font-size:0.95rem;letter-spacing:1px">🍇 Ouvrir Vivino — ${(nom + ' ' + annee).trim()}</a><br>
+    <a href="${vivinoUrl}" target="_blank" rel="noopener" style="display:inline-block;margin-bottom:12px;padding:8px 18px;background:var(--wine);color:var(--cream);text-decoration:none;border-radius:2px;font-size:0.95rem;letter-spacing:1px">🍇 Ouvrir Vivino — ${queryStr}</a><br>
     <span style="color:var(--cream)">1.</span> Cliquez le lien ci-dessus<br>
     <span style="color:var(--cream)">2.</span> Cliquez sur le vin voulu sur Vivino<br>
     <span style="color:var(--cream)">3.</span> Clic droit sur l'étiquette → <i>Copier l'adresse de l'image</i><br>
