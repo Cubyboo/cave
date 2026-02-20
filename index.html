@@ -432,7 +432,6 @@ const WINE_COLORS = {
   empty:        { fill:'#1a1014', stroke:'#4a3040', small:'#2a1a22' }
 };
 
-// Sauvegarde via form POST (contourne CORS)
 function saveData() {
   localStorage.setItem('caveData', JSON.stringify(wineData));
   updateHeader();
@@ -448,15 +447,21 @@ function saveData() {
     form.appendChild(input);
     document.body.appendChild(form);
     form.submit();
-    setTimeout(() => document.body.removeChild(form), 2000);
+    setTimeout(() => { if(form.parentNode) document.body.removeChild(form); }, 2000);
   } catch(e) { console.warn('Sync Google Sheets échouée', e); }
 }
 
-// Chargement via JSONP (contourne CORS)
 function loadFromSheets() {
   showNotif('Synchronisation en cours…');
   const cbName = 'caveCallback_' + Date.now();
+  const timeout = setTimeout(() => {
+    showNotif('Mode hors ligne — données locales', true);
+    delete window[cbName];
+    const s = document.getElementById('jsonp-script');
+    if(s) s.remove();
+  }, 8000);
   window[cbName] = function(data) {
+    clearTimeout(timeout);
     try {
       if(Array.isArray(data) && data.length > 0) {
         wineData = data.map(w => ({
@@ -487,10 +492,13 @@ function loadFromSheets() {
   script.id = 'jsonp-script';
   script.src = SCRIPT_URL + '?callback=' + cbName + '&t=' + Date.now();
   script.onerror = function() {
+    clearTimeout(timeout);
     showNotif('Mode hors ligne — données locales', true);
     delete window[cbName];
     this.remove();
   };
+  const old = document.getElementById('jsonp-script');
+  if(old) old.remove();
   document.head.appendChild(script);
 }
 
@@ -851,6 +859,7 @@ function openEditModal(id) {
   document.getElementById('f-prix').value        = wine.prix||'';
   document.getElementById('f-note').value        = wine.note||'';
   document.getElementById('f-notes').value       = wine.notes||'';
+  const imgField = document.getElementById('f-image'); if(imgField) imgField.value = wine.image||'';
   document.getElementById('f-cave').value        = wine.cave;
   updateEtageSelect();
   document.getElementById('f-etage').value = wine.floor;
