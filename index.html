@@ -862,11 +862,11 @@ function openEditModal(id) {
   document.getElementById('f-notes').value       = wine.notes||'';
   const imgField = document.getElementById('f-image'); if(imgField) imgField.value = wine.image||'';
   document.getElementById('f-cave').value        = wine.cave;
+  addingToSlot = {editing:String(id), cave:wine.cave, floor:wine.floor, slot:wine.slot};
   updateEtageSelect();
   document.getElementById('f-etage').value = wine.floor;
   updateSlotSelect();
   document.getElementById('f-slot').value  = wine.slot;
-  addingToSlot = {editing:id, cave:wine.cave, floor:wine.floor, slot:wine.slot};
   showNotif('Mode édition — modifiez puis validez');
 }
 
