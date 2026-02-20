@@ -313,7 +313,17 @@
   <div class="stats-grid" id="statsGrid"></div>
   <div class="charts-row">
     <div class="chart-card"><h3>Répartition par type</h3><div class="bar-chart" id="chartType"></div></div>
-    <div class="chart-card"><h3>Répartition par décennie</h3><div class="bar-chart" id="chartDecade"></div></div>
+    <div class="chart-card"><h3>Répartition par millésime</h3><div class="bar-chart" id="chartDecade"></div></div>
+  </div>
+  <div class="charts-row">
+    <div class="chart-card"><h3>Répartition par région</h3><div class="bar-chart" id="chartRegion"></div></div>
+    <div class="chart-card"><h3>Répartition par appellation</h3><div class="bar-chart" id="chartAppellation"></div></div>
+  </div>
+  <div class="charts-row" style="grid-template-columns:1fr">
+    <div class="chart-card">
+      <h3>Occupation des caves</h3>
+      <div id="chartCaves" style="display:flex;gap:40px;flex-wrap:wrap;align-items:flex-end;padding:10px 0"></div>
+    </div>
   </div>
 </div>
 
@@ -1180,34 +1190,88 @@ function renderList() {
 function renderStats() {
   const total   = wineData.length;
   const val     = wineData.reduce((s,w)=>s+(parseFloat(w.prix)||0),0);
-  const types   = {}; wineData.forEach(w=>{types[w.type]=(types[w.type]||0)+1;});
-  const decades = {}; wineData.forEach(w=>{if(w.annee){const d=Math.floor(w.annee/10)*10; decades[d]=(decades[d]||0)+1;}});
+  const avgPrix = total ? Math.round(val/total) : 0;
+  const types   = {}; wineData.forEach(w=>{ const t=w.type||'autre'; types[t]=(types[t]||0)+1; });
+  const decades = {}; wineData.forEach(w=>{ if(w.annee){ const d=Math.floor(w.annee/10)*10; decades[d]=(decades[d]||0)+1; }});
+  const regions = {}; wineData.forEach(w=>{ if(w.region){ regions[w.region]=(regions[w.region]||0)+1; }});
+  const appells = {}; wineData.forEach(w=>{ if(w.appellation){ appells[w.appellation]=(appells[w.appellation]||0)+1; }});
   const cap1    = CAVE_CONFIG[1].floors.reduce((s,f)=>s+f.slots,0);
   const cap2    = CAVE_CONFIG[2].floors.reduce((s,f)=>s+f.slots,0);
   const occ1    = wineData.filter(w=>w.cave==1).length;
   const occ2    = wineData.filter(w=>w.cave==2).length;
+
+  // Stat cards
   document.getElementById('statsGrid').innerHTML=`
     <div class="stat-card"><div class="s-val">${total}</div><div class="s-lbl">Bouteilles total</div></div>
-    <div class="stat-card"><div class="s-val" style="color:var(--green2)">${Math.round(val)}€</div><div class="s-lbl">Valeur estimée</div></div>
-    <div class="stat-card"><div class="s-val">${occ1}/${cap1}</div><div class="s-lbl">Cave 1 (${Math.round(occ1/cap1*100)||0}% remplie)</div></div>
-    <div class="stat-card"><div class="s-val">${occ2}/${cap2}</div><div class="s-lbl">Cave 2 (${Math.round(occ2/cap2*100)||0}% remplie)</div></div>`;
+    <div class="stat-card"><div class="s-val" style="color:var(--green2)">${Math.round(val).toLocaleString('fr-FR')} €</div><div class="s-lbl">Valeur estimée</div></div>
+    <div class="stat-card"><div class="s-val">${avgPrix} €</div><div class="s-lbl">Prix moyen / bouteille</div></div>
+    <div class="stat-card"><div class="s-val">${occ1+occ2}/${cap1+cap2}</div><div class="s-lbl">Taux remplissage global</div></div>`;
+
+  // Helper pour générer les barres
+  function makeBarChart(elId, data, colorFn, limit=15) {
+    const sorted = Object.entries(data).sort((a,b)=>b[1]-a[1]).slice(0,limit);
+    const maxV = Math.max(1,...sorted.map(e=>e[1]));
+    document.getElementById(elId).innerHTML = sorted.length
+      ? sorted.map(([k,v])=>`
+        <div class="bar-row">
+          <div class="bar-label" title="${k}">${k.length>14?k.slice(0,13)+'…':k}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${v/maxV*100}%;${colorFn(k)}"></div></div>
+          <div class="bar-count">${v}</div>
+        </div>`).join('')
+      : '<div style="color:var(--text2);font-style:italic;padding:10px">Aucune donnée</div>';
+  }
+
+  // Type
   const typeOrder = ['rouge','blanc','rosé','effervescent','vdn','magnum'];
   const typeNames = {rouge:'Rouge',blanc:'Blanc','rosé':'Rosé',effervescent:'Effervescent',vdn:'VDN',magnum:'Magnum'};
+  const typeColors = {rouge:'background:linear-gradient(90deg,#5a1020,#9e2a3f)',blanc:'background:linear-gradient(90deg,#7a5a10,#c9a84c)','rosé':'background:linear-gradient(90deg,#8a3050,#c06080)',effervescent:'background:linear-gradient(90deg,#204060,#5090c0)',vdn:'background:linear-gradient(90deg,#502080,#9040c0)',magnum:'background:linear-gradient(90deg,#4a2870,#9060c0)'};
   const maxT = Math.max(1,...Object.values(types));
   document.getElementById('chartType').innerHTML = typeOrder.map(t=>`
     <div class="bar-row">
       <div class="bar-label">${typeNames[t]||t}</div>
-      <div class="bar-track"><div class="bar-fill bar-fill-${t}" style="width:${((types[t]||0)/maxT*100)}%"></div></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${((types[t]||0)/maxT*100)}%;${typeColors[t]||'background:var(--wine)'}"></div></div>
       <div class="bar-count">${types[t]||0}</div>
     </div>`).join('');
+
+  // Millésime
   const decKeys = Object.keys(decades).sort();
-  const maxD    = Math.max(1,...Object.values(decades));
-  document.getElementById('chartDecade').innerHTML = decKeys.map(d=>`
-    <div class="bar-row">
-      <div class="bar-label">${d}s</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${decades[d]/maxD*100}%;background:linear-gradient(90deg,#3a1828,#9e2a3f)"></div></div>
-      <div class="bar-count">${decades[d]}</div>
-    </div>`).join('') || '<div style="color:var(--text2);font-style:italic;padding:10px">Aucune année renseignée</div>';
+  const maxD = Math.max(1,...Object.values(decades));
+  document.getElementById('chartDecade').innerHTML = decKeys.length
+    ? decKeys.map(d=>`
+      <div class="bar-row">
+        <div class="bar-label">${d}s</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${decades[d]/maxD*100}%;background:linear-gradient(90deg,#3a1828,#9e2a3f)"></div></div>
+        <div class="bar-count">${decades[d]}</div>
+      </div>`).join('')
+    : '<div style="color:var(--text2);font-style:italic;padding:10px">Aucune année renseignée</div>';
+
+  // Région
+  makeBarChart('chartRegion', regions, ()=>'background:linear-gradient(90deg,#1a3a2a,#2d7a4e)');
+
+  // Appellation (top 15)
+  makeBarChart('chartAppellation', appells, ()=>'background:linear-gradient(90deg,#2a1a3a,#6040a0)', 15);
+
+  // Caves occupation
+  document.getElementById('chartCaves').innerHTML = [
+    {label:'Cave 1', occ:occ1, cap:cap1, color:'#9e2a3f'},
+    {label:'Cave 2', occ:occ2, cap:cap2, color:'#c9a84c'}
+  ].map(c=>{
+    const pct = Math.round(c.occ/c.cap*100)||0;
+    return `<div style="text-align:center;min-width:160px">
+      <div style="position:relative;width:120px;height:120px;margin:0 auto">
+        <svg viewBox="0 0 36 36" style="width:120px;height:120px;transform:rotate(-90deg)">
+          <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--bg3)" stroke-width="3"/>
+          <circle cx="18" cy="18" r="15.9" fill="none" stroke="${c.color}" stroke-width="3"
+            stroke-dasharray="${pct} ${100-pct}" stroke-dashoffset="0" stroke-linecap="round"/>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div style="font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--cream)">${pct}%</div>
+          <div style="font-size:0.7rem;color:var(--text2)">${c.occ}/${c.cap}</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;color:var(--text2);font-size:0.85rem;letter-spacing:1px">${c.label}</div>
+    </div>`;
+  }).join('');
 }
 
 // =====================================================================
