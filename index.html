@@ -389,6 +389,7 @@
   <div class="tab" onclick="switchTab('accords',this)">🍽 Accords</div>
   <div class="tab" onclick="switchTab('stats',this)">📊 Statistiques</div>
   <div class="tab" onclick="switchTab('add',this)">➕ Ajouter</div>
+  <div class="tab" onclick="switchTab('carte',this)">🌍 Carte</div>
   <div style="flex:1"></div>
   <div class="search-wrap" style="margin:0 12px;align-self:center">
     <span class="search-icon">🔍</span>
@@ -651,6 +652,22 @@
   <div id="apogee-list"></div>
 </div>
 
+<!-- ===== CARTE DES VIGNOBLES ===== -->
+<div id="carte" class="content">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+    <h2 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem">🌍 Carte des vignobles</h2>
+    <div id="carte-legend" style="display:flex;gap:12px;flex-wrap:wrap;font-size:0.78rem;color:var(--text2)"></div>
+  </div>
+  <div style="position:relative;background:var(--bg2);border:1px solid var(--border);border-radius:4px;overflow:hidden">
+    <svg id="carte-svg" style="width:100%;display:block;cursor:grab" viewBox="0 0 1000 500"></svg>
+    <div id="carte-tooltip" style="display:none;position:absolute;background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:10px 14px;pointer-events:none;z-index:10;min-width:180px;box-shadow:0 4px 16px rgba(0,0,0,0.4)"></div>
+  </div>
+  <div style="margin-top:16px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:16px">
+    <div id="carte-region-title" style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1rem;margin-bottom:12px">Cliquez sur un point pour voir les vins</div>
+    <div id="carte-region-list"></div>
+  </div>
+</div>
+
 <!-- MODAL DEPLACEMENT -->
 <div class="modal-overlay" id="modalDeplacer">
   <div class="modal" style="max-width:480px">
@@ -885,6 +902,7 @@ function switchTab(id, el) {
   if(id==='stats') renderStats();
   if(id==='accords') populateVinSelect();
   if(id==='apogee') renderApogee('tous');
+  if(id==='carte') renderCarte();
   if(id==='add')   updateEtageSelect();
   if(id==='view2d') renderCave2D();
 }
@@ -2716,6 +2734,276 @@ function mobileBubbleOpenFiche() {
     lastTapTime = Date.now() + 2000; // bloquer les taps pendant 2s
     setTimeout(() => { bubble.style.display = 'none'; openSlotModal(c, f, s); }, 260);
   }
+}
+
+
+// =====================================================================
+// CARTE DES VIGNOBLES
+// =====================================================================
+
+// Coordonnées des régions viticoles (projection simple lon/lat → x/y sur viewBox 1000x500)
+// Projection: x = (lon + 180) / 360 * 1000, y = (90 - lat) / 180 * 500
+function lonLatToXY(lon, lat) {
+  return {
+    x: (lon + 180) / 360 * 1000,
+    y: (90 - lat) / 180 * 500
+  };
+}
+
+const REGIONS_CARTE = [
+  // France
+  { key: "Bourgogne",         lon: 4.8,   lat: 47.0,  label: "Bourgogne" },
+  { key: "Jura",              lon: 5.7,   lat: 46.7,  label: "Jura" },
+  { key: "Bordeaux",          lon: -0.5,  lat: 44.8,  label: "Bordeaux" },
+  { key: "Champagne",         lon: 4.0,   lat: 49.0,  label: "Champagne" },
+  { key: "Alsace",            lon: 7.4,   lat: 48.2,  label: "Alsace" },
+  { key: "Rhône",             lon: 4.9,   lat: 45.1,  label: "Rhône" },
+  { key: "Loire",             lon: 0.5,   lat: 47.4,  label: "Loire" },
+  { key: "Provence",          lon: 5.9,   lat: 43.5,  label: "Provence" },
+  { key: "Languedoc",         lon: 3.5,   lat: 43.6,  label: "Languedoc" },
+  { key: "Sud-Ouest",         lon: 0.6,   lat: 43.7,  label: "Sud-Ouest" },
+  { key: "Savoie",            lon: 6.1,   lat: 45.6,  label: "Savoie" },
+  { key: "Roussillon",        lon: 2.8,   lat: 42.7,  label: "Roussillon" },
+  { key: "Corse",             lon: 9.1,   lat: 42.2,  label: "Corse" },
+  // Portugal
+  { key: "Porto",             lon: -8.0,  lat: 41.1,  label: "Porto / Douro" },
+  { key: "Douro",             lon: -7.5,  lat: 41.2,  label: "Douro" },
+  { key: "Alentejo",          lon: -7.9,  lat: 38.5,  label: "Alentejo" },
+  // Espagne
+  { key: "Rioja",             lon: -2.4,  lat: 42.5,  label: "Rioja" },
+  { key: "Ribera del Duero",  lon: -3.8,  lat: 41.6,  label: "Ribera del Duero" },
+  { key: "Priorat",           lon: 0.8,   lat: 41.2,  label: "Priorat" },
+  // Italie
+  { key: "Toscane",           lon: 11.2,  lat: 43.4,  label: "Toscane" },
+  { key: "Piedmont",          lon: 8.0,   lat: 44.7,  label: "Piémont" },
+  { key: "Veneto",            lon: 11.5,  lat: 45.4,  label: "Vénétie" },
+  { key: "Sicile",            lon: 14.2,  lat: 37.6,  label: "Sicile" },
+  // Allemagne
+  { key: "Moselle",           lon: 7.0,   lat: 50.0,  label: "Moselle" },
+  { key: "Rhin",              lon: 8.3,   lat: 49.8,  label: "Rhin" },
+  // Monde
+  { key: "Napa Valley",       lon: -122.3, lat: 38.5, label: "Napa Valley" },
+  { key: "Mendoza",           lon: -68.8,  lat: -32.9,label: "Mendoza" },
+  { key: "Barossa Valley",    lon: 138.9,  lat: -34.5,label: "Barossa" },
+  { key: "Cape Winelands",    lon: 18.9,   lat: -33.9,label: "Cap (ZA)" },
+  { key: "Marlborough",       lon: 173.9,  lat: -41.5,label: "Marlborough" },
+  { key: "Douro",             lon: -7.5,   lat: 41.2, label: "Douro" },
+];
+
+// Correspondance région vin → clé carte
+const REGION_MAP = {
+  "bourgogne": "Bourgogne", "burgundy": "Bourgogne",
+  "jura": "Jura",
+  "bordeaux": "Bordeaux",
+  "champagne": "Champagne",
+  "alsace": "Alsace",
+  "rhône": "Rhône", "rhone": "Rhône", "côtes du rhône": "Rhône",
+  "loire": "Loire",
+  "provence": "Provence",
+  "languedoc": "Languedoc", "languedoc-roussillon": "Languedoc",
+  "sud-ouest": "Sud-Ouest", "sud ouest": "Sud-Ouest",
+  "savoie": "Savoie",
+  "roussillon": "Roussillon",
+  "corse": "Corse",
+  "porto": "Porto", "port": "Porto", "douro": "Douro",
+  "alentejo": "Alentejo",
+  "rioja": "Rioja",
+  "ribera del duero": "Ribera del Duero",
+  "priorat": "Priorat",
+  "toscane": "Toscane", "tuscany": "Toscane", "chianti": "Toscane",
+  "piémont": "Piedmont", "piemont": "Piedmont", "barolo": "Piedmont",
+  "veneto": "Veneto", "vénétie": "Veneto", "soave": "Veneto",
+  "sicile": "Sicile",
+  "moselle": "Moselle",
+  "rhin": "Rhin",
+  "napa": "Napa Valley", "californie": "Napa Valley",
+  "mendoza": "Mendoza", "argentine": "Mendoza",
+  "barossa": "Barossa Valley", "australie": "Barossa Valley",
+  "afrique du sud": "Cape Winelands",
+  "nouvelle-zélande": "Marlborough", "marlborough": "Marlborough",
+};
+
+const TYPE_COLORS_CARTE = {
+  rouge: '#9e2a3f', blanc: '#c9a84c', "rosé": '#c06080',
+  effervescent: '#5090c0', vdn: '#9040c0', magnum: '#9060c0'
+};
+
+function getRegionKey(wine) {
+  const r = (wine.region || '').toLowerCase().trim();
+  if(REGION_MAP[r]) return REGION_MAP[r];
+  // Cherche partielle
+  for(const [k, v] of Object.entries(REGION_MAP)) {
+    if(r.includes(k) || k.includes(r)) return v;
+  }
+  return null;
+}
+
+let carteSelectedRegion = null;
+
+function renderCarte() {
+  const svg = document.getElementById('carte-svg');
+  if(!svg) return;
+
+  // Grouper les vins par région carte
+  const regionData = {};
+  wineData.forEach(w => {
+    const key = getRegionKey(w);
+    if(!key) return;
+    if(!regionData[key]) regionData[key] = [];
+    regionData[key].push(w);
+  });
+
+  // Fond de carte mondial simplifié (SVG path simplifié des continents)
+  let html = `
+    <rect width="1000" height="500" fill="#0d1520"/>
+    <!-- Océans -->
+    <rect width="1000" height="500" fill="#0d1520"/>
+    <!-- Continents simplifiés -->
+    <!-- Europe -->
+    <path d="M420,95 L480,85 L510,90 L530,100 L520,120 L490,125 L470,115 L440,118 L425,108 Z" fill="#1a2535" stroke="#263040" stroke-width="0.5"/>
+    <!-- France détail -->
+    <path d="M430,115 L460,108 L475,112 L480,125 L468,135 L450,138 L435,130 L428,120 Z" fill="#1e2d3d" stroke="#2a3d50" stroke-width="0.8"/>
+    <!-- Ibérique -->
+    <path d="M400,120 L432,115 L430,138 L415,148 L398,140 Z" fill="#1a2535" stroke="#263040" stroke-width="0.5"/>
+    <!-- Italie -->
+    <path d="M480,118 L498,115 L505,130 L500,155 L490,160 L482,145 L478,130 Z" fill="#1a2535" stroke="#263040" stroke-width="0.5"/>
+    <!-- Allemagne/Europe centrale -->
+    <path d="M475,100 L520,95 L525,115 L510,120 L480,118 Z" fill="#1a2535" stroke="#263040" stroke-width="0.5"/>
+    <!-- Afrique -->
+    <path d="M435,170 L510,165 L530,200 L515,270 L480,290 L450,275 L435,240 L428,200 Z" fill="#1a2535" stroke="#263040" stroke-width="0.5"/>
+    <!-- Amériques -->
+    <path d="M155,80 L220,75 L240,100 L235,160 L220,200 L200,220 L185,200 L175,160 L160,120 Z" fill="#1a2535" stroke="#263040" stroke-width="0.5"/>
+    <path d="M185,210 L220,205 L235,240 L225,300 L205,320 L185,300 L178,260 Z" fill="#1a2535" stroke="#263040" stroke-width="0.5"/>
+    <!-- Australie -->
+    <path d="M760,270 L830,265 L850,290 L840,330 L800,340 L770,325 L755,300 Z" fill="#1a2535" stroke="#263040" stroke-width="0.5"/>
+    <!-- Nouvelle Zélande -->
+    <path d="M870,305 L882,298 L888,315 L878,328 L868,318 Z" fill="#1a2535" stroke="#263040" stroke-width="0.5"/>
+    <!-- Asie -->
+    <path d="M525,85 L700,70 L740,90 L730,140 L680,155 L600,145 L540,130 L520,110 Z" fill="#1a2535" stroke="#263040" stroke-width="0.5"/>
+  `;
+
+  // Grille de latitude/longitude légère
+  for(let lon = -180; lon <= 180; lon += 30) {
+    const x = (lon + 180) / 360 * 1000;
+    html += `<line x1="${x}" y1="0" x2="${x}" y2="500" stroke="#1a2535" stroke-width="0.3"/>`;
+  }
+  for(let lat = -90; lat <= 90; lat += 30) {
+    const y = (90 - lat) / 180 * 500;
+    html += `<line x1="0" y1="${y}" x2="1000" y2="${y}" stroke="#1a2535" stroke-width="0.3"/>`;
+  }
+
+  // Points des régions
+  REGIONS_CARTE.forEach(reg => {
+    const wines = regionData[reg.key] || [];
+    const count = wines.length;
+    if(count === 0) return;
+
+    const pos  = lonLatToXY(reg.lon, reg.lat);
+    const r    = Math.max(8, Math.min(28, 8 + count * 1.8));
+
+    // Couleur dominante
+    const typeCount = {};
+    wines.forEach(w => { typeCount[w.type] = (typeCount[w.type]||0) + 1; });
+    const dominantType = Object.entries(typeCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'rouge';
+    const color = TYPE_COLORS_CARTE[dominantType] || '#9e2a3f';
+
+    const isSelected = carteSelectedRegion === reg.key;
+
+    html += `
+      <circle cx="${pos.x}" cy="${pos.y}" r="${r+4}" fill="${color}" opacity="0.15"/>
+      <circle cx="${pos.x}" cy="${pos.y}" r="${r}" fill="${color}" opacity="${isSelected ? 1 : 0.85}"
+        stroke="${isSelected ? '#fff' : color}" stroke-width="${isSelected ? 2 : 1}"
+        style="cursor:pointer" class="carte-point"
+        data-region="${reg.key}" data-label="${reg.label}"
+        onclick="selectCarteRegion('${reg.key}','${reg.label}')"/>
+      <text x="${pos.x}" y="${pos.y - r - 4}" text-anchor="middle"
+        font-size="9" fill="rgba(255,255,255,0.7)" style="pointer-events:none">${reg.label}</text>
+      <text x="${pos.x}" y="${pos.y + 4}" text-anchor="middle"
+        font-size="${r > 14 ? 10 : 8}" fill="white" font-weight="bold" style="pointer-events:none">${count}</text>
+    `;
+  });
+
+  svg.innerHTML = html;
+
+  // Tooltip au survol
+  svg.querySelectorAll('.carte-point').forEach(el => {
+    el.addEventListener('mouseenter', (e) => {
+      const key   = el.dataset.region;
+      const label = el.dataset.label;
+      const wines = regionData[key] || [];
+      const tt    = document.getElementById('carte-tooltip');
+      const typeCount = {};
+      wines.forEach(w => { typeCount[w.type] = (typeCount[w.type]||0)+1; });
+      tt.innerHTML = `
+        <div style="font-family:'Playfair Display',serif;color:var(--gold);margin-bottom:6px">${label}</div>
+        <div style="color:var(--cream);font-size:0.9rem">${wines.length} bouteille${wines.length>1?'s':''}</div>
+        <div style="color:var(--text2);font-size:0.78rem;margin-top:4px">${Object.entries(typeCount).map(([t,n])=>`${n} ${t}`).join(' · ')}</div>
+        <div style="color:var(--text2);font-size:0.72rem;margin-top:4px">Cliquer pour voir les vins</div>`;
+      tt.style.display = 'block';
+      const rect = svg.getBoundingClientRect();
+      const px = e.clientX - rect.left + 14;
+      const py = e.clientY - rect.top  - 10;
+      tt.style.left = Math.min(px, rect.width - 200) + 'px';
+      tt.style.top  = Math.max(10, py) + 'px';
+    });
+    el.addEventListener('mouseleave', () => {
+      document.getElementById('carte-tooltip').style.display = 'none';
+    });
+  });
+
+  // Légende
+  const typesSeen = [...new Set(wineData.map(w=>w.type).filter(Boolean))];
+  document.getElementById('carte-legend').innerHTML = typesSeen.map(t => `
+    <div style="display:flex;align-items:center;gap:5px">
+      <span style="width:10px;height:10px;border-radius:50%;background:${TYPE_COLORS_CARTE[t]||'#888'};display:inline-block"></span>
+      <span style="text-transform:capitalize">${t}</span>
+    </div>`).join('');
+
+  // Si région déjà sélectionnée
+  if(carteSelectedRegion) selectCarteRegion(carteSelectedRegion, REGIONS_CARTE.find(r=>r.key===carteSelectedRegion)?.label||carteSelectedRegion);
+}
+
+function selectCarteRegion(key, label) {
+  carteSelectedRegion = key;
+
+  // Trouver les vins de cette région
+  const wines = wineData.filter(w => getRegionKey(w) === key);
+
+  document.getElementById('carte-region-title').textContent = `${label} — ${wines.length} bouteille${wines.length!==1?'s':''}`;
+
+  if(!wines.length) {
+    document.getElementById('carte-region-list').innerHTML = '<div style="color:var(--text2);font-style:italic">Aucun vin de cette région dans votre cave</div>';
+    return;
+  }
+
+  // Grouper par appellation
+  const byApp = {};
+  wines.forEach(w => {
+    const app = w.appellation || 'Sans appellation';
+    if(!byApp[app]) byApp[app] = [];
+    byApp[app].push(w);
+  });
+
+  document.getElementById('carte-region-list').innerHTML = Object.entries(byApp)
+    .sort((a,b) => b[1].length - a[1].length)
+    .map(([app, ws]) => `
+      <div style="margin-bottom:14px">
+        <div style="font-size:0.75rem;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">${app} <span style="color:var(--gold)">(${ws.length})</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          ${ws.map(w => `
+            <div onclick="openSlotModal(${w.cave},${w.floor},${w.slot})"
+              style="display:flex;gap:8px;align-items:center;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;cursor:pointer;min-width:180px;flex:1;max-width:260px">
+              ${w.image ? `<img src="${w.image}" style="width:28px;height:40px;object-fit:contain;border-radius:2px;flex-shrink:0">` : `<span style="font-size:1rem;flex-shrink:0">🍷</span>`}
+              <div style="min-width:0">
+                <div style="color:var(--cream);font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${w.nom||'—'}</div>
+                <div style="color:var(--text2);font-size:0.75rem">${w.annee||''} ${w.domaine ? '· '+w.domaine : ''}</div>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>`).join('');
+
+  // Re-render pour mettre à jour la sélection visuelle
+  renderCarte();
 }
 
 </script>
