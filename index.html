@@ -804,8 +804,8 @@ function openSlotModal(cave, floor, slot) {
           </div>
           ${wine.notes?`<div style="color:var(--text2);font-style:italic;margin-bottom:16px;line-height:1.6;font-size:0.95rem">"${wine.notes}"</div>`:''}
           <div class="modal-actions">
-            <button class="btn-outline" onclick="openEditModal('${wine.id}')">✏ Modifier</button>
-            <button class="btn-danger"  onclick="removeWine('${wine.id}')">🗑 Retirer</button>
+            <button class="btn-outline" data-edit-id="${wine.id}" onclick="openEditModal(this.dataset.editId)">✏ Modifier</button>
+            <button class="btn-danger"  data-rm-id="${wine.id}"   onclick="removeWine(this.dataset.rmId)">🗑 Retirer</button>
             <button class="btn-wine"    onclick="closeModal('modalSlot')">Fermer</button>
           </div>
         </div>
