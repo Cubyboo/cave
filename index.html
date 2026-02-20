@@ -7,9 +7,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #18100f;
-    --bg2: #221518;
-    --bg3: #2c1c20;
+    --bg: #0a0608;
+    --bg2: #110c0e;
+    --bg3: #1a1214;
     --wine: #7b1c2e;
     --wine2: #9e2a3f;
     --wine3: #c4364f;
@@ -98,7 +98,7 @@
     border: 1px solid var(--gold);
     padding: 12px 16px; border-radius: 3px;
     font-size: 0.84rem; pointer-events: none;
-    display: none; z-index: 999; max-width: 220px;
+    display: none; z-index: 999; max-width: 300px;
     box-shadow: 0 4px 24px rgba(0,0,0,0.9);
   }
   #tooltip .tt-name { font-family: 'Playfair Display', serif; color: var(--gold); margin-bottom: 4px; font-size: 0.95rem; }
@@ -108,14 +108,9 @@
   /* Modal */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 200; align-items: center; justify-content: center; }
   .modal-overlay.open { display: flex; }
-  .modal { background: var(--bg2); border: 1px solid var(--border); padding: 32px; width: 780px; max-width: 96vw; border-radius: 4px; position: relative; max-height: 90vh; overflow-y: auto; }
+  .modal { background: var(--bg2); border: 1px solid var(--border); padding: 32px; width: 480px; max-width: 96vw; border-radius: 4px; position: relative; max-height: 90vh; overflow-y: auto; }
   .modal h2 { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 1.35rem; margin-bottom: 18px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
   .modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; color: var(--text2); font-size: 1.4rem; cursor: pointer; }
-  .modal-layout { display: flex; gap: 24px; align-items: flex-start; }
-  .modal-image-col { flex-shrink: 0; width: 160px; }
-  .modal-image-col img { width: 160px; height: 220px; object-fit: cover; border-radius: 3px; border: 1px solid var(--border); display: block; }
-  .modal-image-placeholder { width: 160px; height: 220px; background: var(--bg3); border: 1px dashed var(--border); border-radius: 3px; display: flex; align-items: center; justify-content: center; color: var(--text2); font-size: 0.75rem; text-align: center; padding: 10px; line-height: 1.5; }
-  .modal-content-col { flex: 1; min-width: 0; }
   .form-row { margin-bottom: 13px; }
   .form-row label { display: block; font-size: 0.78rem; color: var(--text2); letter-spacing: 1px; margin-bottom: 4px; text-transform: uppercase; }
   .form-row input, .form-row select, .form-row textarea {
@@ -349,10 +344,6 @@
       <div class="form-row form-full">
         <label>Notes personnelles</label>
         <textarea id="f-notes" rows="3" placeholder="Arômes, accords mets-vins, occasion..."></textarea>
-      </div>
-      <div class="form-row form-full">
-        <label>Photo étiquette (URL)</label>
-        <input type="text" id="f-image" placeholder="https://... lien direct vers une image">
       </div>
     </div>
     <div style="margin-top:20px">
@@ -711,7 +702,8 @@ function renderCave2D() {
       if(wine) {
         document.getElementById('tt-name').textContent = wine.nom;
         document.getElementById('tt-info').innerHTML =
-          `<span class="type-badge badge-${wine.type}" style="font-size:0.7rem">${TYPE_LABELS[wine.type]||wine.type}</span>
+          `${wine.image ? `<img src="${wine.image}" style="width:100%;height:120px;object-fit:cover;border-radius:2px;margin-bottom:6px;display:block;" onerror="this.style.display='none'">` : ''}
+          <span class="type-badge badge-${wine.type}" style="font-size:0.7rem">${TYPE_LABELS[wine.type]||wine.type}</span>
           ${wine.appellation ? `<br><i>${wine.appellation}</i>` : ''}
           <br>${wine.annee||'—'} · ${wine.region||'—'}
           ${wine.prix ? `<br>${wine.prix} €` : ''}
@@ -751,34 +743,25 @@ function openSlotModal(cave, floor, slot) {
     const tLabel = TYPE_LABELS[wine.type] || wine.type;
     const fLabel = FORMAT_LABELS[wine.format] || (wine.format||'75 cl');
     body.innerHTML = `
-      <div class="modal-layout">
-        <div class="modal-image-col">
-          ${wine.image
-            ? `<img src="${wine.image}" alt="Étiquette ${wine.nom}" onerror="this.parentNode.innerHTML='<div class=\'modal-image-placeholder\'>Image non disponible</div>'">`
-            : `<div class="modal-image-placeholder">🍷<br>Pas d'étiquette<br><small>Ajoutez une URL image</small></div>`}
+      <div class="modal-info-panel">
+        <div class="info-cell" style="grid-column:1/-1">
+          <div class="lbl">Nom</div>
+          <div class="val" style="font-size:1.15rem">${wine.nom}</div>
+          ${wine.appellation?`<div style="font-size:0.85rem;color:var(--text2);font-style:italic;margin-top:2px">${wine.appellation}</div>`:''}
         </div>
-        <div class="modal-content-col">
-          <div class="modal-info-panel">
-            <div class="info-cell" style="grid-column:1/-1">
-              <div class="lbl">Nom</div>
-              <div class="val" style="font-size:1.15rem">${wine.nom}</div>
-              ${wine.appellation?`<div style="font-size:0.85rem;color:var(--text2);font-style:italic;margin-top:2px">${wine.appellation}</div>`:''}
-            </div>
-            <div class="info-cell"><div class="lbl">Type</div><div class="val"><span class="type-badge badge-${wine.type}">${tLabel}</span></div></div>
-            <div class="info-cell"><div class="lbl">Format</div><div class="val"><span class="format-badge">${fLabel}</span></div></div>
-            <div class="info-cell"><div class="lbl">Millésime</div><div class="val">${wine.annee||'—'}</div></div>
-            <div class="info-cell"><div class="lbl">Prix</div><div class="val">${wine.prix?wine.prix+'€':'—'}</div></div>
-            <div class="info-cell"><div class="lbl">Domaine</div><div class="val">${wine.domaine||'—'}</div></div>
-            <div class="info-cell"><div class="lbl">Région</div><div class="val">${wine.region||'—'}</div></div>
-            <div class="info-cell"><div class="lbl">Note</div><div class="val rating-stars" style="font-size:1rem">${stars}</div></div>
-          </div>
-          ${wine.notes?`<div style="color:var(--text2);font-style:italic;margin-bottom:16px;line-height:1.6;font-size:0.95rem">"${wine.notes}"</div>`:''}
-          <div class="modal-actions">
-            <button class="btn-outline" onclick="openEditModal('${wine.id}')">✏ Modifier</button>
-            <button class="btn-danger"  onclick="removeWine('${wine.id}')">🗑 Retirer</button>
-            <button class="btn-wine"    onclick="closeModal('modalSlot')">Fermer</button>
-          </div>
-        </div>
+        <div class="info-cell"><div class="lbl">Type</div><div class="val"><span class="type-badge badge-${wine.type}">${tLabel}</span></div></div>
+        <div class="info-cell"><div class="lbl">Format</div><div class="val"><span class="format-badge">${fLabel}</span></div></div>
+        <div class="info-cell"><div class="lbl">Millésime</div><div class="val">${wine.annee||'—'}</div></div>
+        <div class="info-cell"><div class="lbl">Prix</div><div class="val">${wine.prix?wine.prix+'€':'—'}</div></div>
+        <div class="info-cell"><div class="lbl">Domaine</div><div class="val">${wine.domaine||'—'}</div></div>
+        <div class="info-cell"><div class="lbl">Région</div><div class="val">${wine.region||'—'}</div></div>
+        <div class="info-cell"><div class="lbl">Note</div><div class="val rating-stars" style="font-size:1rem">${stars}</div></div>
+      </div>
+      ${wine.notes?`<div style="color:var(--text2);font-style:italic;margin-bottom:16px;line-height:1.6;font-size:0.95rem">"${wine.notes}"</div>`:''}
+      <div class="modal-actions">
+        <button class="btn-outline" onclick="openEditModal('${wine.id}')">✏ Modifier</button>
+        <button class="btn-danger"  onclick="removeWine('${wine.id}')">🗑 Retirer</button>
+        <button class="btn-wine"    onclick="closeModal('modalSlot')">Fermer</button>
       </div>`;
   } else {
     body.innerHTML = `
@@ -817,9 +800,9 @@ function openEditModal(id) {
   const wine = wineData.find(w=>w.id===id);
   if(!wine) return;
   closeModal('modalSlot');
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===3));
-  document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
-  document.getElementById('add').classList.add('active');
+  // Basculer proprement sur l'onglet Ajouter via switchTab
+  const tabAdd = document.querySelectorAll('.tab')[3];
+  switchTab('add', tabAdd);
   document.getElementById('f-nom').value         = wine.nom;
   document.getElementById('f-appellation').value = wine.appellation||'';
   document.getElementById('f-domaine').value     = wine.domaine||'';
@@ -912,12 +895,11 @@ function addWine() {
     prix:        document.getElementById('f-prix').value,
     note:        document.getElementById('f-note').value,
     notes:       document.getElementById('f-notes').value.trim(),
-    image:       document.getElementById('f-image').value.trim(),
     cave:  parseInt(cave), floor: parseInt(floor), slot: parseInt(slot),
     dateAjout: new Date().toISOString().split('T')[0]
   });
   saveData(); addingToSlot = null;
-  ['f-nom','f-appellation','f-domaine','f-region','f-annee','f-prix','f-notes','f-image'].forEach(id=>document.getElementById(id).value='');
+  ['f-nom','f-appellation','f-domaine','f-region','f-annee','f-prix','f-notes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-note').value='';
   document.getElementById('f-type').value='rouge';
   document.getElementById('f-format').value='75cl';
