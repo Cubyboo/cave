@@ -1175,68 +1175,22 @@ window.addEventListener('load', () => {
 // =====================================================================
 // VIVINO IMAGE SEARCH
 // =====================================================================
-async function searchVivino() {
-  const nom   = (document.getElementById('f-nom')?.value   || document.getElementById('edit-nom')?.value   || '').trim();
-  const annee = (document.getElementById('f-annee')?.value || document.getElementById('edit-annee')?.value || '').trim();
+function searchVivino() {
+  const nom   = (document.getElementById('f-nom')?.value || '').trim();
+  const annee = (document.getElementById('f-annee')?.value || '').trim();
   if(!nom) { showNotif('Entrez le nom du vin', true); return; }
-
-  const resultsBox = document.getElementById('vivino-results');
-  const loadingEl  = document.getElementById('vivino-loading');
-  const gridEl     = document.getElementById('vivino-grid');
-  const emptyEl    = document.getElementById('vivino-empty');
-
-  resultsBox.style.display = 'block';
-  loadingEl.style.display  = 'block';
-  gridEl.innerHTML         = '';
-  emptyEl.style.display    = 'none';
-
   const query = encodeURIComponent((nom + ' ' + annee).trim());
-  const url   = `https://www.vivino.com/api/wines/search?q=${query}&language=fr&limit=12`;
-
-  try {
-    const res  = await fetch(url, { headers: { 'Accept': 'application/json' } });
-    const json = await res.json();
-    const wines = json?.explore_vintage?.matches || [];
-
-    loadingEl.style.display = 'none';
-
-    if(!wines.length) {
-      emptyEl.style.display = 'block';
-      return;
-    }
-
-    wines.forEach(match => {
-      const vintage = match.vintage;
-      if(!vintage) return;
-      const wine    = vintage.wine || {};
-      const imgPath = vintage.image?.location || wine.image?.location || '';
-      if(!imgPath) return;
-
-      const imgUrl  = 'https://images.vivino.com/thumbs/' + imgPath + '_300x400.jpg';
-      const label   = (wine.name || '') + (vintage.year ? ' ' + vintage.year : '');
-
-      const card = document.createElement('div');
-      card.style.cssText = 'cursor:pointer;text-align:center;border:1px solid transparent;border-radius:3px;padding:6px;transition:border-color 0.2s';
-      card.onmouseover = () => card.style.borderColor = 'var(--gold)';
-      card.onmouseout  = () => card.style.borderColor = 'transparent';
-      card.innerHTML   = `
-        <img src="${imgUrl}" alt="${label}" style="width:60px;height:90px;object-fit:contain;border-radius:2px" onerror="this.parentElement.style.display='none'">
-        <div style="font-size:0.65rem;color:var(--text2);margin-top:4px;line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${label}</div>`;
-      card.onclick = () => {
-        document.getElementById('f-image').value = imgUrl;
-        resultsBox.style.display = 'none';
-        showNotif('Étiquette sélectionnée ✓');
-      };
-      gridEl.appendChild(card);
-    });
-
-    if(!gridEl.children.length) emptyEl.style.display = 'block';
-
-  } catch(err) {
-    loadingEl.style.display = 'none';
-    emptyEl.style.display   = 'block';
-    emptyEl.textContent     = 'Erreur réseau — vérifiez votre connexion';
-  }
+  const vivinoUrl = 'https://www.vivino.com/search/wines?q=' + query;
+  const resultsBox = document.getElementById('vivino-results');
+  const gridEl     = document.getElementById('vivino-grid');
+  resultsBox.style.display = 'block';
+  gridEl.innerHTML = `<div style="color:var(--text2);font-size:0.88rem;line-height:2">
+    <a href="${vivinoUrl}" target="_blank" rel="noopener" style="display:inline-block;margin-bottom:12px;padding:8px 18px;background:var(--wine);color:var(--cream);text-decoration:none;border-radius:2px;font-size:0.95rem;letter-spacing:1px">🍇 Ouvrir Vivino — ${(nom + ' ' + annee).trim()}</a><br>
+    <span style="color:var(--cream)">1.</span> Cliquez le lien ci-dessus<br>
+    <span style="color:var(--cream)">2.</span> Cliquez sur le vin voulu sur Vivino<br>
+    <span style="color:var(--cream)">3.</span> Clic droit sur l'étiquette → <i>Copier l'adresse de l'image</i><br>
+    <span style="color:var(--cream)">4.</span> Collez l'URL dans le champ ci-dessus
+  </div>`;
 }
 
 </script>
