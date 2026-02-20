@@ -685,7 +685,7 @@
     <div style="position:absolute;bottom:8px;right:10px;color:rgba(255,255,255,0.3);font-size:0.7rem">Molette pour zoomer · Glisser pour déplacer</div>
   </div>
   <div style="margin-top:14px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:16px">
-    <div id="carte-region-title" style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1rem;margin-bottom:12px">Cliquez sur un point pour voir les vins</div>
+    <div id="carte-region-title" style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1rem;margin-bottom:12px">Cliquez sur une région pour explorer</div>
     <div id="carte-region-list"></div>
   </div>
 </div>
@@ -3076,11 +3076,13 @@ function renderCarte() {
       const countries = topojson.feature(topo, topo.objects.countries);
       const wineCountryIds = new Set([250,724,620,380,276,756,40,348,528,56,300,100,642,191,705,498,642,616,203,703,826,372,208,578,752,688,807,792,20,442,233,428,440]);
       
-      // Fond de mer / hors Europe
+      // Fond de mer / hors Europe — clic pour désélectionner
       g.append('rect')
         .attr('width', carteW * 10).attr('height', carteH * 10)
         .attr('x', -carteW * 4).attr('y', -carteH * 4)
-        .attr('fill', '#0d1a2a');
+        .attr('fill', '#0d1a2a')
+        .style('cursor','default')
+        .on('click', clearCarteRegion);
       
       // Pays non-viticoles (fond gris)
       g.selectAll('.country-other')
@@ -3090,23 +3092,49 @@ function renderCarte() {
         .attr('d', cartePath)
         .attr('fill', '#111e2b')
         .attr('stroke', '#1a2d3d')
-        .attr('stroke-width', 0.3);
+        .attr('stroke-width', 0.3)
+        .style('cursor','default')
+        .on('click', clearCarteRegion);
       
       // Pays viticoles (fond légèrement plus clair)
+      // Couleurs vertes pour tous les pays viticoles (comme la France)
+      // IDs: 250=France, 724=Espagne, 620=Portugal, 380=Italie, 276=Allemagne,
+      //      756=Suisse, 40=Autriche, 348=Hongrie, 300=Grèce, 642=Roumanie,
+      //      100=Bulgarie, 191=Croatie, 705=Slovénie, 498=Moldavie, 616=Pologne,
+      //      203=Rép.Tchèque, 703=Slovaquie, 826=UK, 372=Irlande, 208=Danemark,
+      //      578=Norvège, 752=Suède, 688=Serbie, 807=Macédoine, 792=Turquie,
+      //      20=Andorre, 442=Luxembourg, 233=Estonie, 428=Lettonie, 440=Lituanie
       const countryColors = {
-        250:'#162412', 724:'#162014', 620:'#162014', 380:'#141828',
-        276:'#121a28', 756:'#141828', 40:'#141828', 348:'#141828',
-        300:'#141828', 642:'#141828', 100:'#141828', 191:'#141828',
-        705:'#141828', 498:'#141828', 616:'#141828', 203:'#121a28', 703:'#121a28'
+        250:'#172812', // France - vert profond
+        724:'#182612', // Espagne - vert olive
+        620:'#162512', // Portugal - vert forêt
+        380:'#172210', // Italie - vert sombre
+        276:'#151e10', // Allemagne - vert ardoise
+        40: '#131d10',  // Autriche - vert ardoise
+        348:'#161e0f',  // Hongrie - vert mousse
+        300:'#141e0f',  // Grèce - vert olive foncé
+        756:'#141c0e',  // Suisse - vert neutre
+        191:'#131b0e',  // Croatie
+        705:'#131b0e',  // Slovénie
+        100:'#121a0e',  // Bulgarie
+        642:'#121a0e',  // Roumanie
+        498:'#121a0e',  // Moldavie
+        703:'#121a0e',  // Slovaquie
+        203:'#121a0e',  // Rép.Tchèque
+        688:'#121a0e',  // Serbie
+        807:'#121a0e',  // Macédoine
+        792:'#131a0e',  // Turquie
       };
       g.selectAll('.country-wine')
         .data(countries.features.filter(f => wineCountryIds.has(parseInt(f.id))))
         .enter().append('path')
         .attr('class','country-wine')
         .attr('d', cartePath)
-        .attr('fill', f => countryColors[parseInt(f.id)] || '#141828')
-        .attr('stroke', '#253545')
-        .attr('stroke-width', 0.5);
+        .attr('fill', f => countryColors[parseInt(f.id)] || '#131a0e')
+        .attr('stroke', '#1e3018')
+        .attr('stroke-width', 0.6)
+        .style('cursor','default')
+        .on('click', clearCarteRegion);
       
       // Frontières internes (borders)
       if(topo.objects.countries) {
@@ -3262,6 +3290,141 @@ function drawWineRegionPolygons(g) {
         .text(labelText);
     }
   });
+
+  // ── Sous-étiquettes des appellations importantes ────────────────
+  const SUB_LABELS = [
+    // Bourgogne : Côte de Nuits
+    {lon:4.96,lat:47.22,txt:"Côte de Nuits",color:"#e8c84a",size:3.8},
+    // Bourgogne : Côte de Beaune
+    {lon:4.84,lat:46.94,txt:"Côte de Beaune",color:"#e8c84a",size:3.8},
+    // Bourgogne : Côte Chalonnaise
+    {lon:4.72,lat:46.6,txt:"Côte Chalonnaise",color:"#e8c84a",size:3.4},
+    // Bourgogne : Mâconnais
+    {lon:4.72,lat:46.2,txt:"Mâconnais",color:"#e8c84a",size:3.4},
+    // Bourgogne : Chablis
+    {lon:3.8,lat:47.72,txt:"Chablis",color:"#e8c84a",size:3.4},
+    // Rhône Nord : appellations
+    {lon:4.82,lat:45.55,txt:"Côte-Rôtie",color:"#22aa55",size:3.4},
+    {lon:4.96,lat:45.1,txt:"Hermitage",color:"#22aa55",size:3.4},
+    {lon:4.74,lat:45.35,txt:"Condrieu",color:"#22aa55",size:3.2},
+    {lon:4.8,lat:44.9,txt:"Cornas",color:"#22aa55",size:3.2},
+    // Bordeaux : rive gauche / droite
+    {lon:-0.85,lat:45.5,txt:"Médoc",color:"#9988cc",size:3.6},
+    {lon:-0.22,lat:44.9,txt:"Saint-Émilion",color:"#9988cc",size:3.4},
+    {lon:-0.28,lat:44.75,txt:"Pomerol",color:"#9988cc",size:3.2},
+    {lon:-0.48,lat:44.68,txt:"Pessac-Léognan",color:"#9988cc",size:3.2},
+    {lon:-0.35,lat:44.38,txt:"Sauternes",color:"#9988cc",size:3.2},
+    // Champagne : secteurs
+    {lon:4.02,lat:49.28,txt:"Montagne de Reims",color:"#b03030",size:3.2},
+    {lon:3.8,lat:49.0,txt:"Vallée de la Marne",color:"#b03030",size:3.2},
+    {lon:3.95,lat:48.7,txt:"Côte des Blancs",color:"#b03030",size:3.2},
+    {lon:4.35,lat:48.15,txt:"Côte des Bar",color:"#b03030",size:3.2},
+    // Loire : appellations
+    {lon:-1.45,lat:47.15,txt:"Muscadet",color:"#88aa22",size:3.4},
+    {lon:-0.08,lat:47.18,txt:"Anjou-Saumur",color:"#88aa22",size:3.2},
+    {lon:0.48,lat:47.38,txt:"Touraine",color:"#88aa22",size:3.4},
+    {lon:2.82,lat:47.3,txt:"Sancerre",color:"#88aa22",size:3.4},
+    // Languedoc
+    {lon:3.85,lat:43.65,txt:"Pic Saint-Loup",color:"#ee44aa",size:3.2},
+    {lon:2.9,lat:43.6,txt:"Minervois",color:"#ee44aa",size:3.2},
+    {lon:2.5,lat:43.1,txt:"Corbières",color:"#ee44aa",size:3.2},
+    {lon:3.15,lat:43.5,txt:"Saint-Chinian",color:"#ee44aa",size:3.0},
+    // Roussillon
+    {lon:2.72,lat:42.65,txt:"Banyuls",color:"#558822",size:3.2},
+    {lon:2.62,lat:42.85,txt:"Maury",color:"#558822",size:3.2},
+    // Alsace
+    {lon:7.35,lat:48.55,txt:"Alsace Grand Cru",color:"#d4c5a9",size:3.2},
+    // Jura
+    {lon:5.68,lat:47.0,txt:"Château-Chalon",color:"#cc88cc",size:3.2},
+    {lon:5.58,lat:46.85,txt:"Arbois",color:"#cc88cc",size:3.2},
+    // Savoie
+    {lon:5.9,lat:45.65,txt:"Apremont",color:"#aaaadd",size:3.2},
+    {lon:6.22,lat:45.45,txt:"Mondeuse",color:"#aaaadd",size:3.0},
+    // Provence
+    {lon:5.9,lat:43.32,txt:"Bandol",color:"#aacc22",size:3.4},
+    {lon:5.62,lat:43.6,txt:"Coteaux Aix",color:"#aacc22",size:3.2},
+    // Rhône Sud
+    {lon:4.82,lat:44.05,txt:"Châteauneuf-du-Pape",color:"#44aaaa",size:3.4},
+    {lon:5.12,lat:44.15,txt:"Gigondas",color:"#44aaaa",size:3.2},
+    {lon:4.62,lat:44.0,txt:"Tavel",color:"#44aaaa",size:3.0},
+    // Beaujolais
+    {lon:4.68,lat:46.05,txt:"Moulin-à-Vent",color:"#2d8a4e",size:3.2},
+    {lon:4.62,lat:45.85,txt:"Morgon",color:"#2d8a4e",size:3.2},
+    {lon:4.72,lat:45.72,txt:"Fleurie",color:"#2d8a4e",size:3.0},
+    // Sud-Ouest
+    {lon:1.72,lat:44.45,txt:"Cahors",color:"#ff2288",size:3.4},
+    {lon:0.55,lat:44.48,txt:"Bergerac",color:"#ff2288",size:3.2},
+    {lon:-0.35,lat:43.55,txt:"Jurançon",color:"#ff2288",size:3.2},
+    {lon:-1.02,lat:43.1,txt:"Irouléguy",color:"#ff2288",size:3.0},
+    // Espagne
+    {lon:-2.55,lat:42.4,txt:"Rioja Alta",color:"#c8442a",size:3.4},
+    {lon:-2.18,lat:42.45,txt:"Rioja Alavesa",color:"#c8442a",size:3.2},
+    {lon:-3.35,lat:41.65,txt:"Ribera del Duero",color:"#aa2244",size:3.4},
+    {lon:0.85,lat:41.2,txt:"Priorat DOCa",color:"#8b1a3a",size:3.2},
+    {lon:-5.52,lat:36.78,txt:"Jerez",color:"#d4a020",size:3.4},
+    {lon:1.65,lat:41.42,txt:"Penedès/Cava",color:"#c4a0e0",size:3.2},
+    {lon:-8.52,lat:42.38,txt:"Albariño",color:"#88bbcc",size:3.2},
+    // Portugal
+    {lon:-6.55,lat:41.3,txt:"Porto Vintage",color:"#8b2252",size:3.4},
+    {lon:-8.42,lat:41.75,txt:"Vinho Verde",color:"#55aa55",size:3.4},
+    {lon:-7.85,lat:38.75,txt:"Alentejo",color:"#cc8833",size:3.4},
+    // Italie
+    {lon:7.88,lat:44.62,txt:"Barolo/Barbaresco",color:"#c43a5a",size:3.4},
+    {lon:7.42,lat:44.52,txt:"Gavi/Roero",color:"#c43a5a",size:3.0},
+    {lon:11.12,lat:43.38,txt:"Chianti Classico",color:"#8b3a2a",size:3.4},
+    {lon:11.42,lat:42.95,txt:"Brunello",color:"#8b3a2a",size:3.2},
+    {lon:10.55,lat:43.32,txt:"Bolgheri",color:"#8b3a2a",size:3.0},
+    {lon:11.0,lat:45.38,txt:"Amarone",color:"#5577cc",size:3.4},
+    {lon:11.28,lat:45.55,txt:"Prosecco",color:"#5577cc",size:3.2},
+    {lon:11.25,lat:45.25,txt:"Soave",color:"#5577cc",size:3.0},
+    {lon:13.1,lat:46.0,txt:"Collio",color:"#4488bb",size:3.2},
+    {lon:11.0,lat:46.38,txt:"Alto Adige",color:"#6699cc",size:3.2},
+    {lon:9.38,lat:46.12,txt:"Franciacorta",color:"#7755aa",size:3.2},
+    {lon:9.72,lat:46.18,txt:"Valtellina",color:"#7755aa",size:3.0},
+    {lon:14.85,lat:41.12,txt:"Taurasi",color:"#cc5533",size:3.2},
+    {lon:13.88,lat:37.52,txt:"Nero d'Avola",color:"#dd7722",size:3.2},
+    {lon:15.18,lat:40.85,txt:"Primitivo",color:"#dd4422",size:3.2},
+    // Allemagne
+    {lon:6.55,lat:50.15,txt:"Mosel Riesling",color:"#44bb88",size:3.4},
+    {lon:7.95,lat:50.05,txt:"Rheingau",color:"#88cc88",size:3.2},
+    {lon:8.12,lat:49.7,txt:"Rheinhessen",color:"#77bb55",size:3.2},
+    {lon:7.98,lat:49.18,txt:"Pfalz",color:"#55aa66",size:3.2},
+    {lon:7.88,lat:48.28,txt:"Kaiserstuhl",color:"#33aa55",size:3.0},
+    {lon:10.38,lat:49.72,txt:"Würzburg",color:"#88aa44",size:3.0},
+    // Autriche
+    {lon:15.32,lat:48.3,txt:"Wachau",color:"#88bbdd",size:3.4},
+    {lon:15.75,lat:48.42,txt:"Kamptal",color:"#66aacc",size:3.2},
+    {lon:16.72,lat:47.7,txt:"Blaufränkisch",color:"#cc8844",size:3.2},
+    {lon:15.55,lat:47.1,txt:"Sauvignon Styrie",color:"#55aa44",size:3.0},
+    // Grèce / Hongrie
+    {lon:25.48,lat:36.42,txt:"Assyrtiko",color:"#4499cc",size:3.2},
+    {lon:22.48,lat:37.62,txt:"Nemea",color:"#bb4455",size:3.2},
+    {lon:21.48,lat:48.22,txt:"Furmint/Aszú",color:"#e8c850",size:3.4},
+  ];
+
+  const subLabelLayer = g.append('g').attr('id','sub-labels-g');
+  SUB_LABELS.forEach(sl => {
+    const pt = carteProjection([sl.lon, sl.lat]);
+    if(!pt) return;
+    const tw = sl.txt.length * sl.size * 0.52 + 4;
+    subLabelLayer.append('rect')
+      .attr('x', pt[0]-tw/2).attr('y', pt[1]-sl.size*0.75)
+      .attr('width', tw).attr('height', sl.size*1.6)
+      .attr('fill','rgba(5,2,4,0.5)')
+      .attr('rx',1.5)
+      .style('pointer-events','none');
+    subLabelLayer.append('text')
+      .attr('x', pt[0]).attr('y', pt[1])
+      .attr('text-anchor','middle')
+      .attr('dominant-baseline','middle')
+      .attr('font-size', sl.size)
+      .attr('fill', sl.color)
+      .attr('font-family','Cormorant Garamond, serif')
+      .attr('font-weight','600')
+      .attr('fill-opacity', 0.88)
+      .style('pointer-events','none')
+      .text(sl.txt);
+  });
 }
 
 function drawWinePoints(g) {
@@ -3386,6 +3549,7 @@ function updateCartePoints() {
   g.select('#carte-points-g').remove();
   g.select('#wine-labels-g').remove();
   g.select('#wine-zones-g').remove();
+  g.select('#sub-labels-g').remove();
   drawWineRegionPolygons(g);
   drawWinePoints(g);
 }
@@ -3397,6 +3561,14 @@ function renderCarteLegend() {
       <span style="width:10px;height:10px;border-radius:50%;background:${TYPE_COLORS_CARTE[t]||'#888'};display:inline-block"></span>
       <span style="text-transform:capitalize">${t}</span>
     </div>`).join('');
+}
+
+function clearCarteRegion() {
+  carteSelectedRegion = null;
+  d3.selectAll('.wine-zone').attr('fill-opacity', 0.30).attr('stroke-width', 0.8);
+  document.getElementById('carte-region-title').textContent = 'Cliquez sur une région pour explorer';
+  document.getElementById('carte-region-list').innerHTML = '';
+  d3.select('#carte-tooltip').style('display','none');
 }
 
 function selectCarteRegion(key, label) {
