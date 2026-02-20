@@ -401,10 +401,9 @@
           <input type="text" id="f-image" placeholder="https://i.imgur.com/... ou lien direct vers une image" style="flex:1">
           <button type="button" onclick="searchVivino()" style="white-space:nowrap;padding:9px 16px;background:var(--wine);border:none;color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:0.95rem;letter-spacing:1px;cursor:pointer;border-radius:2px;transition:background 0.2s;flex-shrink:0" onmouseover="this.style.background='var(--wine2)'" onmouseout="this.style.background='var(--wine)'">🍇 Vivino</button>
         </div>
-        <div id="vivino-results" style="display:none;margin-top:10px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:12px;max-height:280px;overflow-y:auto">
-          <div id="vivino-loading" style="text-align:center;color:var(--text2);font-style:italic;padding:10px">Recherche en cours…</div>
-          <div id="vivino-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px"></div>
-          <div id="vivino-empty" style="display:none;text-align:center;color:var(--text2);font-style:italic;padding:10px">Aucun résultat trouvé</div>
+        <div id="vivino-results" style="display:none;margin-top:10px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:14px">
+          <div id="vivino-loading"></div>
+          <div id="vivino-grid"></div>
         </div>
       </div>
     </div>
