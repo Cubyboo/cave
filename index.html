@@ -397,7 +397,15 @@
       </div>
       <div class="form-row form-full">
         <label>Photo étiquette (URL)</label>
-        <input type="text" id="f-image" placeholder="https://i.imgur.com/... ou lien direct vers une image">
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" id="f-image" placeholder="https://i.imgur.com/... ou lien direct vers une image" style="flex:1">
+          <button type="button" onclick="searchVivino()" style="white-space:nowrap;padding:9px 16px;background:var(--wine);border:none;color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:0.95rem;letter-spacing:1px;cursor:pointer;border-radius:2px;transition:background 0.2s;flex-shrink:0" onmouseover="this.style.background='var(--wine2)'" onmouseout="this.style.background='var(--wine)'">🍇 Vivino</button>
+        </div>
+        <div id="vivino-results" style="display:none;margin-top:10px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:12px;max-height:280px;overflow-y:auto">
+          <div id="vivino-loading" style="text-align:center;color:var(--text2);font-style:italic;padding:10px">Recherche en cours…</div>
+          <div id="vivino-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px"></div>
+          <div id="vivino-empty" style="display:none;text-align:center;color:var(--text2);font-style:italic;padding:10px">Aucun résultat trouvé</div>
+        </div>
       </div>
     </div>
     <div style="margin-top:20px">
@@ -1164,6 +1172,74 @@ window.addEventListener('load', () => {
     loadFromSheets();
   }
 });
+
+// =====================================================================
+// VIVINO IMAGE SEARCH
+// =====================================================================
+async function searchVivino() {
+  const nom   = (document.getElementById('f-nom')?.value   || document.getElementById('edit-nom')?.value   || '').trim();
+  const annee = (document.getElementById('f-annee')?.value || document.getElementById('edit-annee')?.value || '').trim();
+  if(!nom) { showNotif('Entrez le nom du vin', true); return; }
+
+  const resultsBox = document.getElementById('vivino-results');
+  const loadingEl  = document.getElementById('vivino-loading');
+  const gridEl     = document.getElementById('vivino-grid');
+  const emptyEl    = document.getElementById('vivino-empty');
+
+  resultsBox.style.display = 'block';
+  loadingEl.style.display  = 'block';
+  gridEl.innerHTML         = '';
+  emptyEl.style.display    = 'none';
+
+  const query = encodeURIComponent((nom + ' ' + annee).trim());
+  const url   = `https://www.vivino.com/api/wines/search?q=${query}&language=fr&limit=12`;
+
+  try {
+    const res  = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    const json = await res.json();
+    const wines = json?.explore_vintage?.matches || [];
+
+    loadingEl.style.display = 'none';
+
+    if(!wines.length) {
+      emptyEl.style.display = 'block';
+      return;
+    }
+
+    wines.forEach(match => {
+      const vintage = match.vintage;
+      if(!vintage) return;
+      const wine    = vintage.wine || {};
+      const imgPath = vintage.image?.location || wine.image?.location || '';
+      if(!imgPath) return;
+
+      const imgUrl  = 'https://images.vivino.com/thumbs/' + imgPath + '_300x400.jpg';
+      const label   = (wine.name || '') + (vintage.year ? ' ' + vintage.year : '');
+
+      const card = document.createElement('div');
+      card.style.cssText = 'cursor:pointer;text-align:center;border:1px solid transparent;border-radius:3px;padding:6px;transition:border-color 0.2s';
+      card.onmouseover = () => card.style.borderColor = 'var(--gold)';
+      card.onmouseout  = () => card.style.borderColor = 'transparent';
+      card.innerHTML   = `
+        <img src="${imgUrl}" alt="${label}" style="width:60px;height:90px;object-fit:contain;border-radius:2px" onerror="this.parentElement.style.display='none'">
+        <div style="font-size:0.65rem;color:var(--text2);margin-top:4px;line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${label}</div>`;
+      card.onclick = () => {
+        document.getElementById('f-image').value = imgUrl;
+        resultsBox.style.display = 'none';
+        showNotif('Étiquette sélectionnée ✓');
+      };
+      gridEl.appendChild(card);
+    });
+
+    if(!gridEl.children.length) emptyEl.style.display = 'block';
+
+  } catch(err) {
+    loadingEl.style.display = 'none';
+    emptyEl.style.display   = 'block';
+    emptyEl.textContent     = 'Erreur réseau — vérifiez votre connexion';
+  }
+}
+
 </script>
 </body>
 </html>
