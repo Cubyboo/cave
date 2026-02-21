@@ -3345,15 +3345,8 @@ function renderCarte() {
   svg.call(carteZoomBehavior)
     .on('dblclick.zoom', null);
 
-  // Masquer le tooltip quand on survole le fond de carte (aucune région)
-  svg.on('mousemove.tooltiphide', function(event) {
-    const target = event.target;
-    // Si l'élément survolé n'appartient pas à une zone ou un point de région → cacher le tooltip
-    const inZone = target.closest && (target.closest('.wine-zone') || target.closest('.wine-zone-group') || target.closest('.wine-point-g'));
-    if (!inZone) {
-      d3.select('#carte-tooltip').style('display','none');
-    }
-  });
+  // Masquer le tooltip quand le curseur quitte la carte ou survole le fond
+  svg.on('mouseleave.tt', () => d3.select('#carte-tooltip').style('display','none'));
   
   // Charger les pays (fond)
   fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
@@ -3368,7 +3361,8 @@ function renderCarte() {
         .attr('x', -carteW * 4).attr('y', -carteH * 4)
         .attr('fill', '#0d1a2a')
         .style('cursor','default')
-        .on('click', clearCarteRegion);
+        .on('click', clearCarteRegion)
+        .on('mouseenter', () => d3.select('#carte-tooltip').style('display','none'));
       
       // Pays non-viticoles (fond gris)
       g.selectAll('.country-other')
@@ -3380,7 +3374,8 @@ function renderCarte() {
         .attr('stroke', '#1a2d3d')
         .attr('stroke-width', 0.3)
         .style('cursor','default')
-        .on('click', clearCarteRegion);
+        .on('click', clearCarteRegion)
+        .on('mouseenter', () => d3.select('#carte-tooltip').style('display','none'));
       
       // Pays viticoles (fond légèrement plus clair)
       // Couleurs vertes pour tous les pays viticoles (comme la France)
@@ -3420,7 +3415,8 @@ function renderCarte() {
         .attr('stroke', '#1e3018')
         .attr('stroke-width', 0.6)
         .style('cursor','default')
-        .on('click', clearCarteRegion);
+        .on('click', clearCarteRegion)
+        .on('mouseenter', () => d3.select('#carte-tooltip').style('display','none'));
       
       // Frontières internes (borders)
       if(topo.objects.countries) {
@@ -3438,9 +3434,7 @@ function renderCarte() {
     })
     .finally(() => {
       drawWineRegionPolygons(g);
-      // Les points sont dessinés AVANT les sous-étiquettes (effet arrière-plan)
       drawWinePoints(g);
-      drawSubLabels(g);
       renderCarteLegend();
     });
   
@@ -3560,11 +3554,7 @@ function drawWineRegionPolygons(g) {
     // Pas d'étiquette de région sur le polygone — les appellations sont affichées via SUB_LABELS ci-dessous
     // Le nom de la région + pays apparaît uniquement dans la fenêtre volante (tooltip)
   });
-}
 
-// Dessinées séparément pour pouvoir les placer au-dessus des points de vin
-function drawSubLabels(g) {
-  g.select('#sub-labels-g').remove();
   // ── Sous-étiquettes des appellations importantes ────────────────
   const SUB_LABELS = [
     // Bourgogne : Côte de Nuits
@@ -3720,17 +3710,11 @@ function drawWinePoints(g) {
       ? region.geometry
       : { type:'Polygon', coordinates:[region.coords] };
     const polysCoords = geom.type === 'MultiPolygon' ? geom.coordinates : [geom.coordinates];
-
-    // Pour la Bourgogne, positionner le point à gauche de la Côte de Nuits
-    let centroid;
-    if(key === 'bourgogne') {
-      // Coordonnées : légèrement à gauche de la Côte de Nuits (~lon 4.65, lat 47.25)
-      const pt = carteProjection([4.60, 47.22]);
-      centroid = pt;
-    } else {
-      const mainGeo = { type:'Feature', geometry:{ type:'Polygon', coordinates: polysCoords[0] }};
-      centroid = cartePath.centroid(mainGeo);
-    }
+    const mainGeo = { type:'Feature', geometry:{ type:'Polygon', coordinates: polysCoords[0] }};
+    // Pour Bourgogne : forcer le point à gauche de la Côte de Nuits
+    const centroid = (key === 'bourgogne')
+      ? carteProjection([4.60, 47.22])
+      : cartePath.centroid(mainGeo);
     if(!centroid || isNaN(centroid[0])) return;
 
     const typeCount = {};
@@ -3753,14 +3737,14 @@ function drawWinePoints(g) {
       .attr('cx', centroid[0]).attr('cy', centroid[1])
       .attr('r', r)
       .attr('fill', color)
-      .attr('opacity', isSel ? 0.85 : 0.45)
-      .attr('stroke', isSel ? 'white' : 'rgba(255,255,255,0.3)')
+      .attr('opacity', isSel ? 0.90 : 0.42)
+      .attr('stroke', isSel ? 'white' : 'rgba(255,255,255,0.25)')
       .attr('stroke-width', isSel ? 1.8 : 0.6);
     group.append('text')
       .attr('x', centroid[0]).attr('y', centroid[1] + 2)
       .attr('text-anchor','middle')
       .attr('font-size','5').attr('font-weight','bold')
-      .attr('fill','rgba(255,255,255,0.75)').style('pointer-events','none')
+      .attr('fill','rgba(255,255,255,0.80)').style('pointer-events','none')
       .text(wines.length);
 
     group.on('mouseenter', (event) => {
@@ -3834,8 +3818,7 @@ function updateCartePoints() {
   g.select('#wine-zones-g').remove();
   g.select('#sub-labels-g').remove();
   drawWineRegionPolygons(g);
-  drawWinePoints(g);       // points AVANT les sous-étiquettes
-  drawSubLabels(g);        // sous-étiquettes AU-DESSUS des points
+  drawWinePoints(g);
 }
 
 function renderCarteLegend() {
