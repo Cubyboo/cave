@@ -221,6 +221,7 @@
   .form-full { grid-column: 1/-1; }
 
   /* Notifications */
+  .wine-zone { isolation: isolate; }
   #notif { position: fixed; top: 76px; right: 20px; background: var(--bg2); border: 1px solid var(--green2); color: var(--green2); padding: 12px 20px; border-radius: 3px; font-size: 0.9rem; z-index: 500; transform: translateX(130%); opacity: 0; visibility: hidden; transition: transform 0.3s, opacity 0.3s; }
   #notif.show { transform: translateX(0); opacity: 1; visibility: visible; }
   #notif.error { border-color: var(--wine3); color: var(--wine3); }
@@ -663,9 +664,7 @@
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <div id="carte-legend" style="display:flex;gap:10px;flex-wrap:wrap;font-size:0.78rem;color:var(--text2)"></div>
-      <button onclick="carteZoomIn()" style="padding:5px 12px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;border-radius:2px;font-size:1rem;transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">+</button>
-      <button onclick="carteZoomOut()" style="padding:5px 12px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;border-radius:2px;font-size:1rem;transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">−</button>
-      <button onclick="carteReset()" style="padding:5px 12px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.8rem;transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">↺ France</button>
+
     </div>
   </div>
   <!-- Filtres rapides par pays -->
@@ -682,7 +681,12 @@
   <div id="carte-wrap" style="position:relative;background:#0d1520;border:1px solid var(--border);border-radius:4px;overflow:hidden;height:620px">
     <svg id="carte-svg" style="width:100%;height:100%;display:block"></svg>
     <div id="carte-tooltip" style="display:none;position:absolute;background:var(--bg2);border:1px solid var(--gold);border-radius:3px;padding:10px 14px;pointer-events:none;z-index:10;min-width:180px;box-shadow:0 4px 20px rgba(0,0,0,0.6);font-size:0.85rem"></div>
-    <div style="position:absolute;bottom:8px;right:10px;color:rgba(255,255,255,0.3);font-size:0.7rem">Molette pour zoomer · Glisser pour déplacer</div>
+    <div style="position:absolute;bottom:10px;right:10px;display:flex;flex-direction:column;gap:4px;z-index:5">
+      <button onclick="carteZoomIn()" style="width:32px;height:32px;background:rgba(8,4,6,0.85);border:1px solid var(--border);color:var(--text2);cursor:pointer;border-radius:3px;font-size:1.1rem;line-height:1;transition:all 0.2s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">+</button>
+      <button onclick="carteZoomOut()" style="width:32px;height:32px;background:rgba(8,4,6,0.85);border:1px solid var(--border);color:var(--text2);cursor:pointer;border-radius:3px;font-size:1.1rem;line-height:1;transition:all 0.2s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">−</button>
+      <button onclick="carteReset()" style="width:32px;height:32px;background:rgba(8,4,6,0.85);border:1px solid var(--border);color:var(--text2);cursor:pointer;border-radius:3px;font-size:0.75rem;line-height:1;transition:all 0.2s;display:flex;align-items:center;justify-content:center" title="Retour France" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">↺</button>
+    </div>
+    <div style="position:absolute;bottom:10px;left:10px;color:rgba(255,255,255,0.25);font-size:0.65rem;pointer-events:none">Molette · Glisser</div>
   </div>
   <div style="margin-top:14px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:16px">
     <div id="carte-region-title" style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1rem;margin-bottom:12px">Cliquez sur une région pour explorer</div>
@@ -3224,71 +3228,53 @@ function drawWineRegionPolygons(g) {
       ? geom.coordinates
       : [geom.coordinates];
 
+    // Groupe unique pour la région → opacity appliquée au groupe entier,
+    // pas à chaque polygone : évite l'accumulation d'opacité sur les zones qui se touchent
+    const regionGroup = layerZones.append('g')
+      .attr('class', 'wine-zone-group')
+      .attr('data-key', key)
+      .attr('fill-opacity', 0.30)
+      .attr('stroke-opacity', 0.85)
+      .style('cursor', 'pointer')
+      .on('mouseenter', function(event) {
+        d3.selectAll(`.wine-zone-group[data-key="${key}"]`)
+          .attr('fill-opacity', 0.52)
+          .attr('stroke-width', 1.8);
+        showRegionTooltip(event, key, region.label);
+      })
+      .on('mousemove', updateTooltipPos)
+      .on('mouseleave', function() {
+        const isSel = carteSelectedRegion === key;
+        d3.selectAll(`.wine-zone-group[data-key="${key}"]`)
+          .attr('fill-opacity', isSel ? 0.52 : 0.30)
+          .attr('stroke-width', isSel ? 1.8 : 0.8);
+        d3.select('#carte-tooltip').style('display','none');
+      })
+      .on('click', function() {
+        d3.selectAll('.wine-zone-group')
+          .attr('fill-opacity', 0.30)
+          .attr('stroke-width', 0.8);
+        d3.selectAll(`.wine-zone-group[data-key="${key}"]`)
+          .attr('fill-opacity', 0.52)
+          .attr('stroke-width', 1.8);
+        selectCarteRegion(key, region.label);
+      });
+
     polysCoords.forEach((polyCoords, pi) => {
       const singleGeo = { type:'Feature', geometry:{ type:'Polygon', coordinates: polyCoords }};
-      layerZones.append('path')
+      regionGroup.append('path')
         .datum(singleGeo)
         .attr('class', 'wine-zone')
         .attr('data-key', key)
         .attr('data-pi', pi)
         .attr('d', cartePath)
         .attr('fill', region.color)
-        .attr('fill-opacity', 0.30)
         .attr('stroke', region.color)
-        .attr('stroke-width', 0.8)
-        .attr('stroke-opacity', 0.85)
-        .style('cursor', 'pointer')
-        .on('mouseenter', function(event) {
-          // Highlight tous les polygones de cette région
-          d3.selectAll(`.wine-zone[data-key="${key}"]`)
-            .attr('fill-opacity', 0.52)
-            .attr('stroke-width', 1.8);
-          showRegionTooltip(event, key, region.label);
-        })
-        .on('mousemove', updateTooltipPos)
-        .on('mouseleave', function() {
-          const isSel = carteSelectedRegion === key;
-          d3.selectAll(`.wine-zone[data-key="${key}"]`)
-            .attr('fill-opacity', isSel ? 0.52 : 0.30)
-            .attr('stroke-width', isSel ? 1.8 : 0.8);
-          d3.select('#carte-tooltip').style('display','none');
-        })
-        .on('click', function() {
-          d3.selectAll('.wine-zone')
-            .attr('fill-opacity', 0.30)
-            .attr('stroke-width', 0.8);
-          d3.selectAll(`.wine-zone[data-key="${key}"]`)
-            .attr('fill-opacity', 0.52)
-            .attr('stroke-width', 1.8);
-          selectCarteRegion(key, region.label);
-        });
+        .attr('stroke-width', 0.8);
     });
 
-    // Label au centroïde du premier polygone (principal)
-    const mainGeo = { type:'Feature', geometry:{ type:'Polygon', coordinates: polysCoords[0] }};
-    const centroid = cartePath.centroid(mainGeo);
-    if(centroid && !isNaN(centroid[0])) {
-      const labelText = region.label.toUpperCase();
-      const charWidth = 3.2;
-      const labelW = Math.max(20, labelText.length * charWidth + 6);
-      layerLabels.append('rect')
-        .attr('x', centroid[0] - labelW/2).attr('y', centroid[1] - 4.5)
-        .attr('width', labelW).attr('height', 8)
-        .attr('fill', 'rgba(5,2,4,0.65)')
-        .attr('rx', 2)
-        .style('pointer-events','none');
-      layerLabels.append('text')
-        .attr('x', centroid[0]).attr('y', centroid[1])
-        .attr('text-anchor','middle')
-        .attr('dominant-baseline','middle')
-        .attr('font-size','5.5')
-        .attr('fill', region.color)
-        .attr('font-family','Cormorant Garamond, serif')
-        .attr('font-weight','700')
-        .attr('letter-spacing','0.4')
-        .style('pointer-events','none')
-        .text(labelText);
-    }
+    // Pas d'étiquette de région sur le polygone — les appellations sont affichées via SUB_LABELS ci-dessous
+    // Le nom de la région + pays apparaît uniquement dans la fenêtre volante (tooltip)
   });
 
   // ── Sous-étiquettes des appellations importantes ────────────────
@@ -3497,7 +3483,7 @@ function showRegionTooltip(event, key, label) {
   tt.style('display','block').style('max-width','280px')
     .html(`
       <div style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1rem;margin-bottom:6px;border-bottom:1px solid var(--border);padding-bottom:5px">
-        ${region.color ? `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${region.color};margin-right:5px;vertical-align:middle"></span>` : ''}${label}
+        ${region.color ? `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${region.color};margin-right:5px;vertical-align:middle"></span>` : ''}${label}${region.country ? ` <span style="color:var(--text2);font-size:0.78rem;font-weight:400"> — ${region.country}</span>` : ''}
       </div>
       ${region.cepages ? `<div style="color:var(--text2);font-size:0.72rem;margin-bottom:6px">🍇 <em>${region.cepages}</em></div>` : ''}
       ${apps.length > 0 ? `
@@ -3520,7 +3506,7 @@ function showWinePointTooltip(event, key, label, wines) {
   const tt = d3.select('#carte-tooltip');
   tt.style('display','block').style('max-width','280px')
     .html(`
-      <div style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1rem;margin-bottom:5px">🍷 ${label}</div>
+      <div style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1rem;margin-bottom:5px">🍷 ${label}${region.country ? `<span style="color:var(--text2);font-size:0.75rem;font-weight:400"> — ${region.country}</span>` : ''}</div>
       ${region.cepages ? `<div style="color:var(--text2);font-size:0.72rem;margin-bottom:5px">🍇 <em>${region.cepages}</em></div>` : ''}
       <div style="color:var(--gold2);font-weight:600;margin-bottom:3px">${wines.length} bouteille${wines.length>1?'s':''}</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:5px">
@@ -3565,7 +3551,7 @@ function renderCarteLegend() {
 
 function clearCarteRegion() {
   carteSelectedRegion = null;
-  d3.selectAll('.wine-zone').attr('fill-opacity', 0.30).attr('stroke-width', 0.8);
+  d3.selectAll('.wine-zone-group').attr('fill-opacity', 0.30).attr('stroke-width', 0.8);
   document.getElementById('carte-region-title').textContent = 'Cliquez sur une région pour explorer';
   document.getElementById('carte-region-list').innerHTML = '';
   d3.select('#carte-tooltip').style('display','none');
@@ -3574,7 +3560,9 @@ function clearCarteRegion() {
 function selectCarteRegion(key, label) {
   carteSelectedRegion = key;
   const wines = wineData.filter(w => getRegionKey(w) === key);
-  document.getElementById('carte-region-title').textContent = `${label} — ${wines.length} bouteille${wines.length!==1?'s':''}`;
+  const regionMeta = WINE_REGION_POLYGONS[key] || {};
+  const countryStr = regionMeta.country ? ` · ${regionMeta.country}` : '';
+  document.getElementById('carte-region-title').textContent = `${label}${countryStr} — ${wines.length} bouteille${wines.length!==1?'s':''}`;
 
   if(!wines.length) {
     document.getElementById('carte-region-list').innerHTML = '<div style="color:var(--text2);font-style:italic">Aucun vin de cette région</div>';
