@@ -344,6 +344,13 @@
     th, td { padding: 8px 6px; }
   }
 
+  @media (max-width: 768px) {
+    /* Cacher les labels de la carte sur mobile pour éviter les chevauchements */
+    #wine-labels-g { display: none; }
+    /* Rendre les points de vin plus grands et faciles à toucher sur mobile */
+    .wine-point-g circle { }
+  }
+
   @media (max-width: 480px) {
     .logo { font-size: 1rem; }
     .stats-bar { display: none; }
@@ -392,7 +399,7 @@
   <div class="tab" onclick="switchTab('stats',this)">📊 Statistiques</div>
   <div class="tab" onclick="switchTab('add',this)">➕ Ajouter</div>
   <div class="tab" onclick="switchTab('carte',this)">🌍 Carte</div>
-  <div class="tab" onclick="switchTab('degustation',this)">🥂 Dégustations</div>
+  <div class="tab" onclick="switchTab('degustation',this)">🥂 Journal</div>
   <div style="flex:1"></div>
   <div class="search-wrap" style="margin:0 12px;align-self:center">
     <span class="search-icon">🔍</span>
@@ -591,6 +598,10 @@
 <div id="historique" class="content">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
     <h2 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem">📜 Historique des dégustations</h2>
+    <div style="color:var(--text2);font-size:0.78rem;margin-top:4px;display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+      <span>Cave ↗ retirée de la cave</span>
+      <span style="border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:1px 8px;background:rgba(201,168,76,0.07);color:var(--text2)">hors cave</span><span>↗ journal de dégustation</span>
+    </div>
     <div style="display:flex;gap:10px;align-items:center">
       <span id="histo-count" style="color:var(--text2);font-size:0.85rem"></span>
     </div>
@@ -703,7 +714,7 @@
 <div id="degustation" class="content">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
     <div>
-      <h2 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem">🥂 Vins dégustés</h2>
+      <h2 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem">🥂 Journal de dégustation</h2>
       <div style="color:var(--text2);font-size:0.8rem;margin-top:3px">Vins bus hors de votre cave — restaurants, voyages, dons, cadeaux…</div>
     </div>
     <button onclick="openAddDegustation()" style="padding:10px 20px;background:var(--wine);border:none;color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:1rem;letter-spacing:1px;cursor:pointer;border-radius:2px;transition:background 0.2s;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='var(--wine2)'" onmouseout="this.style.background='var(--wine)'">
@@ -1284,11 +1295,11 @@ function renderCave2D() {
       const tt    = document.getElementById('tooltip');
       const floorData = CAVE_CONFIG[cave].floors.find(f=>f.id===floor);
       if(wine) {
-        document.getElementById('tt-name').textContent = wine.nom;
+        document.getElementById('tt-name').innerHTML = wine.nom + (wine.annee ? ` <span style="color:var(--text2);font-size:0.82rem;font-weight:normal">${wine.annee}</span>` : '');
         document.getElementById('tt-info').innerHTML =
           `<span class="type-badge badge-${wine.type}" style="font-size:0.7rem">${TYPE_LABELS[wine.type]||wine.type}</span>
-          ${wine.appellation ? `<br><i>${wine.appellation}</i>` : ''}
-          <br>${wine.annee||'—'} · ${wine.region||'—'}
+          ${wine.domaine ? `<br><i style="color:var(--cream)">${wine.domaine}</i>` : ''}
+          <br>${wine.region||'—'}
           ${wine.prix ? `<br>${wine.prix} €` : ''}
           ${wine.note ? `<br>${'★'.repeat(parseInt(wine.note))}` : ''}
           <br><small style="color:#4a3840">Ét.${floor} · #${slot}</small>`;
@@ -1334,8 +1345,14 @@ function openSlotModal(cave, floor, slot) {
         <img src="${wine.image}" alt="Étiquette" id="etiquette-img" style="max-height:200px;max-width:100%;object-fit:contain;border-radius:4px;border:1px solid #3a2830;box-shadow:0 4px 20px rgba(0,0,0,0.7);cursor:pointer;transition:max-height 0.4s ease" onclick="this.style.maxHeight=this.style.maxHeight==='200px'||!this.style.maxHeight?'520px':'200px'" title="Cliquer pour agrandir">
         <div style="font-size:0.68rem;color:var(--text2);margin-top:5px;letter-spacing:1px">↕ CLIQUER POUR AGRANDIR</div>
       </div>` : '';
+    // Sur mobile portrait, image au-dessus à pleine largeur
+    const isMobileDevice = window.matchMedia('(max-width: 768px) and (orientation: portrait)').matches;
+    const imgHtmlMobile = wine.image ? `<div style="width:calc(100% + 28px);margin:-18px -14px 18px;background:var(--bg3);text-align:center;padding:16px 14px">
+        <img src="${wine.image}" alt="Étiquette" id="etiquette-img" style="max-height:220px;max-width:100%;object-fit:contain;border-radius:4px;border:1px solid #3a2830;box-shadow:0 4px 20px rgba(0,0,0,0.7);cursor:pointer;transition:max-height 0.4s ease" onclick="this.style.maxHeight=this.style.maxHeight==='220px'||!this.style.maxHeight?'440px':'220px'" title="Cliquer pour agrandir">
+      </div>` : '';
+    const imgHtmlFinal = isMobileDevice ? imgHtmlMobile : imgHtml;
     body.innerHTML = `
-      ${imgHtml}
+      ${imgHtmlFinal}
       <div style="display:flex;gap:20px;align-items:flex-start">
         <div style="flex:1">
           <div class="modal-info-panel">
@@ -2100,35 +2117,49 @@ function renderHistorique() {
   const empty     = document.getElementById('histo-empty');
   const count     = document.getElementById('histo-count');
   if(!container) return;
-  if(!historiqueData.length) {
+
+  // Fusionner historique cave + dégustations hors cave
+  const histoEntries = historiqueData.map(h => ({...h, _source: 'cave'}));
+  const degEntries   = degustationData.map(d => ({...d, _source: 'hors_cave'}));
+  const allEntries   = [...histoEntries, ...degEntries].sort((a,b) => {
+    const da = a.date || a.dateAjout || '';
+    const db = b.date || b.dateAjout || '';
+    return db > da ? 1 : -1;
+  });
+
+  if(!allEntries.length) {
     empty.style.display = 'block';
     container.innerHTML = '';
     count.textContent = '';
     return;
   }
   empty.style.display = 'none';
-  count.textContent = historiqueData.length + ' bouteille' + (historiqueData.length>1?'s':'') + ' bue' + (historiqueData.length>1?'s':'');
+  count.textContent = allEntries.length + ' entrée' + (allEntries.length>1?'s':'');
 
   const TYPE_COLORS = { rouge:'#7b1c2e', blanc:'#c9a84c', rose:'#d4607a', champagne:'#e8c870', other:'#555' };
 
-  container.innerHTML = historiqueData.map((h,i) => {
+  container.innerHTML = allEntries.map((h,i) => {
     const stars  = '★'.repeat(parseInt(h.note)||0) + '☆'.repeat(5-(parseInt(h.note)||0));
     const tColor = TYPE_COLORS[h.type] || TYPE_COLORS.other;
     const imgHtml = h.image ? `<img src="${h.image}" alt="" style="width:50px;height:70px;object-fit:contain;border-radius:3px;flex-shrink:0;border:1px solid var(--border)">` : `<div style="width:50px;height:70px;background:var(--bg3);border-radius:3px;flex-shrink:0;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:1.4rem">🍷</div>`;
-    return `<div style="display:flex;gap:16px;align-items:flex-start;padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;margin-bottom:10px">
+    const isHorsCave = h._source === 'hors_cave';
+    // Style discret pour les vins hors cave : fond légèrement différent + badge
+    const cardBg = isHorsCave ? 'background:rgba(201,168,76,0.04);border-color:rgba(201,168,76,0.18)' : '';
+    const badge  = isHorsCave ? `<span style="font-size:0.68rem;color:var(--text2);border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:1px 7px;background:rgba(201,168,76,0.07);white-space:nowrap">hors cave${h.occasion?' · '+h.occasion:''}</span>` : (h.occasion ? `<div style="margin-top:6px;font-size:0.8rem;color:var(--text2);font-style:italic">📍 ${h.occasion}</div>` : '');
+    return `<div style="display:flex;gap:16px;align-items:flex-start;padding:16px;background:var(--bg2);border:1px solid var(--border);${cardBg};border-radius:4px;margin-bottom:10px">
       ${imgHtml}
       <div style="flex:1;min-width:0">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
           <div>
             <div style="font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--cream)">${h.nom||'—'}${h.annee?' <span style="color:var(--text2);font-size:0.9rem">'+h.annee+'</span>':''}</div>
-            <div style="font-size:0.82rem;color:var(--text2);margin-top:2px">${[h.domaine,h.appellation,h.region].filter(Boolean).join(' · ')}</div>
+            <div style="font-size:0.82rem;color:var(--text2);margin-top:2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">${[h.domaine,h.appellation,h.region].filter(Boolean).join(' · ')} ${isHorsCave ? badge : ''}</div>
           </div>
           <div style="text-align:right;flex-shrink:0">
             <div style="font-size:0.75rem;color:var(--text2)">${h.date||''}</div>
             <div style="color:var(--gold);font-size:0.9rem;margin-top:2px">${stars}</div>
           </div>
         </div>
-        ${h.occasion?`<div style="margin-top:6px;font-size:0.8rem;color:var(--text2);font-style:italic">📍 ${h.occasion}</div>`:''}
+        ${!isHorsCave && h.occasion?`<div style="margin-top:6px;font-size:0.8rem;color:var(--text2);font-style:italic">📍 ${h.occasion}</div>`:''}
         ${h.commentaire?`<div style="margin-top:6px;font-size:0.88rem;color:var(--text2);line-height:1.5;font-style:italic">"${h.commentaire}"</div>`:''}
       </div>
     </div>`;
