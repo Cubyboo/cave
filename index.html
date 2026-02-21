@@ -394,10 +394,10 @@
   <div class="tab active" onclick="switchTab('view2d',this)">🗺 Vue Cave</div>
   <div class="tab" onclick="switchTab('list',this)">📋 Liste</div>
   <div class="tab" onclick="switchTab('historique',this)">🥂 Dégustation</div>
+  <div class="tab" onclick="switchTab('carte',this)">🌍 Carte</div>
   <div class="tab" onclick="switchTab('apogee',this)">🔔 Apogée</div>
   <div class="tab" onclick="switchTab('accords',this)">🍽 Accords</div>
   <div class="tab" onclick="switchTab('stats',this)">📊 Statistiques</div>
-  <div class="tab" onclick="switchTab('carte',this)">🌍 Carte</div>
   <div style="flex:1"></div>
   <div class="tab" onclick="switchTab('add',this)" style="border-bottom:2px solid transparent">➕ Ajouter</div>
   <div class="search-wrap" style="margin:0 12px;align-self:center">
@@ -704,13 +704,11 @@
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <div id="carte-legend" style="display:flex;gap:10px;flex-wrap:wrap;font-size:0.78rem;color:var(--text2)"></div>
-      <button onclick="carteZoomIn()" style="padding:5px 12px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;border-radius:2px;font-size:1rem;transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">+</button>
-      <button onclick="carteZoomOut()" style="padding:5px 12px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;border-radius:2px;font-size:1rem;transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">−</button>
-      <button onclick="carteReset()" style="padding:5px 12px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.8rem;transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">↺ France</button>
     </div>
   </div>
   <!-- Filtres rapides par pays -->
-  <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+  <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
+    <button onclick="resetToEurope()" style="padding:4px 11px;background:var(--bg2);border:1px solid var(--gold);color:var(--gold);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s;font-weight:600">🌍 Europe</button>
     <button onclick="carteZoomPays('France')"    style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#3a2830';this.style.color='var(--text2)'">🇫🇷 France</button>
     <button onclick="carteZoomPays('Espagne')"   style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#3a2830';this.style.color='var(--text2)'">🇪🇸 Espagne</button>
     <button onclick="carteZoomPays('Portugal')"  style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#3a2830';this.style.color='var(--text2)'">🇵🇹 Portugal</button>
@@ -723,6 +721,11 @@
   <div id="carte-wrap" style="position:relative;background:#0d1520;border:1px solid var(--border);border-radius:4px;overflow:hidden;height:620px">
     <svg id="carte-svg" style="width:100%;height:100%;display:block"></svg>
     <div id="carte-tooltip" style="display:none;position:absolute;background:var(--bg2);border:1px solid var(--gold);border-radius:3px;padding:10px 14px;pointer-events:none;z-index:10;min-width:180px;box-shadow:0 4px 20px rgba(0,0,0,0.6);font-size:0.85rem"></div>
+    <!-- Boutons zoom superposés sur la carte -->
+    <div style="position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:4px;z-index:5">
+      <button onclick="carteZoomIn()" style="width:34px;height:34px;background:rgba(8,4,6,0.82);border:1px solid var(--border);color:var(--text2);cursor:pointer;border-radius:3px;font-size:1.2rem;line-height:1;transition:all 0.2s;backdrop-filter:blur(4px)" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">+</button>
+      <button onclick="carteZoomOut()" style="width:34px;height:34px;background:rgba(8,4,6,0.82);border:1px solid var(--border);color:var(--text2);cursor:pointer;border-radius:3px;font-size:1.2rem;line-height:1;transition:all 0.2s;backdrop-filter:blur(4px)" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">−</button>
+    </div>
     <div style="position:absolute;bottom:8px;right:10px;color:rgba(255,255,255,0.3);font-size:0.7rem">Molette pour zoomer · Glisser pour déplacer</div>
   </div>
   <div style="margin-top:14px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:16px">
@@ -3967,8 +3970,19 @@ function renderCarte() {
       renderCarteLegend();
     });
   
-  // Zoom par défaut sur la France
-  resetToFrance();
+  // Vue par défaut : Europe
+  resetToEurope();
+}
+
+function resetToEurope() {
+  if(!carteSvg || !carteZoomBehavior) return;
+  // Europe viticole centrée ~10°E, 46°N — vue d'ensemble
+  const [cx, cy] = carteProjection([10.0, 46.0]);
+  const scale = 1.5;
+  const tx = carteW/2 - cx * scale;
+  const ty = carteH/2 - cy * scale;
+  carteSvg.transition().duration(600)
+    .call(carteZoomBehavior.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
 }
 
 function resetToFrance() {
@@ -3993,7 +4007,7 @@ function carteZoomOut() {
   carteSvg.transition().duration(300)
     .call(carteZoomBehavior.scaleBy, 0.625);
 }
-function carteReset() { resetToFrance(); }
+function carteReset() { resetToEurope(); }
 
 // Zoom par pays
 const PAYS_ZOOM = {
