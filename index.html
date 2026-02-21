@@ -393,14 +393,13 @@
 <div class="tabs">
   <div class="tab active" onclick="switchTab('view2d',this)">🗺 Vue Cave</div>
   <div class="tab" onclick="switchTab('list',this)">📋 Liste</div>
-  <div class="tab" onclick="switchTab('historique',this)">📜 Historique</div>
+  <div class="tab" onclick="switchTab('historique',this)">🥂 Dégustation</div>
   <div class="tab" onclick="switchTab('apogee',this)">🔔 Apogée</div>
   <div class="tab" onclick="switchTab('accords',this)">🍽 Accords</div>
   <div class="tab" onclick="switchTab('stats',this)">📊 Statistiques</div>
-  <div class="tab" onclick="switchTab('add',this)">➕ Ajouter</div>
   <div class="tab" onclick="switchTab('carte',this)">🌍 Carte</div>
-  <div class="tab" onclick="switchTab('degustation',this)">🥂 Journal</div>
   <div style="flex:1"></div>
+  <div class="tab" onclick="switchTab('add',this)" style="border-bottom:2px solid transparent">➕ Ajouter</div>
   <div class="search-wrap" style="margin:0 12px;align-self:center">
     <span class="search-icon">🔍</span>
     <input class="search-input" id="global-search" type="text" placeholder="Rechercher…"
@@ -594,19 +593,41 @@
   </div>
 </div>
 
-<!-- ===== HISTORIQUE VIEW ===== -->
+<!-- ===== DÉGUSTATION VIEW (historique cave + hors cave) ===== -->
 <div id="historique" class="content">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
-    <h2 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem">📜 Historique des dégustations</h2>
-    <div style="color:var(--text2);font-size:0.78rem;margin-top:4px;display:flex;gap:14px;flex-wrap:wrap;align-items:center">
-      <span>Cave ↗ retirée de la cave</span>
-      <span style="border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:1px 8px;background:rgba(201,168,76,0.07);color:var(--text2)">hors cave</span><span>↗ journal de dégustation</span>
+    <div>
+      <h2 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem">🥂 Dégustations</h2>
+      <div style="color:var(--text2);font-size:0.78rem;margin-top:4px;display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+        <span>Cave de ma cave</span>
+        <span style="border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:1px 8px;background:rgba(201,168,76,0.07);color:var(--text2)">hors cave</span>
+      </div>
     </div>
-    <div style="display:flex;gap:10px;align-items:center">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <span id="histo-count" style="color:var(--text2);font-size:0.85rem"></span>
+      <button onclick="openAddDegustation()" style="padding:9px 18px;background:var(--wine);border:none;color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:0.95rem;letter-spacing:1px;cursor:pointer;border-radius:2px;transition:background 0.2s;display:flex;align-items:center;gap:6px" onmouseover="this.style.background='var(--wine2)'" onmouseout="this.style.background='var(--wine)'">＋ Hors cave</button>
     </div>
   </div>
-  <div id="histo-empty" style="display:none;text-align:center;padding:60px 0;color:var(--text2);font-style:italic">Aucune bouteille bue pour l'instant</div>
+  <!-- Filtres -->
+  <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center">
+    <input type="text" id="histo-search" placeholder="Rechercher…" oninput="renderHistorique()"
+      style="flex:1;min-width:180px;max-width:320px;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:'Cormorant Garamond',serif;font-size:0.95rem;border-radius:2px;outline:none"
+      onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">
+    <select id="histo-filter-source" onchange="renderHistorique()" style="padding:8px 12px;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:'Cormorant Garamond',serif;font-size:0.95rem;border-radius:2px;outline:none">
+      <option value="">Toutes les sources</option>
+      <option value="cave">De ma cave</option>
+      <option value="hors_cave">Hors cave</option>
+    </select>
+    <select id="histo-filter-type" onchange="renderHistorique()" style="padding:8px 12px;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:'Cormorant Garamond',serif;font-size:0.95rem;border-radius:2px;outline:none">
+      <option value="">Tous les types</option>
+      <option value="rouge">Rouge</option>
+      <option value="blanc">Blanc</option>
+      <option value="rosé">Rosé</option>
+      <option value="effervescent">Effervescent</option>
+      <option value="vdn">VDN</option>
+    </select>
+  </div>
+  <div id="histo-empty" style="display:none;text-align:center;padding:60px 0;color:var(--text2);font-style:italic">Aucune dégustation enregistrée</div>
   <div id="histo-list"></div>
 </div>
 
@@ -1081,6 +1102,7 @@ function switchTab(id, el) {
   if(id==='accords') populateVinSelect();
   if(id==='apogee') renderApogee('tous');
   if(id==='carte') renderCarte();
+  if(id==='historique') renderHistorique();
   if(id==='degustation') renderDegustations();
   if(id==='add')   updateEtageSelect();
   if(id==='view2d') renderCave2D();
@@ -2118,10 +2140,28 @@ function renderHistorique() {
   const count     = document.getElementById('histo-count');
   if(!container) return;
 
+  const q       = (document.getElementById('histo-search')?.value || '').toLowerCase();
+  const sourceF = document.getElementById('histo-filter-source')?.value || '';
+  const typeF   = document.getElementById('histo-filter-type')?.value || '';
+
   // Fusionner historique cave + dégustations hors cave
   const histoEntries = historiqueData.map(h => ({...h, _source: 'cave'}));
   const degEntries   = degustationData.map(d => ({...d, _source: 'hors_cave'}));
-  const allEntries   = [...histoEntries, ...degEntries].sort((a,b) => {
+  let allEntries = [...histoEntries, ...degEntries];
+
+  // Filtres
+  allEntries = allEntries.filter(h => {
+    if(sourceF && h._source !== sourceF) return false;
+    if(typeF && h.type !== typeF) return false;
+    if(q) {
+      const text = [h.nom, h.domaine, h.appellation, h.region, h.occasion, h.commentaire].join(' ').toLowerCase();
+      if(!text.includes(q)) return false;
+    }
+    return true;
+  });
+
+  // Tri par date décroissante
+  allEntries.sort((a,b) => {
     const da = a.date || a.dateAjout || '';
     const db = b.date || b.dateAjout || '';
     return db > da ? 1 : -1;
@@ -2136,30 +2176,37 @@ function renderHistorique() {
   empty.style.display = 'none';
   count.textContent = allEntries.length + ' entrée' + (allEntries.length>1?'s':'');
 
-  const TYPE_COLORS = { rouge:'#7b1c2e', blanc:'#c9a84c', rose:'#d4607a', champagne:'#e8c870', other:'#555' };
-
-  container.innerHTML = allEntries.map((h,i) => {
-    const stars  = '★'.repeat(parseInt(h.note)||0) + '☆'.repeat(5-(parseInt(h.note)||0));
-    const tColor = TYPE_COLORS[h.type] || TYPE_COLORS.other;
-    const imgHtml = h.image ? `<img src="${h.image}" alt="" style="width:50px;height:70px;object-fit:contain;border-radius:3px;flex-shrink:0;border:1px solid var(--border)">` : `<div style="width:50px;height:70px;background:var(--bg3);border-radius:3px;flex-shrink:0;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:1.4rem">🍷</div>`;
+  container.innerHTML = allEntries.map((h) => {
+    const stars   = '★'.repeat(parseInt(h.note)||0) + '☆'.repeat(5-(parseInt(h.note)||0));
+    const imgHtml = h.image
+      ? `<img src="${h.image}" alt="" style="width:50px;height:70px;object-fit:contain;border-radius:3px;flex-shrink:0;border:1px solid var(--border)">`
+      : `<div style="width:50px;height:70px;background:var(--bg3);border-radius:3px;flex-shrink:0;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:1.4rem">🍷</div>`;
     const isHorsCave = h._source === 'hors_cave';
-    // Style discret pour les vins hors cave : fond légèrement différent + badge
-    const cardBg = isHorsCave ? 'background:rgba(201,168,76,0.04);border-color:rgba(201,168,76,0.18)' : '';
-    const badge  = isHorsCave ? `<span style="font-size:0.68rem;color:var(--text2);border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:1px 7px;background:rgba(201,168,76,0.07);white-space:nowrap">hors cave${h.occasion?' · '+h.occasion:''}</span>` : (h.occasion ? `<div style="margin-top:6px;font-size:0.8rem;color:var(--text2);font-style:italic">📍 ${h.occasion}</div>` : '');
-    return `<div style="display:flex;gap:16px;align-items:flex-start;padding:16px;background:var(--bg2);border:1px solid var(--border);${cardBg};border-radius:4px;margin-bottom:10px">
+    const sourceBadge = isHorsCave
+      ? `<span style="font-size:0.67rem;color:var(--text2);border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:1px 7px;background:rgba(201,168,76,0.07);white-space:nowrap;margin-left:5px">hors cave</span>`
+      : '';
+    const editBtns = isHorsCave
+      ? `<div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end">
+           <button onclick="openAddDegustation('${h.id}')" style="padding:4px 9px;background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.78rem;cursor:pointer;border-radius:2px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">✏️</button>
+           <button onclick="deleteDegustation('${h.id}')" style="padding:4px 9px;background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.78rem;cursor:pointer;border-radius:2px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--wine2)';this.style.color='var(--wine2)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">🗑</button>
+         </div>` : '';
+    const borderCol = isHorsCave ? 'rgba(201,168,76,0.2)' : 'var(--border)';
+    const bgCol     = isHorsCave ? 'rgba(201,168,76,0.025)' : 'var(--bg2)';
+    return `<div style="display:flex;gap:16px;align-items:flex-start;padding:16px;background:${bgCol};border:1px solid ${borderCol};border-radius:4px;margin-bottom:10px">
       ${imgHtml}
       <div style="flex:1;min-width:0">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
-          <div>
-            <div style="font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--cream)">${h.nom||'—'}${h.annee?' <span style="color:var(--text2);font-size:0.9rem">'+h.annee+'</span>':''}</div>
-            <div style="font-size:0.82rem;color:var(--text2);margin-top:2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">${[h.domaine,h.appellation,h.region].filter(Boolean).join(' · ')} ${isHorsCave ? badge : ''}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--cream);display:flex;align-items:baseline;flex-wrap:wrap;gap:4px">${h.nom||'—'}${h.annee?`<span style="color:var(--text2);font-size:0.9rem">${h.annee}</span>`:''}${sourceBadge}</div>
+            <div style="font-size:0.82rem;color:var(--text2);margin-top:2px">${[h.domaine,h.appellation,h.region].filter(Boolean).join(' · ')}</div>
           </div>
           <div style="text-align:right;flex-shrink:0">
             <div style="font-size:0.75rem;color:var(--text2)">${h.date||''}</div>
             <div style="color:var(--gold);font-size:0.9rem;margin-top:2px">${stars}</div>
+            ${editBtns}
           </div>
         </div>
-        ${!isHorsCave && h.occasion?`<div style="margin-top:6px;font-size:0.8rem;color:var(--text2);font-style:italic">📍 ${h.occasion}</div>`:''}
+        ${h.occasion?`<div style="margin-top:6px;font-size:0.8rem;color:var(--text2);font-style:italic">📍 ${h.occasion}</div>`:''}
         ${h.commentaire?`<div style="margin-top:6px;font-size:0.88rem;color:var(--text2);line-height:1.5;font-style:italic">"${h.commentaire}"</div>`:''}
       </div>
     </div>`;
@@ -4232,15 +4279,11 @@ function selectCarteRegion(key, label) {
 </script>
 <div id="mobile-bubble">
   <div class="mb-handle"></div>
-  <div style="display:flex;gap:14px;align-items:flex-start">
-    <div id="mb-img-wrap" style="display:none">
-      <img id="mb-img" src="" style="width:44px;height:62px;object-fit:contain;border-radius:2px;border:1px solid var(--border)">
-    </div>
-    <div style="flex:1">
-      <div class="mb-name" id="mb-name"></div>
-      <div class="mb-info" id="mb-info"></div>
-    </div>
+  <div id="mb-img-wrap" style="display:none;margin:-16px -20px 14px;background:var(--bg3);text-align:center;padding:12px 20px;border-bottom:1px solid var(--border)">
+    <img id="mb-img" src="" style="max-height:180px;max-width:100%;object-fit:contain;border-radius:3px;">
   </div>
+  <div class="mb-name" id="mb-name"></div>
+  <div class="mb-info" id="mb-info"></div>
   <div class="mb-actions">
     <button class="btn-wine" id="mb-btn-fiche" onclick="mobileBubbleOpenFiche()">📋 Fiche complète</button>
     <button class="btn-outline" onclick="closeMobileBubble()">Fermer</button>
