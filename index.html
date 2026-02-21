@@ -983,6 +983,13 @@ const CAVE_CONFIG = {
 // =====================================================================
 // DATA
 // =====================================================================
+// =====================================================================
+// CLOUDINARY CONFIG
+// =====================================================================
+const CLOUDINARY_CLOUD = 'dvrevescl';
+const CLOUDINARY_PRESET = 'Degustation';
+const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`;
+
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_GkA2thpGf_tCdgMtoVYt5-xANAztBu6Rmks9SE5-9yF8_jdbBu7iXbgS13_5iqH_6Q/exec';
 
 let wineData = JSON.parse(localStorage.getItem('caveData') || '[]');
@@ -1841,24 +1848,41 @@ window.addEventListener('load', () => {
 // =====================================================================
 // PHOTO UPLOAD — CAVE FORM
 // =====================================================================
-function handleImageFile(input) {
+async function handleImageFile(input) {
   const file = input.files && input.files[0];
   if(!file) return;
   if(!file.type.startsWith('image/')) { showNotif('Fichier non reconnu', true); return; }
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const dataUrl = e.target.result;
-    // Store in hidden field as data URL
-    const imgField = document.getElementById('f-image');
-    if(imgField) imgField.value = dataUrl;
-    // Show preview
-    const pw = document.getElementById('img-preview-wrap');
-    const pi = document.getElementById('img-preview');
-    if(pw && pi) { pi.src = dataUrl; pw.style.display = 'block'; }
-  };
-  reader.readAsDataURL(file);
-  // Reset input so same file can be re-selected
   input.value = '';
+
+  // Aperçu local immédiat pendant l'upload
+  const pw = document.getElementById('img-preview-wrap');
+  const pi = document.getElementById('img-preview');
+  const reader = new FileReader();
+  reader.onload = e => { if(pw && pi) { pi.src = e.target.result; pw.style.display = 'block'; } };
+  reader.readAsDataURL(file);
+
+  // Upload Cloudinary
+  showNotif('📤 Upload en cours…');
+  try {
+    const publicId = 'cave_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', CLOUDINARY_PRESET);
+    fd.append('public_id', publicId);
+    fd.append('asset_folder', 'cave_vins');
+    const res  = await fetch(CLOUDINARY_URL, { method:'POST', body:fd });
+    const data = await res.json();
+    if(data.secure_url) {
+      const imgField = document.getElementById('f-image');
+      if(imgField) imgField.value = data.secure_url;
+      if(pi) pi.src = data.secure_url;
+      showNotif('Photo sauvegardée ✓');
+    } else {
+      throw new Error(data.error?.message || 'Erreur Cloudinary');
+    }
+  } catch(e) {
+    showNotif('Erreur upload : ' + e.message, true);
+  }
 }
 
 function onImageUrlChange(url) {
@@ -1988,19 +2012,39 @@ function deleteDegustation(id) {
   showNotif('Dégustation supprimée');
 }
 
-function handleDegImageFile(input) {
+async function handleDegImageFile(input) {
   const file = input.files && input.files[0];
   if(!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const dataUrl = e.target.result;
-    document.getElementById('deg-image').value = dataUrl;
-    const pw = document.getElementById('deg-img-preview-wrap');
-    const pi = document.getElementById('deg-img-preview');
-    if(pw && pi) { pi.src = dataUrl; pw.style.display = 'block'; }
-  };
-  reader.readAsDataURL(file);
   input.value = '';
+
+  // Aperçu local immédiat
+  const pw = document.getElementById('deg-img-preview-wrap');
+  const pi = document.getElementById('deg-img-preview');
+  const reader = new FileReader();
+  reader.onload = e => { if(pw && pi) { pi.src = e.target.result; pw.style.display = 'block'; } };
+  reader.readAsDataURL(file);
+
+  // Upload Cloudinary
+  showNotif('📤 Upload en cours…');
+  try {
+    const publicId = 'deg_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', CLOUDINARY_PRESET);
+    fd.append('public_id', publicId);
+    fd.append('asset_folder', 'cave_vins');
+    const res  = await fetch(CLOUDINARY_URL, { method:'POST', body:fd });
+    const data = await res.json();
+    if(data.secure_url) {
+      document.getElementById('deg-image').value = data.secure_url;
+      if(pi) pi.src = data.secure_url;
+      showNotif('Photo sauvegardée ✓');
+    } else {
+      throw new Error(data.error?.message || 'Erreur Cloudinary');
+    }
+  } catch(e) {
+    showNotif('Erreur upload : ' + e.message, true);
+  }
 }
 
 function onDegImageUrlChange(url) {
