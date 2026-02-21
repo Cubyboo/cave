@@ -3344,9 +3344,6 @@ function renderCarte() {
   
   svg.call(carteZoomBehavior)
     .on('dblclick.zoom', null);
-
-  // Masquer le tooltip quand le curseur quitte la carte ou survole le fond
-  svg.on('mouseleave.tt', () => d3.select('#carte-tooltip').style('display','none'));
   
   // Charger les pays (fond)
   fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
@@ -3711,7 +3708,7 @@ function drawWinePoints(g) {
       : { type:'Polygon', coordinates:[region.coords] };
     const polysCoords = geom.type === 'MultiPolygon' ? geom.coordinates : [geom.coordinates];
     const mainGeo = { type:'Feature', geometry:{ type:'Polygon', coordinates: polysCoords[0] }};
-    // Pour Bourgogne : forcer le point à gauche de la Côte de Nuits
+    // Bourgogne : centroïde forcé à gauche de la Côte de Nuits
     const centroid = (key === 'bourgogne')
       ? carteProjection([4.60, 47.22])
       : cartePath.centroid(mainGeo);
@@ -3737,14 +3734,14 @@ function drawWinePoints(g) {
       .attr('cx', centroid[0]).attr('cy', centroid[1])
       .attr('r', r)
       .attr('fill', color)
-      .attr('opacity', isSel ? 0.90 : 0.42)
-      .attr('stroke', isSel ? 'white' : 'rgba(255,255,255,0.25)')
+      .attr('opacity', isSel ? 0.90 : 0.38)
+      .attr('stroke', isSel ? 'white' : 'rgba(255,255,255,0.22)')
       .attr('stroke-width', isSel ? 1.8 : 0.6);
     group.append('text')
       .attr('x', centroid[0]).attr('y', centroid[1] + 2)
       .attr('text-anchor','middle')
       .attr('font-size','5').attr('font-weight','bold')
-      .attr('fill','rgba(255,255,255,0.80)').style('pointer-events','none')
+      .attr('fill','rgba(255,255,255,0.75)').style('pointer-events','none')
       .text(wines.length);
 
     group.on('mouseenter', (event) => {
