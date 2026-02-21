@@ -2768,7 +2768,7 @@ function mobileBubbleOpenFiche() {
 const REGION_MAP = {
   // Alsace
   "alsace":"alsace","alsace grand cru":"alsace","riesling":"alsace","gewurztraminer":"alsace",
-  "pinot gris":"alsace","crémant d'alsace":"alsace","edelzwicker":"alsace",
+  "pinot gris":"alsace","crémant d'alsace":"alsace","edelzwicker":"alsace","sylvaner":"alsace","pinot blanc":"alsace",
   // Bordeaux
   "bordeaux":"bordeaux","médoc":"bordeaux","haut-médoc":"bordeaux","medoc":"bordeaux",
   "pauillac":"bordeaux","saint-julien":"bordeaux","margaux":"bordeaux","saint-estèphe":"bordeaux",
@@ -2878,24 +2878,487 @@ const REGION_MAP = {
   "saint-mont":"sud_ouest","béarn":"sud_ouest","tursan":"sud_ouest",
   "manseng":"sud_ouest","len de l'el":"sud_ouest","fer servadou":"sud_ouest",
   "sud-ouest":"sud_ouest","sud ouest":"sud_ouest",
+  // Espagne
+  "espagne":"rioja","spain":"rioja",
+  "rioja":"rioja","rioja alta":"rioja","rioja alavesa":"rioja","rioja oriental":"rioja",
+  "ribera del duero":"ribera_del_duero","vega sicilia":"ribera_del_duero","pingus":"ribera_del_duero","pesquera":"ribera_del_duero",
+  "priorat":"priorat","priorato":"priorat","montsant":"priorat","terra alta":"priorat",
+  "jerez":"jerez","sherry":"jerez","xérès":"jerez","manzanilla":"jerez","fino":"jerez",
+  "amontillado":"jerez","oloroso":"jerez","palo cortado":"jerez","pedro ximénez":"jerez",
+  "penedès":"penedes","penedes":"penedes","cava":"penedes","corpinnat":"penedes",
+  "rías baixas":"rias_baixas","rias baixas":"rias_baixas","albariño":"rias_baixas",
+  "rueda":"rueda","verdejo":"rueda",
+  "toro":"toro","tinta de toro":"toro","zamora":"toro",
+  "ribeira sacra":"galicia","ribeiro":"galicia","valdeorras":"galicia","monterrei":"galicia","godello":"galicia",
+  "navarra":"aragon_navarra","campo de borja":"aragon_navarra","calatayud":"aragon_navarra","cariñena":"aragon_navarra","somontano":"aragon_navarra",
+  "la mancha":"castilla_la_mancha","valdepeñas":"castilla_la_mancha","manchuela":"castilla_la_mancha","almansa":"castilla_la_mancha",
+  "bierzo":"bierzo","mencía":"bierzo","mencia":"bierzo","cigales":"bierzo",
+  "txakoli":"txakoli","txakoli de getaria":"txakoli","chacoli":"txakoli",
+  "empordà":"emporda","emporda":"emporda","costa brava wine":"emporda",
+  // Portugal
+  "porto":"douro_porto","port":"douro_porto","douro":"douro_porto","porto vintage":"douro_porto",
+  "porto tawny":"douro_porto","porto ruby":"douro_porto","porto colheita":"douro_porto",
+  "vinho verde":"vinho_verde","alvarinho":"vinho_verde","loureiro vinho":"vinho_verde",
+  "dão":"dao_bairrada","dao":"dao_bairrada","bairrada":"dao_bairrada","baga":"dao_bairrada",
+  "alentejo":"alentejo","borba":"alentejo","évora":"alentejo","reguengos":"alentejo",
+  "setúbal":"setubal_lisboa","palmela":"setubal_lisboa","moscatel de setúbal":"setubal_lisboa","lisboa":"setubal_lisboa",
+  "madère":"madere","madeira":"madere","sercial":"madere","malmsey":"madere",
+  "portugal":"douro_porto",
+  // Italie
+  "barolo":"piemonte","barbaresco":"piemonte","barbera":"piemonte","nebbiolo":"piemonte","gavi":"piemonte","piémont":"piemonte","piemonte":"piemonte","moscato d'asti":"piemonte","asti":"piemonte","langhe":"piemonte","roero":"piemonte","dolcetto":"piemonte",
+  "toscane":"toscane","toscana":"toscane","tuscany":"toscane","chianti":"toscane","brunello":"toscane","bolgheri":"toscane","sangiovese":"toscane","morellino":"toscane","vernaccia":"toscane","vino nobile":"toscane","rosso di montalcino":"toscane","maremma":"toscane",
+  "vénétie":"veneto","veneto":"veneto","venetie":"veneto","amarone":"veneto","valpolicella":"veneto","soave":"veneto","prosecco":"veneto","bardolino":"veneto","recioto":"veneto",
+  "frioul":"frioul","friuli":"frioul","collio":"frioul","friulano":"frioul","ribolla":"frioul",
+  "trentin":"trentino_aa","trentino":"trentino_aa","alto adige":"trentino_aa","südtirol":"trentino_aa","lagrein":"trentino_aa","teroldego":"trentino_aa",
+  "lombardie":"lombardie","lombardia":"lombardie","franciacorta":"lombardie","valtellina":"lombardie",
+  "piémont":"piemonte","italie":"piemonte","italy":"piemonte",
+  "campanie":"campanie","campania":"campanie","taurasi":"campanie","aglianico":"campanie","fiano":"campanie","greco di tufo":"campanie","falanghina":"campanie",
+  "sicile":"sicile","sicilia":"sicile","sicily":"sicile","nero d'avola":"sicile","etna":"sicile","marsala":"sicile",
+  "sardaigne":"sardaigne","sardegna":"sardaigne","sardinia":"sardaigne","cannonau":"sardaigne","vermentino":"sardaigne",
+  "pouilles":"pouilles","puglia":"pouilles","primitivo":"pouilles","negroamaro":"pouilles",
+  "marches":"marches_ombrie","marche":"marches_ombrie","ombrie":"marches_ombrie","umbria":"marches_ombrie","sagrantino":"marches_ombrie","verdicchio":"marches_ombrie","orvieto":"marches_ombrie",
+  "abruzzes":"abruzzo_molise","abruzzo":"abruzzo_molise","montepulciano d'abruzzo":"abruzzo_molise",
+  "latium":"lazio","lazio":"lazio","frascati":"lazio","calabre":"lazio","calabria":"lazio","cirò":"lazio",
+  // Allemagne
+  "allemagne":"mosel","germany":"mosel",
+  "moselle":"mosel","mosel":"mosel","saar":"saar","mittelrhein":"saar",
+  "rheingau":"rheingau","rüdesheim":"rheingau","johannisberg":"rheingau",
+  "rheinhessen":"rheinhessen","nierstein":"rheinhessen","oppenheim":"rheinhessen",
+  "pfalz":"pfalz","palatinat":"pfalz","deidesheim":"pfalz",
+  "bade":"bade","baden":"bade","kaiserstuhl":"bade","markgräflerland":"bade",
+  "franconie":"franconie","franken":"franconie","würzburg":"franconie","silvaner":"franconie",
+  "nahe":"nahe","bad kreuznach":"nahe",
+  "wurtemberg":"wurtemberg","württemberg":"wurtemberg","trollinger":"wurtemberg","lemberger":"wurtemberg",
+  // Autriche
+  "autriche":"wachau","austria":"wachau",
+  "wachau":"wachau","smaragd":"wachau","grüner veltliner":"wachau",
+  "kamptal":"kamptal_kremstal","kremstal":"kamptal_kremstal","langenlois":"kamptal_kremstal",
+  "burgenland":"burgenland","blaufränkisch":"burgenland","zweigelt":"burgenland",
+  "styrie":"styrie","steiermark":"styrie","südsteiermark":"styrie","schilcher":"styrie",
+  "vienne":"wien_donauland","wien":"wien_donauland","wagram":"wien_donauland",
+  // Grèce
+  "grèce":"santorini","greece":"santorini",
+  "santorini":"santorini","assyrtiko":"santorini","samos":"santorini",
+  "nemea":"nemee","agiorgitiko":"nemee","péloponnèse":"nemee",
+  "naoussa":"naoussa_mak","xinomavro":"naoussa_mak","amyntaion":"naoussa_mak",
+  "crète":"crete","crete":"crete","kotsifali":"crete",
+  // Hongrie
+  "tokaj":"tokaj","tokaji":"tokaj","furmint":"tokaj","aszú":"tokaj","hongrie":"tokaj","hungary":"tokaj",
+  "eger":"eger","egri bikavér":"eger",
+  "villány":"villany","villany":"villany","szekszárd":"villany",
+  "somló":"somlo","badacsony":"somlo","juhfark":"somlo",
+  // Suisse
+  "valais":"suisse_valais","fendant":"suisse_valais","dôle":"suisse_valais","petite arvine":"suisse_valais","suisse":"suisse_valais","switzerland":"suisse_valais",
+  "vaud":"suisse_vaud","lavaux":"suisse_vaud","la côte vaudoise":"suisse_vaud","chasselas":"suisse_vaud",
+  // Autres
+  "croatie":"croatie_dalm","croatia":"croatie_dalm","dingač":"croatie_dalm","plavac mali":"croatie_dalm",
+  "slovénie":"slovenie","slovenia":"slovenie","brda":"slovenie","rebula":"slovenie",
+  "bulgarie":"bulgarie","bulgaria":"bulgarie","mavrud":"bulgarie","melnik":"bulgarie",
+  "roumanie":"roumanie","romania":"roumanie","dealu mare":"roumanie","cotnari":"roumanie",
+  "angleterre":"angleterre","england":"angleterre","english sparkling":"angleterre","sussex":"angleterre",
+  "luxembourg":"luxembourg","moselle luxembourgeoise":"luxembourg",
 };
 
 const WINE_REGION_POLYGONS = {
-  "alsace":{label:"Alsace",num:1,country:"France",color:"#d4c5a9",type:"blanc",appellations:["Alsace Grand Cru", "Riesling", "Gewurztraminer", "Pinot Gris", "Muscat", "Crémant d'Alsace"],cepages:"Riesling, Gewurztraminer, Pinot Gris, Pinot Noir",geometry:{"type":"MultiPolygon","coordinates":[[[[7.33,48.95],[7.42,48.97],[7.52,48.88],[7.6,48.8],[7.68,48.65],[7.72,48.5],[7.76,48.32],[7.8,48.18],[7.78,47.95],[7.72,47.72],[7.6,47.6],[7.45,47.55],[7.35,47.58],[7.25,47.68],[7.18,47.85],[7.12,48.05],[7.08,48.22],[7.1,48.45],[7.12,48.62],[7.18,48.78],[7.25,48.88],[7.33,48.95]]]]}},
-  "bordeaux":{label:"Bordeaux",num:2,country:"France",color:"#9988cc",type:"both",appellations:["Médoc", "Haut-Médoc", "Pauillac", "Saint-Julien", "Margaux", "Saint-Estèphe", "Saint-Émilion", "Pomerol", "Graves", "Pessac-Léognan", "Sauternes", "Barsac", "Entre-deux-Mers", "Blaye", "Bourg"],cepages:"Cabernet Sauvignon, Merlot, Cabernet Franc, S\u00e9millon, Sauvignon Blanc",geometry:{"type":"MultiPolygon","coordinates":[[[[-1.25,45.62],[-1.05,45.72],[-0.88,45.68],[-0.72,45.55],[-0.68,45.32],[-0.72,45.12],[-0.82,44.98],[-0.95,44.92],[-1.08,44.95],[-1.18,45.08],[-1.22,45.3],[-1.25,45.62]]],[[[-0.38,45.05],[-0.12,45.1],[0.05,45.02],[0.12,44.88],[0.02,44.72],[-0.18,44.68],[-0.38,44.78],[-0.42,44.92],[-0.38,45.05]]],[[[-0.78,44.9],[-0.52,44.95],[-0.38,44.88],[-0.32,44.72],[-0.4,44.52],[-0.58,44.42],[-0.72,44.52],[-0.8,44.68],[-0.78,44.9]]],[[[-0.62,44.6],[-0.42,44.63],[-0.32,44.52],[-0.38,44.38],[-0.55,44.35],[-0.65,44.42],[-0.62,44.6]]],[[[-0.45,45.0],[-0.18,45.08],[0.08,44.98],[0.18,44.82],[0.05,44.58],[-0.15,44.5],[-0.35,44.6],[-0.42,44.78],[-0.45,45.0]]],[[[-0.68,45.32],[-0.45,45.38],[-0.32,45.28],[-0.28,45.08],[-0.38,44.92],[-0.58,44.88],[-0.68,45.02],[-0.68,45.32]]]]}},
-  "bourgogne":{label:"Bourgogne",num:3,country:"France",color:"#e8c84a",type:"both",appellations:["Chablis", "Côte de Nuits", "Côte de Beaune", "Côte Chalonnaise", "Mâconnais", "Gevrey-Chambertin", "Chambolle-Musigny", "Vosne-Romanée", "Nuits-Saint-Georges", "Meursault", "Puligny-Montrachet", "Chassagne-Montrachet", "Pommard", "Volnay", "Mercurey", "Givry", "Pouilly-Fuissé"],cepages:"Pinot Noir, Chardonnay, Aligot\u00e9, Gamay",geometry:{"type":"MultiPolygon","coordinates":[[[[3.52,47.72],[3.78,47.8],[4.02,47.72],[4.1,47.58],[3.95,47.45],[3.68,47.42],[3.48,47.55],[3.52,47.72]]],[[[4.82,47.42],[4.88,47.42],[4.98,47.38],[5.05,47.28],[5.08,47.15],[5.05,47.02],[4.95,46.95],[4.85,46.98],[4.78,47.08],[4.76,47.22],[4.78,47.32],[4.82,47.42]]],[[[4.76,47.05],[4.85,47.05],[4.95,46.98],[5.02,46.88],[5.0,46.72],[4.9,46.65],[4.78,46.68],[4.72,46.78],[4.72,46.92],[4.76,47.05]]],[[[4.65,46.68],[4.78,46.7],[4.88,46.6],[4.9,46.45],[4.8,46.32],[4.65,46.3],[4.55,46.4],[4.55,46.55],[4.65,46.68]]],[[[4.58,46.32],[4.78,46.35],[4.98,46.25],[5.08,46.08],[4.98,45.92],[4.75,45.85],[4.55,45.95],[4.48,46.12],[4.58,46.32]]]]}},
-  "champagne":{label:"Champagne",num:4,country:"France",color:"#b03030",type:"effervescent",appellations:["Champagne", "Blanc de Blancs", "Blanc de Noirs", "Rosé", "Crémant"],cepages:"Pinot Noir, Chardonnay, Pinot Meunier",geometry:{"type":"MultiPolygon","coordinates":[[[[3.52,49.32],[3.75,49.38],[4.05,49.3],[4.15,49.15],[4.0,49.02],[3.68,49.0],[3.45,49.1],[3.52,49.32]]],[[[3.25,49.1],[3.68,49.15],[4.0,49.08],[4.12,48.98],[3.98,48.88],[3.65,48.85],[3.3,48.9],[3.25,49.1]]],[[[3.7,49.02],[3.95,49.0],[4.05,48.88],[4.0,48.72],[3.8,48.68],[3.65,48.75],[3.62,48.9],[3.7,49.02]]],[[[3.5,48.8],[3.72,48.82],[3.85,48.68],[3.75,48.55],[3.52,48.52],[3.38,48.62],[3.5,48.8]]],[[[4.05,48.32],[4.45,48.38],[4.7,48.22],[4.62,48.0],[4.28,47.92],[4.0,48.02],[4.05,48.32]]]]}},
-  "beaujolais":{label:"Beaujolais",num:5,country:"France",color:"#2d8a4e",type:"rouge",appellations:["Beaujolais", "Beaujolais-Villages", "Brouilly", "Fleurie", "Morgon", "Moulin-à-Vent", "Chiroubles", "Saint-Amour", "Juliénas", "Chénas", "Côte de Brouilly", "Régnié"],cepages:"Gamay Noir",geometry:{"type":"MultiPolygon","coordinates":[[[[4.45,46.18],[4.68,46.22],[4.85,46.08],[4.92,45.9],[4.88,45.72],[4.75,45.58],[4.58,45.52],[4.42,45.6],[4.35,45.78],[4.35,45.98],[4.45,46.18]]]]}},
-  "val_de_loire":{label:"Val de Loire",num:6,country:"France",color:"#88aa22",type:"both",appellations:["Muscadet", "Anjou", "Saumur", "Saumur-Champigny", "Touraine", "Chinon", "Bourgueil", "Vouvray", "Montlouis", "Sancerre", "Pouilly-Fumé", "Menetou-Salon", "Savennières", "Coteaux du Layon", "Bonnezeaux", "Quarts de Chaume", "Crémant de Loire", "Saint-Nicolas-de-Bourgueil", "Cheverny"],cepages:"Chenin Blanc, Sauvignon Blanc, Cabernet Franc, Melon de Bourgogne, Gamay",geometry:{"type":"MultiPolygon","coordinates":[[[[-2.12,47.5],[-1.58,47.55],[-1.1,47.4],[-1.0,47.2],[-1.15,47.0],[-1.55,46.95],[-1.95,47.05],[-2.18,47.28],[-2.12,47.5]]],[[[-0.88,47.58],[-0.48,47.65],[-0.05,47.55],[0.08,47.42],[-0.02,47.25],[-0.22,47.12],[-0.55,47.08],[-0.88,47.22],[-0.88,47.58]]],[[[-0.38,47.38],[-0.02,47.48],[0.25,47.38],[0.38,47.2],[0.25,47.02],[0.0,46.92],[-0.28,47.0],[-0.4,47.18],[-0.38,47.38]]],[[[0.35,47.52],[0.82,47.62],[1.15,47.52],[1.3,47.38],[1.18,47.22],[0.82,47.12],[0.45,47.22],[0.3,47.38],[0.35,47.52]]],[[[0.15,47.32],[0.4,47.38],[0.52,47.22],[0.42,47.08],[0.2,47.05],[0.05,47.15],[0.15,47.32]]],[[[0.72,47.5],[0.95,47.55],[1.05,47.42],[0.98,47.3],[0.78,47.28],[0.65,47.38],[0.72,47.5]]],[[[2.5,47.5],[2.82,47.55],[3.08,47.45],[3.18,47.28],[3.05,47.1],[2.72,47.05],[2.45,47.15],[2.38,47.32],[2.5,47.5]]],[[[2.6,47.72],[2.85,47.78],[2.98,47.65],[2.88,47.52],[2.65,47.48],[2.5,47.58],[2.6,47.72]]]]}},
-  "corse":{label:"Corse",num:7,country:"France",color:"#884488",type:"rouge",appellations:["Patrimonio", "Ajaccio", "Vin de Corse", "Corse-Calvi", "Corse-Sartène", "Corse-Figari", "Corse-Porto-Vecchio", "Muscat du Cap Corse"],cepages:"Nielluccio, Sciaccarello, Vermentino, Grenache",geometry:{"type":"MultiPolygon","coordinates":[[[[9.18,42.62],[9.38,42.72],[9.52,42.65],[9.48,42.5],[9.28,42.45],[9.12,42.55],[9.18,42.62]]],[[[8.62,42.0],[8.78,42.08],[8.92,41.98],[8.88,41.82],[8.68,41.78],[8.55,41.88],[8.62,42.0]]],[[[8.95,41.6],[9.18,41.68],[9.4,41.62],[9.58,41.5],[9.48,41.3],[9.25,41.22],[8.98,41.3],[8.85,41.45],[8.95,41.6]]],[[[9.42,42.48],[9.55,42.62],[9.65,42.5],[9.68,42.28],[9.58,42.1],[9.45,42.05],[9.35,42.15],[9.42,42.48]]]]}},
-  "jura":{label:"Jura",num:8,country:"France",color:"#cc88cc",type:"both",appellations:["Arbois", "Château-Chalon", "Côtes du Jura", "L'Étoile", "Crémant du Jura", "Vin Jaune", "Vin de Paille"],cepages:"Savagnin, Chardonnay, Poulsard, Trousseau, Pinot Noir",geometry:{"type":"MultiPolygon","coordinates":[[[[5.38,47.2],[5.62,47.25],[5.82,47.15],[5.98,46.98],[5.92,46.72],[5.75,46.5],[5.52,46.42],[5.35,46.52],[5.28,46.72],[5.32,46.98],[5.38,47.2]]]]}},
-  "languedoc":{label:"Languedoc",num:9,country:"France",color:"#ee44aa",type:"rouge",appellations:["Languedoc", "Pic Saint-Loup", "Faugères", "Saint-Chinian", "Minervois", "Corbières", "Fitou", "La Clape", "Terrasses du Larzac", "Pézenas", "Grès de Montpellier", "Clairette de Bellegarde", "Muscat de Frontignan", "Muscat de Lunel", "Clairette du Languedoc"],cepages:"Grenache, Syrah, Mourv\u00e8dre, Carignan, Cinsault, Clairette, Marsanne",geometry:{"type":"MultiPolygon","coordinates":[[[[3.48,43.98],[3.82,44.05],[4.05,43.92],[4.12,43.72],[3.92,43.55],[3.58,43.5],[3.35,43.58],[3.38,43.78],[3.48,43.98]]],[[[2.82,43.72],[3.15,43.8],[3.4,43.68],[3.45,43.48],[3.22,43.35],[2.88,43.3],[2.62,43.4],[2.7,43.6],[2.82,43.72]]],[[[2.3,43.58],[2.65,43.65],[2.88,43.52],[2.85,43.3],[2.55,43.18],[2.22,43.22],[2.05,43.38],[2.3,43.58]]],[[[2.1,43.48],[2.52,43.55],[2.78,43.42],[2.95,43.18],[2.88,42.92],[2.55,42.8],[2.18,42.85],[1.98,43.08],[2.1,43.48]]],[[[2.68,43.1],[2.92,43.15],[3.08,43.0],[3.02,42.8],[2.78,42.72],[2.58,42.8],[2.62,43.0],[2.68,43.1]]],[[[3.02,43.22],[3.22,43.28],[3.35,43.12],[3.28,42.98],[3.08,42.92],[2.95,43.02],[3.02,43.22]]],[[[3.62,43.5],[3.88,43.58],[4.05,43.45],[3.98,43.28],[3.75,43.22],[3.55,43.32],[3.62,43.5]]]]}},
-  "rhone_nord":{label:"Rh\u00f4ne Septentrional",num:10,country:"France",color:"#22aa55",type:"rouge",appellations:["Côte-Rôtie", "Condrieu", "Château-Grillet", "Saint-Joseph", "Crozes-Hermitage", "Hermitage", "Cornas", "Saint-Péray"],cepages:"Syrah, Viognier, Marsanne, Roussanne",geometry:{"type":"MultiPolygon","coordinates":[[[[4.55,45.72],[4.68,45.75],[4.78,45.62],[4.75,45.48],[4.62,45.42],[4.5,45.48],[4.48,45.6],[4.55,45.72]]],[[[4.58,45.5],[4.72,45.55],[4.82,45.42],[4.88,45.22],[4.85,45.0],[4.72,44.92],[4.58,44.98],[4.52,45.15],[4.52,45.35],[4.58,45.5]]],[[[4.72,45.18],[4.95,45.28],[5.08,45.12],[5.02,44.95],[4.82,44.88],[4.65,44.95],[4.62,45.08],[4.72,45.18]]],[[[4.72,44.95],[4.88,44.98],[4.98,44.85],[4.92,44.72],[4.75,44.68],[4.62,44.75],[4.65,44.88],[4.72,44.95]]]]}},
-  "provence":{label:"Provence",num:12,country:"France",color:"#aacc22",type:"ros\u00e9",appellations:["Côtes de Provence", "Coteaux d'Aix-en-Provence", "Les Baux-de-Provence", "Bandol", "Cassis", "Palette", "Coteaux Varois", "Bellet", "Côtes de Provence Sainte-Victoire", "Coteaux de Pierrevert", "Pierrevert"],cepages:"Grenache, Mourv\u00e8dre, Cinsault, Syrah, Vermentino, Clairette, Ugni Blanc",geometry:{"type":"MultiPolygon","coordinates":[[[[4.8,43.82],[5.22,43.95],[5.52,43.82],[5.55,43.58],[5.28,43.38],[4.88,43.38],[4.68,43.52],[4.72,43.68],[4.8,43.82]]],[[[5.38,43.88],[5.85,44.0],[6.35,43.95],[6.88,43.8],[7.1,43.62],[7.02,43.35],[6.45,43.12],[5.88,43.05],[5.45,43.15],[5.25,43.35],[5.38,43.88]]],[[[5.52,43.32],[5.8,43.38],[5.98,43.22],[5.92,43.05],[5.65,43.0],[5.48,43.1],[5.52,43.32]]],[[[5.38,43.28],[5.55,43.35],[5.68,43.22],[5.6,43.08],[5.42,43.05],[5.32,43.15],[5.38,43.28]]]]}},
-  "roussillon":{label:"Roussillon",num:13,country:"France",color:"#558822",type:"vdn",appellations:["Côtes du Roussillon", "Côtes du Roussillon Villages", "Banyuls", "Banyuls Grand Cru", "Collioure", "Maury", "Rivesaltes", "Muscat de Rivesaltes", "Muscat de Noël"],cepages:"Grenache Noir, Grenache Blanc, Grenache Gris, Carignan, Mourv\u00e8dre, Macabeu",geometry:{"type":"MultiPolygon","coordinates":[[[[2.45,42.98],[2.82,43.05],[3.1,42.92],[3.15,42.65],[2.95,42.45],[2.62,42.38],[2.32,42.45],[2.18,42.68],[2.45,42.98]]],[[[2.92,42.58],[3.1,42.68],[3.25,42.55],[3.22,42.38],[3.0,42.32],[2.8,42.38],[2.82,42.5],[2.92,42.58]]],[[[2.62,42.88],[2.88,42.95],[3.02,42.82],[2.95,42.62],[2.7,42.58],[2.52,42.68],[2.62,42.88]]]]}},
-  "rhone_sud":{label:"Rh\u00f4ne M\u00e9ridional",num:14,country:"France",color:"#44aaaa",type:"rouge",appellations:["Châteauneuf-du-Pape", "Gigondas", "Vacqueyras", "Beaumes-de-Venise", "Rasteau", "Tavel", "Lirac", "Ventoux", "Luberon", "Côtes du Rhône Villages", "Côtes du Vivarais"],cepages:"Grenache, Syrah, Mourv\u00e8dre, Cinsault, Clairette, Bourboulenc, Roussanne",geometry:{"type":"MultiPolygon","coordinates":[[[[4.58,44.28],[4.82,44.35],[5.0,44.22],[5.05,44.0],[4.88,43.88],[4.62,43.85],[4.45,43.98],[4.45,44.15],[4.58,44.28]]],[[[4.88,44.28],[5.08,44.38],[5.28,44.25],[5.32,44.05],[5.15,43.92],[4.92,43.88],[4.8,44.02],[4.8,44.18],[4.88,44.28]]],[[[4.78,44.45],[5.0,44.52],[5.18,44.38],[5.12,44.22],[4.9,44.18],[4.72,44.28],[4.78,44.45]]],[[[4.45,44.12],[4.62,44.18],[4.72,44.05],[4.68,43.9],[4.52,43.85],[4.4,43.95],[4.45,44.12]]],[[[4.92,44.18],[5.25,44.28],[5.55,44.18],[5.62,43.95],[5.45,43.78],[5.12,43.72],[4.88,43.82],[4.78,44.02],[4.92,44.18]]],[[[5.12,43.82],[5.45,43.88],[5.72,43.75],[5.78,43.55],[5.58,43.38],[5.25,43.32],[4.98,43.42],[4.92,43.62],[5.12,43.82]]]]}},
-  "savoie":{label:"Savoie & Bugey",num:15,country:"France",color:"#aaaadd",type:"both",appellations:["Vin de Savoie", "Roussette de Savoie", "Crémant de Savoie", "Seyssel", "Bugey", "Cerdon", "Roussette du Bugey"],cepages:"Jacqu\u00e8re, Altesse/Roussette, Mondeuse, Chardonnay, Gamay",geometry:{"type":"MultiPolygon","coordinates":[[[[5.22,45.95],[5.5,46.05],[5.7,45.9],[5.65,45.68],[5.42,45.55],[5.2,45.62],[5.12,45.78],[5.22,45.95]]],[[[5.72,45.72],[5.98,45.82],[6.18,45.7],[6.22,45.5],[6.05,45.35],[5.82,45.3],[5.62,45.4],[5.58,45.58],[5.72,45.72]]],[[[6.08,45.6],[6.32,45.68],[6.52,45.55],[6.55,45.35],[6.38,45.2],[6.15,45.18],[5.98,45.3],[5.98,45.48],[6.08,45.6]]],[[[6.28,46.32],[6.45,46.4],[6.58,46.3],[6.52,46.15],[6.32,46.12],[6.18,46.22],[6.28,46.32]]]]}},
-  "sud_ouest":{label:"Sud-Ouest",num:16,country:"France",color:"#ff2288",type:"rouge",appellations:["Bergerac", "Pécharmant", "Monbazillac", "Saussignac", "Cahors", "Gaillac", "Fronton", "Buzet", "Duras", "Marmandais", "Madiran", "Pacherenc du Vic-Bilh", "Jurançon", "Irouléguy", "Saint-Mont", "Béarn", "Tursan"],cepages:"Malbec/C\u00f4t, Cabernet Franc, Tannat, Manseng, Len de l'El, Fer Servadou",geometry:{"type":"MultiPolygon","coordinates":[[[[0.22,45.05],[0.65,45.12],[0.98,44.98],[0.98,44.72],[0.68,44.58],[0.28,44.62],[0.1,44.78],[0.22,45.05]]],[[[0.98,44.72],[1.55,44.8],[1.9,44.62],[1.88,44.35],[1.52,44.22],[1.05,44.25],[0.82,44.42],[0.98,44.72]]],[[[1.55,44.0],[1.98,44.08],[2.15,43.92],[2.08,43.68],[1.72,43.6],[1.4,43.68],[1.28,43.85],[1.55,44.0]]],[[[1.28,43.88],[1.52,43.95],[1.68,43.8],[1.62,43.62],[1.38,43.55],[1.2,43.65],[1.28,43.88]]],[[[0.12,44.52],[0.45,44.58],[0.68,44.45],[0.72,44.25],[0.48,44.12],[0.15,44.18],[-0.05,44.32],[0.12,44.52]]],[[[-0.48,43.85],[-0.12,43.92],[0.12,43.78],[0.12,43.55],[-0.15,43.42],[-0.48,43.48],[-0.6,43.62],[-0.48,43.85]]],[[[-0.68,43.32],[-0.28,43.38],[0.0,43.22],[0.0,43.02],[-0.28,42.92],[-0.62,42.98],[-0.72,43.15],[-0.68,43.32]]],[[[-1.28,43.22],[-0.98,43.28],[-0.8,43.12],[-0.82,42.98],[-1.05,42.92],[-1.28,43.02],[-1.28,43.22]]]]}},
+  /* ===== FRANCE ===== */
+  "alsace":{label:"Alsace",num:1,country:"France",color:"#d4c5a9",type:"blanc",
+    appellations:["Alsace Grand Cru","Riesling","Gewurztraminer","Pinot Gris","Muscat d'Alsace","Crémant d'Alsace","Pinot Blanc","Sylvaner","Edelzwicker"],
+    cepages:"Riesling, Gewurztraminer, Pinot Gris, Pinot Noir, Muscat",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[7.33,48.95],[7.42,48.97],[7.52,48.88],[7.6,48.8],[7.68,48.65],[7.72,48.5],[7.76,48.32],[7.8,48.18],[7.78,47.95],[7.72,47.72],[7.6,47.6],[7.45,47.55],[7.35,47.58],[7.25,47.68],[7.18,47.85],[7.12,48.05],[7.08,48.22],[7.1,48.45],[7.12,48.62],[7.18,48.78],[7.25,48.88],[7.33,48.95]]]]}},
+
+  "bordeaux":{label:"Bordeaux",num:2,country:"France",color:"#9988cc",type:"both",
+    appellations:["Médoc","Haut-Médoc","Pauillac","Saint-Julien","Margaux","Saint-Estèphe","Moulis","Listrac","Saint-Émilion","Pomerol","Lalande-de-Pomerol","Graves","Pessac-Léognan","Sauternes","Barsac","Entre-deux-Mers","Blaye","Bourg","Fronsac","Canon-Fronsac"],
+    cepages:"Cabernet Sauvignon, Merlot, Cabernet Franc, Sémillon, Sauvignon Blanc",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[-1.25,45.62],[-1.05,45.72],[-0.88,45.68],[-0.72,45.55],[-0.68,45.32],[-0.72,45.12],[-0.82,44.98],[-0.95,44.92],[-1.08,44.95],[-1.18,45.08],[-1.22,45.3],[-1.25,45.62]]],[[[-0.38,45.05],[-0.12,45.1],[0.05,45.02],[0.12,44.88],[0.02,44.72],[-0.18,44.68],[-0.38,44.78],[-0.42,44.92],[-0.38,45.05]]],[[[-0.78,44.9],[-0.52,44.95],[-0.38,44.88],[-0.32,44.72],[-0.4,44.52],[-0.58,44.42],[-0.72,44.52],[-0.8,44.68],[-0.78,44.9]]],[[[-0.62,44.6],[-0.42,44.63],[-0.32,44.52],[-0.38,44.38],[-0.55,44.35],[-0.65,44.42],[-0.62,44.6]]],[[[-0.45,45.0],[-0.18,45.08],[0.08,44.98],[0.18,44.82],[0.05,44.58],[-0.15,44.5],[-0.35,44.6],[-0.42,44.78],[-0.45,45.0]]],[[[-0.68,45.32],[-0.45,45.38],[-0.32,45.28],[-0.28,45.08],[-0.38,44.92],[-0.58,44.88],[-0.68,45.02],[-0.68,45.32]]]]}},
+
+  "bourgogne":{label:"Bourgogne",num:3,country:"France",color:"#e8c84a",type:"both",
+    appellations:["Chablis","Chablis Grand Cru","Côte de Nuits","Gevrey-Chambertin","Chambolle-Musigny","Vosne-Romanée","Nuits-Saint-Georges","Côte de Beaune","Meursault","Puligny-Montrachet","Chassagne-Montrachet","Pommard","Volnay","Beaune","Corton","Côte Chalonnaise","Mercurey","Rully","Givry","Mâconnais","Pouilly-Fuissé","Saint-Véran","Viré-Clessé"],
+    cepages:"Pinot Noir, Chardonnay, Aligoté, Gamay",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[3.52,47.72],[3.78,47.8],[4.02,47.72],[4.1,47.58],[3.95,47.45],[3.68,47.42],[3.48,47.55],[3.52,47.72]]],[[[4.82,47.42],[4.88,47.42],[4.98,47.38],[5.05,47.28],[5.08,47.15],[5.05,47.02],[4.95,46.95],[4.85,46.98],[4.78,47.08],[4.76,47.22],[4.78,47.32],[4.82,47.42]]],[[[4.76,47.05],[4.85,47.05],[4.95,46.98],[5.02,46.88],[5.0,46.72],[4.9,46.65],[4.78,46.68],[4.72,46.78],[4.72,46.92],[4.76,47.05]]],[[[4.65,46.68],[4.78,46.7],[4.88,46.6],[4.9,46.45],[4.8,46.32],[4.65,46.3],[4.55,46.4],[4.55,46.55],[4.65,46.68]]],[[[4.58,46.32],[4.78,46.35],[4.98,46.25],[5.08,46.08],[4.98,45.92],[4.75,45.85],[4.55,45.95],[4.48,46.12],[4.58,46.32]]]]}},
+
+  "champagne":{label:"Champagne",num:4,country:"France",color:"#b03030",type:"effervescent",
+    appellations:["Champagne","Montagne de Reims","Vallée de la Marne","Côte des Blancs","Côte des Bar","Blanc de Blancs","Blanc de Noirs","Crémant d'Alsace"],
+    cepages:"Pinot Noir, Chardonnay, Pinot Meunier",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[3.52,49.32],[3.75,49.38],[4.05,49.3],[4.15,49.15],[4.0,49.02],[3.68,49.0],[3.45,49.1],[3.52,49.32]]],[[[3.25,49.1],[3.68,49.15],[4.0,49.08],[4.12,48.98],[3.98,48.88],[3.65,48.85],[3.3,48.9],[3.25,49.1]]],[[[3.7,49.02],[3.95,49.0],[4.05,48.88],[4.0,48.72],[3.8,48.68],[3.65,48.75],[3.62,48.9],[3.7,49.02]]],[[[3.5,48.8],[3.72,48.82],[3.85,48.68],[3.75,48.55],[3.52,48.52],[3.38,48.62],[3.5,48.8]]],[[[4.05,48.32],[4.45,48.38],[4.7,48.22],[4.62,48.0],[4.28,47.92],[4.0,48.02],[4.05,48.32]]]]}},
+
+  "beaujolais":{label:"Beaujolais",num:5,country:"France",color:"#2d8a4e",type:"rouge",
+    appellations:["Moulin-à-Vent","Fleurie","Morgon","Brouilly","Côte de Brouilly","Juliénas","Saint-Amour","Chénas","Chiroubles","Régnié","Beaujolais-Villages","Beaujolais"],
+    cepages:"Gamay Noir",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[4.45,46.18],[4.68,46.22],[4.85,46.08],[4.92,45.9],[4.88,45.72],[4.75,45.58],[4.58,45.52],[4.42,45.6],[4.35,45.78],[4.35,45.98],[4.45,46.18]]]]}},
+
+  "val_de_loire":{label:"Val de Loire",num:6,country:"France",color:"#88aa22",type:"both",
+    appellations:["Muscadet","Muscadet-Sèvre et Maine","Anjou","Anjou-Villages","Saumur","Saumur-Champigny","Touraine","Chinon","Bourgueil","Saint-Nicolas-de-Bourgueil","Vouvray","Montlouis-sur-Loire","Savennières","Coteaux du Layon","Bonnezeaux","Quarts de Chaume","Sancerre","Pouilly-Fumé","Menetou-Salon","Reuilly","Quincy","Crémant de Loire","Cheverny"],
+    cepages:"Chenin Blanc, Sauvignon Blanc, Cabernet Franc, Melon de Bourgogne, Gamay",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[-2.12,47.5],[-1.58,47.55],[-1.1,47.4],[-1.0,47.2],[-1.15,47.0],[-1.55,46.95],[-1.95,47.05],[-2.18,47.28],[-2.12,47.5]]],[[[-0.88,47.58],[-0.48,47.65],[-0.05,47.55],[0.08,47.42],[-0.02,47.25],[-0.22,47.12],[-0.55,47.08],[-0.88,47.22],[-0.88,47.58]]],[[[0.35,47.52],[0.82,47.62],[1.15,47.52],[1.3,47.38],[1.18,47.22],[0.82,47.12],[0.45,47.22],[0.3,47.38],[0.35,47.52]]],[[[2.5,47.5],[2.82,47.55],[3.08,47.45],[3.18,47.28],[3.05,47.1],[2.72,47.05],[2.45,47.15],[2.38,47.32],[2.5,47.5]]],[[[2.6,47.72],[2.85,47.78],[2.98,47.65],[2.88,47.52],[2.65,47.48],[2.5,47.58],[2.6,47.72]]]]}},
+
+  "corse":{label:"Corse",num:7,country:"France",color:"#884488",type:"rouge",
+    appellations:["Patrimonio","Ajaccio","Vin de Corse","Corse-Calvi","Corse-Sartène","Corse-Figari","Corse-Porto-Vecchio","Muscat du Cap Corse"],
+    cepages:"Nielluccio, Sciaccarello, Vermentino, Grenache",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[9.18,42.62],[9.38,42.72],[9.52,42.65],[9.48,42.5],[9.28,42.45],[9.12,42.55],[9.18,42.62]]],[[[8.62,42.0],[8.78,42.08],[8.92,41.98],[8.88,41.82],[8.68,41.78],[8.55,41.88],[8.62,42.0]]],[[[8.95,41.6],[9.18,41.68],[9.4,41.62],[9.58,41.5],[9.48,41.3],[9.25,41.22],[8.98,41.3],[8.85,41.45],[8.95,41.6]]],[[[9.42,42.48],[9.55,42.62],[9.65,42.5],[9.68,42.28],[9.58,42.1],[9.45,42.05],[9.35,42.15],[9.42,42.48]]]]}},
+
+  "jura":{label:"Jura",num:8,country:"France",color:"#cc88cc",type:"both",
+    appellations:["Arbois","Arbois-Pupillin","Château-Chalon","Côtes du Jura","L'Étoile","Crémant du Jura","Vin Jaune","Vin de Paille","Macvin du Jura"],
+    cepages:"Savagnin, Chardonnay, Poulsard, Trousseau, Pinot Noir",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[5.38,47.2],[5.62,47.25],[5.82,47.15],[5.98,46.98],[5.92,46.72],[5.75,46.5],[5.52,46.42],[5.35,46.52],[5.28,46.72],[5.32,46.98],[5.38,47.2]]]]}},
+
+  "languedoc":{label:"Languedoc",num:9,country:"France",color:"#ee44aa",type:"rouge",
+    appellations:["Languedoc","Pic Saint-Loup","Faugères","Saint-Chinian","Minervois","Minervois-La Livinière","Corbières","Corbières-Boutenac","Fitou","La Clape","Terrasses du Larzac","Pézenas","Grès de Montpellier","Picpoul de Pinet","Blanquette de Limoux","Muscat de Frontignan","Muscat de Mireval"],
+    cepages:"Grenache, Syrah, Mourvèdre, Carignan, Cinsault, Clairette, Marsanne",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[3.48,43.98],[3.82,44.05],[4.05,43.92],[4.12,43.72],[3.92,43.55],[3.58,43.5],[3.35,43.58],[3.38,43.78],[3.48,43.98]]],[[[2.82,43.72],[3.15,43.8],[3.4,43.68],[3.45,43.48],[3.22,43.35],[2.88,43.3],[2.62,43.4],[2.7,43.6],[2.82,43.72]]],[[[2.3,43.58],[2.65,43.65],[2.88,43.52],[2.85,43.3],[2.55,43.18],[2.22,43.22],[2.05,43.38],[2.3,43.58]]],[[[2.68,43.1],[2.92,43.15],[3.08,43.0],[3.02,42.8],[2.78,42.72],[2.58,42.8],[2.62,43.0],[2.68,43.1]]],[[[3.62,43.5],[3.88,43.58],[4.05,43.45],[3.98,43.28],[3.75,43.22],[3.55,43.32],[3.62,43.5]]]]}},
+
+  "rhone_nord":{label:"Rhône Septentrional",num:10,country:"France",color:"#22aa55",type:"rouge",
+    appellations:["Côte-Rôtie","Condrieu","Château-Grillet","Saint-Joseph","Crozes-Hermitage","Hermitage","Cornas","Saint-Péray"],
+    cepages:"Syrah, Viognier, Marsanne, Roussanne",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[4.55,45.72],[4.68,45.75],[4.78,45.62],[4.75,45.48],[4.62,45.42],[4.5,45.48],[4.48,45.6],[4.55,45.72]]],[[[4.58,45.5],[4.72,45.55],[4.82,45.42],[4.88,45.22],[4.85,45.0],[4.72,44.92],[4.58,44.98],[4.52,45.15],[4.52,45.35],[4.58,45.5]]],[[[4.72,45.18],[4.95,45.28],[5.08,45.12],[5.02,44.95],[4.82,44.88],[4.65,44.95],[4.62,45.08],[4.72,45.18]]],[[[4.72,44.95],[4.88,44.98],[4.98,44.85],[4.92,44.72],[4.75,44.68],[4.62,44.75],[4.65,44.88],[4.72,44.95]]]]}},
+
+  "provence":{label:"Provence",num:12,country:"France",color:"#aacc22",type:"rosé",
+    appellations:["Côtes de Provence","Côtes de Provence Sainte-Victoire","Coteaux d'Aix-en-Provence","Les Baux-de-Provence","Bandol","Cassis","Palette","Coteaux Varois en Provence","Bellet","Coteaux de Pierrevert"],
+    cepages:"Grenache, Mourvèdre, Cinsault, Syrah, Vermentino, Clairette, Ugni Blanc",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[4.8,43.82],[5.22,43.95],[5.52,43.82],[5.55,43.58],[5.28,43.38],[4.88,43.38],[4.68,43.52],[4.72,43.68],[4.8,43.82]]],[[[5.38,43.88],[5.85,44.0],[6.35,43.95],[6.88,43.8],[7.1,43.62],[7.02,43.35],[6.45,43.12],[5.88,43.05],[5.45,43.15],[5.25,43.35],[5.38,43.88]]]]}},
+
+  "roussillon":{label:"Roussillon",num:13,country:"France",color:"#558822",type:"vdn",
+    appellations:["Côtes du Roussillon","Côtes du Roussillon Villages","Banyuls","Banyuls Grand Cru","Collioure","Maury","Maury Sec","Rivesaltes","Muscat de Rivesaltes"],
+    cepages:"Grenache Noir, Grenache Blanc, Grenache Gris, Carignan, Mourvèdre, Macabeu",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[2.45,42.98],[2.82,43.05],[3.1,42.92],[3.15,42.65],[2.95,42.45],[2.62,42.38],[2.32,42.45],[2.18,42.68],[2.45,42.98]]],[[[2.92,42.58],[3.1,42.68],[3.25,42.55],[3.22,42.38],[3.0,42.32],[2.8,42.38],[2.82,42.5],[2.92,42.58]]]]}},
+
+  "rhone_sud":{label:"Rhône Méridional",num:14,country:"France",color:"#44aaaa",type:"rouge",
+    appellations:["Châteauneuf-du-Pape","Gigondas","Vacqueyras","Beaumes-de-Venise","Rasteau","Tavel","Lirac","Ventoux","Luberon","Côtes du Rhône Villages","Côtes du Vivarais","Grignan-les-Adhémar"],
+    cepages:"Grenache, Syrah, Mourvèdre, Cinsault, Clairette, Bourboulenc, Roussanne",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[4.58,44.28],[4.82,44.35],[5.0,44.22],[5.05,44.0],[4.88,43.88],[4.62,43.85],[4.45,43.98],[4.45,44.15],[4.58,44.28]]],[[[4.88,44.28],[5.08,44.38],[5.28,44.25],[5.32,44.05],[5.15,43.92],[4.92,43.88],[4.8,44.02],[4.8,44.18],[4.88,44.28]]],[[[4.78,44.45],[5.0,44.52],[5.18,44.38],[5.12,44.22],[4.9,44.18],[4.72,44.28],[4.78,44.45]]],[[[4.92,44.18],[5.25,44.28],[5.55,44.18],[5.62,43.95],[5.45,43.78],[5.12,43.72],[4.88,43.82],[4.78,44.02],[4.92,44.18]]]]}},
+
+  "savoie":{label:"Savoie & Bugey",num:15,country:"France",color:"#aaaadd",type:"both",
+    appellations:["Vin de Savoie","Roussette de Savoie","Crémant de Savoie","Seyssel","Bugey","Bugey-Cerdon","Apremont","Abymes","Chignin","Chignin-Bergeron","Crépy","Ripaille"],
+    cepages:"Jacquère, Altesse/Roussette, Mondeuse, Chardonnay, Gamay, Chasselas",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[5.22,45.95],[5.5,46.05],[5.7,45.9],[5.65,45.68],[5.42,45.55],[5.2,45.62],[5.12,45.78],[5.22,45.95]]],[[[5.72,45.72],[5.98,45.82],[6.18,45.7],[6.22,45.5],[6.05,45.35],[5.82,45.3],[5.62,45.4],[5.58,45.58],[5.72,45.72]]],[[[6.08,45.6],[6.32,45.68],[6.52,45.55],[6.55,45.35],[6.38,45.2],[6.15,45.18],[5.98,45.3],[5.98,45.48],[6.08,45.6]]],[[[6.28,46.32],[6.45,46.4],[6.58,46.3],[6.52,46.15],[6.32,46.12],[6.18,46.22],[6.28,46.32]]]]}},
+
+  "sud_ouest":{label:"Sud-Ouest",num:16,country:"France",color:"#ff2288",type:"rouge",
+    appellations:["Bergerac","Pécharmant","Monbazillac","Cahors","Gaillac","Fronton","Buzet","Madiran","Pacherenc du Vic-Bilh","Jurançon","Irouléguy","Saint-Mont","Marcillac","Entraygues","Estaing","Tursan"],
+    cepages:"Malbec/Côt, Cabernet Franc, Tannat, Gros et Petit Manseng, Len de l'El, Fer Servadou",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[0.22,45.05],[0.65,45.12],[0.98,44.98],[0.98,44.72],[0.68,44.58],[0.28,44.62],[0.1,44.78],[0.22,45.05]]],[[[0.98,44.72],[1.55,44.8],[1.9,44.62],[1.88,44.35],[1.52,44.22],[1.05,44.25],[0.82,44.42],[0.98,44.72]]],[[[1.55,44.0],[1.98,44.08],[2.15,43.92],[2.08,43.68],[1.72,43.6],[1.4,43.68],[1.28,43.85],[1.55,44.0]]],[[[0.12,44.52],[0.45,44.58],[0.68,44.45],[0.72,44.25],[0.48,44.12],[0.15,44.18],[-0.05,44.32],[0.12,44.52]]],[[[-0.48,43.85],[-0.12,43.92],[0.12,43.78],[0.12,43.55],[-0.15,43.42],[-0.48,43.48],[-0.6,43.62],[-0.48,43.85]]],[[[-0.68,43.32],[-0.28,43.38],[0.0,43.22],[0.0,43.02],[-0.28,42.92],[-0.62,42.98],[-0.72,43.15],[-0.68,43.32]]],[[[-1.28,43.22],[-0.98,43.28],[-0.8,43.12],[-0.82,42.98],[-1.05,42.92],[-1.28,43.02],[-1.28,43.22]]]]}},
+
+  /* ===== ESPAGNE ===== */
+  "rioja":{label:"Rioja",num:20,country:"Espagne",color:"#c8442a",type:"rouge",
+    appellations:["Rioja Alta","Rioja Alavesa","Rioja Oriental","Crianza","Reserva","Gran Reserva","Rioja Blanco"],
+    cepages:"Tempranillo, Garnacha, Mazuelo, Graciano, Viura, Malvasía",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[-3.08,42.62],[-2.72,42.75],[-2.28,42.72],[-1.92,42.62],[-1.82,42.38],[-2.05,42.18],[-2.55,42.12],[-3.0,42.28],[-3.08,42.62]]]]}},
+
+  "ribera_del_duero":{label:"Ribera del Duero",num:21,country:"Espagne",color:"#aa2244",type:"rouge",
+    appellations:["Ribera del Duero DO","Crianza","Reserva","Gran Reserva"],
+    cepages:"Tempranillo/Tinto Fino, Garnacha, Cabernet Sauvignon, Merlot",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[-4.18,41.88],[-3.55,41.98],[-2.92,41.92],[-2.72,41.62],[-3.05,41.32],[-3.72,41.28],[-4.18,41.45],[-4.25,41.68],[-4.18,41.88]]]]}},
+
+  "priorat":{label:"Priorat",num:22,country:"Espagne",color:"#8b1a3a",type:"rouge",
+    appellations:["DOCa Priorat","Montsant","Terra Alta","Conca de Barberà"],
+    cepages:"Garnacha, Cariñena/Mazuelo, Cabernet Sauvignon, Syrah, Merlot",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[ 0.62,41.32],[0.95,41.42],[1.15,41.28],[1.1,41.05],[0.85,40.98],[0.62,41.1],[0.62,41.32]]]]}},
+
+  "jerez":{label:"Jerez / Sherry",num:23,country:"Espagne",color:"#d4a020",type:"blanc",
+    appellations:["Fino","Manzanilla-Sanlúcar de Barrameda","Amontillado","Oloroso","Palo Cortado","Pedro Ximénez","Cream","Jerez-Xérès-Sherry"],
+    cepages:"Palomino Fino, Pedro Ximénez, Moscatel",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[-5.98,36.98],[-5.52,37.12],[-5.18,37.02],[-5.05,36.72],[-5.35,36.5],[-5.82,36.52],[-6.0,36.72],[-5.98,36.98]]]]}},
+
+  "penedes":{label:"Penedès / Cava",num:24,country:"Espagne",color:"#c4a0e0",type:"effervescent",
+    appellations:["Penedès DO","Cava DO","Corpinnat","Alt Penedès","Classic Penedès"],
+    cepages:"Xarel·lo, Macabeo/Viura, Parellada, Chardonnay, Pinot Noir",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[ 1.38,41.62],[1.82,41.75],[2.12,41.65],[2.18,41.38],[1.88,41.2],[1.48,41.18],[1.28,41.35],[1.38,41.62]]]]}},
+
+  "rias_baixas":{label:"Rías Baixas",num:25,country:"Espagne",color:"#88bbcc",type:"blanc",
+    appellations:["Rías Baixas DO","Val do Salnés","Condado do Tea","O Rosal","Soutomaior","Ribeira do Ulla"],
+    cepages:"Albariño, Treixadura, Loureira, Caíño",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[-8.85,42.92],[-8.42,42.95],[-8.18,42.78],[-8.22,42.5],[-8.58,42.38],[-8.92,42.45],[-8.92,42.68],[-8.85,42.92]]]]}},
+
+  "rueda":{label:"Rueda",num:26,country:"Espagne",color:"#a0cc55",type:"blanc",
+    appellations:["Rueda DO","Rueda Superior Verdejo","Rueda Sauvignon","Rueda Espumoso"],
+    cepages:"Verdejo, Viura/Macabeo, Sauvignon Blanc, Palomino",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[-5.2,41.62],[-4.82,41.72],[-4.42,41.62],[-4.38,41.35],[-4.72,41.18],[-5.18,41.22],[-5.22,41.45],[-5.2,41.62]]]]}},
+
+  "toro":{label:"Toro / Cigales",num:27,country:"Espagne",color:"#8a3a5a",type:"rouge",
+    appellations:["Toro DO","Cigales DO","Zamora","Arribes DO"],
+    cepages:"Tinta de Toro/Tempranillo, Garnacha, Malvasía",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[-5.95,41.7],[-5.48,41.8],[-5.22,41.68],[-5.22,41.42],[-5.58,41.28],[-5.95,41.38],[-5.98,41.55],[-5.95,41.7]]]]}},
+
+  "galicia":{label:"Galice — Ribeira Sacra",num:28,country:"Espagne",color:"#6699bb",type:"blanc",
+    appellations:["Ribeiro DO","Ribeira Sacra DO","Valdeorras DO","Monterrei DO"],
+    cepages:"Godello, Treixadura, Mencía, Albariño",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[-7.95,42.82],[-7.42,42.88],[-7.08,42.68],[-7.02,42.38],[-7.38,42.22],[-7.85,42.25],[-8.08,42.42],[-7.95,42.82]]]]}},
+
+  "aragon_navarra":{label:"Aragon / Navarre",num:29,country:"Espagne",color:"#cc6633",type:"rouge",
+    appellations:["Campo de Borja DO","Calatayud DO","Cariñena DO","Somontano DO","Navarra DO"],
+    cepages:"Garnacha, Tempranillo, Cabernet Sauvignon, Syrah, Chardonnay",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[-1.8,42.62],[-1.18,42.78],[-0.65,42.68],[-0.48,42.38],[-0.85,42.05],[-1.5,41.98],[-1.92,42.15],[-2.0,42.42],[-1.8,42.62]],[[-0.42,41.92],[0.15,42.0],[0.48,41.85],[0.45,41.6],[0.05,41.42],[-0.42,41.48],[-0.58,41.68],[-0.42,41.92]]]]}},
+
+  "castilla_la_mancha":{label:"La Mancha / Castille",num:30,country:"Espagne",color:"#bb8833",type:"rouge",
+    appellations:["La Mancha DO","Valdepeñas DO","Manchuela DO","Almansa DO","Uclés DO"],
+    cepages:"Airén, Cencibel/Tempranillo, Garnacha, Bobal",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[-3.78,39.88],[-2.98,40.08],[-2.28,39.98],[-1.72,39.62],[-1.62,39.0],[-2.18,38.48],[-3.12,38.32],[-3.92,38.55],[-4.28,39.12],[-4.05,39.58],[-3.78,39.88]]]]}},
+
+  "bierzo":{label:"Bierzo / León",num:31,country:"Espagne",color:"#7788aa",type:"rouge",
+    appellations:["Bierzo DO","Cigales DO","Arlanza DO"],
+    cepages:"Mencía, Tempranillo, Garnacha",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[-6.82,42.75],[-6.38,42.88],[-6.05,42.68],[-6.02,42.38],[-6.38,42.22],[-6.82,42.28],[-7.05,42.48],[-6.82,42.75]]]]}},
+
+  "txakoli":{label:"Txakoli — Pays Basque",num:32,country:"Espagne",color:"#88ccaa",type:"blanc",
+    appellations:["Txakoli de Getaria DO","Txakoli de Bizkaia DO","Txakoli de Álava DO"],
+    cepages:"Hondarrabi Zuri, Hondarrabi Beltza",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[-2.28,43.42],[-1.92,43.52],[-1.72,43.38],[-1.88,43.22],[-2.22,43.22],[-2.32,43.32],[-2.28,43.42]]]]}},
+
+  "emporda":{label:"Empordà / Costa Brava",num:33,country:"Espagne",color:"#dd9944",type:"rouge",
+    appellations:["Empordà DO","Alt Empordà","Baix Empordà","Cava DO"],
+    cepages:"Garnacha, Cariñena, Cabernet Sauvignon, Syrah, Macabeo",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[ 2.78,42.52],[3.22,42.52],[3.32,42.22],[2.98,42.05],[2.62,42.15],[2.62,42.38],[2.78,42.52]]]]}},
+
+  /* ===== PORTUGAL ===== */
+  "douro_porto":{label:"Douro / Porto",num:40,country:"Portugal",color:"#8b2252",type:"vdn",
+    appellations:["Porto Vintage","Porto LBV","Porto Tawny","Porto Ruby","Porto Colheita","Douro DOC","Douro Superior"],
+    cepages:"Touriga Nacional, Touriga Franca, Tinta Roriz, Tinta Barroca, Tinta Cão",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[-8.22,41.62],[-7.22,41.68],[-6.82,41.55],[-6.48,41.28],[-6.65,40.98],[-7.18,40.88],[-7.92,40.92],[-8.25,41.22],[-8.22,41.62]]]]}},
+
+  "vinho_verde":{label:"Vinho Verde",num:41,country:"Portugal",color:"#55aa55",type:"blanc",
+    appellations:["Vinho Verde DO","Alvarinho","Loureiro","Vinho Verde Espumante","Monção e Melgaço"],
+    cepages:"Alvarinho, Loureiro, Arinto, Trajadura, Azal",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[-8.92,42.22],[-8.28,42.22],[-7.85,42.15],[-7.78,41.82],[-8.1,41.62],[-8.62,41.62],[-8.98,41.72],[-8.92,42.22]]]]}},
+
+  "dao_bairrada":{label:"Dão / Bairrada",num:42,country:"Portugal",color:"#aa6622",type:"rouge",
+    appellations:["Dão DOC","Bairrada DOC","Encruzado","Baga","Dão Branco"],
+    cepages:"Touriga Nacional, Jaen/Mencía, Baga, Encruzado, Bical",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[-8.22,40.85],[-7.65,40.88],[-7.32,40.78],[-7.22,40.5],[-7.58,40.28],[-8.08,40.28],[-8.25,40.48],[-8.22,40.85]]]]}},
+
+  "alentejo":{label:"Alentejo",num:43,country:"Portugal",color:"#cc8833",type:"rouge",
+    appellations:["Alentejo DOC","Borba","Évora","Reguengos","Vidigueira","Portalegre","Redondo"],
+    cepages:"Aragonez/Tinta Roriz, Trincadeira, Alicante Bouschet, Antão Vaz, Arinto",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[-8.38,39.08],[-7.68,39.22],[-7.08,39.15],[-6.88,38.68],[-7.28,38.22],[-7.95,38.12],[-8.42,38.38],[-8.45,38.72],[-8.38,39.08]]]]}},
+
+  "setubal_lisboa":{label:"Setúbal / Lisboa",num:44,country:"Portugal",color:"#aa4455",type:"rouge",
+    appellations:["Palmela DOC","Setúbal DOC","Moscatel de Setúbal","Lisboa DOC","Alenquer","Bucelas"],
+    cepages:"Castelão, Moscatel de Setúbal, Fernão Pires, Arinto",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[-9.42,39.08],[-8.82,39.18],[-8.45,39.08],[-8.38,38.68],[-8.68,38.42],[-9.18,38.38],[-9.52,38.62],[-9.42,39.08]]]]}},
+
+  "madere":{label:"Madère",num:45,country:"Portugal",color:"#884400",type:"vdn",
+    appellations:["Sercial","Verdelho","Bual","Malmsey/Malvasia","Terrantez","Rainwater"],
+    cepages:"Sercial, Verdelho, Bual, Malmsey/Malvasia, Terrantez",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[-17.32,32.82],[-16.98,32.94],[-16.65,32.88],[-16.58,32.7],[-16.78,32.58],[-17.12,32.55],[-17.35,32.68],[-17.32,32.82]]]]}},
+
+  /* ===== ITALIE ===== */
+  "piemonte":{label:"Piémont",num:50,country:"Italie",color:"#c43a5a",type:"rouge",
+    appellations:["Barolo DOCG","Barbaresco DOCG","Barbera d'Asti DOCG","Barbera d'Alba DOC","Dolcetto d'Alba DOC","Moscato d'Asti DOCG","Asti Spumante DOCG","Gavi DOCG","Roero DOCG","Nizza DOCG","Langhe DOC"],
+    cepages:"Nebbiolo, Barbera, Dolcetto, Moscato Bianco, Cortese, Arneis",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[6.62,45.2],[7.65,45.45],[8.52,45.25],[8.65,44.8],[8.2,44.38],[7.38,44.2],[6.68,44.4],[6.48,44.82],[6.62,45.2]]]]}},
+
+  "lombardie":{label:"Lombardie",num:51,country:"Italie",color:"#7755aa",type:"rouge",
+    appellations:["Franciacorta DOCG","Lugana DOC","Valtellina Superiore DOCG","Sforzato di Valtellina DOCG","Oltrepò Pavese DOCG"],
+    cepages:"Nebbiolo/Chiavennasca, Pinot Noir, Chardonnay, Turbiana",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[8.55,46.35],[10.02,46.62],[10.22,46.08],[10.2,45.52],[9.22,45.3],[8.52,45.42],[8.22,45.72],[8.55,46.35]]]]}},
+
+  "trentino_aa":{label:"Trentin-Haut-Adige",num:52,country:"Italie",color:"#6699cc",type:"rouge",
+    appellations:["Trentino DOC","Alto Adige DOC","Santa Maddalena DOC","Lagrein DOC","Teroldego Rotaliano DOC","Trento DOC","Caldaro DOC"],
+    cepages:"Teroldego, Lagrein, Schiava/Vernatsch, Pinot Noir, Gewürztraminer, Müller-Thurgau",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[10.5,46.85],[11.65,47.12],[12.28,46.82],[12.25,46.4],[11.42,46.12],[10.55,46.35],[10.5,46.85]]]]}},
+
+  "frioul":{label:"Frioul-Vénétie Julienne",num:53,country:"Italie",color:"#4488bb",type:"blanc",
+    appellations:["Collio DOC","Colli Orientali del Friuli DOCG","Friuli Isonzo DOC","Friuli Grave DOC","Ramandolo DOCG","Picolit DOCG"],
+    cepages:"Pinot Grigio, Friulano/Tocai, Ribolla Gialla, Sauvignon Blanc, Refosco",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[12.3,46.52],[13.75,46.62],[13.95,45.95],[13.2,45.65],[12.45,45.7],[12.3,46.08],[12.3,46.52]]]]}},
+
+  "veneto":{label:"Vénétie",num:54,country:"Italie",color:"#5577cc",type:"rouge",
+    appellations:["Amarone della Valpolicella DOCG","Valpolicella DOC","Valpolicella Ripasso DOC","Soave DOCG","Soave Classico DOC","Bardolino DOC","Prosecco Conegliano Valdobbiadene DOCG","Recioto della Valpolicella DOCG"],
+    cepages:"Corvina, Molinara, Rondinella, Garganega, Glera, Pinot Grigio",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[10.25,46.05],[11.48,46.08],[12.3,45.92],[12.48,45.52],[12.32,45.12],[11.28,44.92],[10.38,45.12],[10.25,45.55],[10.25,46.05]]]]}},
+
+  "toscane":{label:"Toscane",num:55,country:"Italie",color:"#8b3a2a",type:"rouge",
+    appellations:["Chianti DOCG","Chianti Classico DOCG","Brunello di Montalcino DOCG","Vino Nobile di Montepulciano DOCG","Bolgheri DOC","Bolgheri Sassicaia DOC","Morellino di Scansano DOCG","Vernaccia di San Gimignano DOCG","Vin Santo del Chianti DOC","Rosso di Montalcino DOC"],
+    cepages:"Sangiovese, Canaiolo, Colorino, Cabernet Sauvignon, Merlot, Trebbiano",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[9.78,44.5],[10.45,44.65],[11.28,44.45],[11.6,44.05],[11.72,43.38],[11.42,42.78],[10.68,42.6],[9.85,42.72],[9.42,43.2],[9.38,43.88],[9.78,44.5]]]]}},
+
+  "marches_ombrie":{label:"Marches / Ombrie",num:56,country:"Italie",color:"#6688aa",type:"rouge",
+    appellations:["Rosso Conero DOCG","Verdicchio dei Castelli di Jesi DOC","Verdicchio di Matelica DOC","Sagrantino di Montefalco DOCG","Orvieto DOC","Torgiano DOCG"],
+    cepages:"Montepulciano, Verdicchio, Sagrantino, Sangiovese, Trebbiano Spoletino",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[11.72,43.75],[13.85,44.28],[14.42,43.45],[14.0,42.7],[12.88,42.4],[11.72,42.58],[11.58,43.2],[11.72,43.75]]]]}},
+
+  "campanie":{label:"Campanie",num:57,country:"Italie",color:"#cc5533",type:"rouge",
+    appellations:["Taurasi DOCG","Greco di Tufo DOCG","Fiano di Avellino DOCG","Lacryma Christi del Vesuvio DOC","Falerno del Massico DOC","Campi Flegrei DOC"],
+    cepages:"Aglianico, Greco di Tufo, Fiano, Falanghina, Piedirosso",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[13.92,41.6],[15.18,41.72],[15.18,41.22],[14.95,40.62],[13.8,40.42],[13.3,40.8],[13.42,41.3],[13.92,41.6]]]]}},
+
+  "pouilles":{label:"Pouilles (Puglia)",num:58,country:"Italie",color:"#dd4422",type:"rouge",
+    appellations:["Primitivo di Manduria DOC","Primitivo di Manduria Dolce Naturale DOCG","Salice Salentino DOC","Castel del Monte DOCG","Locorotondo DOC"],
+    cepages:"Primitivo/Zinfandel, Negroamaro, Malvasia Nera, Bombino Nero, Verdeca",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[15.2,41.68],[16.62,41.82],[17.68,41.32],[18.32,40.45],[17.95,39.6],[16.92,39.3],[15.48,39.95],[15.2,40.68],[15.2,41.68]]]]}},
+
+  "sicile":{label:"Sicile",num:59,country:"Italie",color:"#dd7722",type:"rouge",
+    appellations:["Nero d'Avola DOC","Etna DOC","Marsala DOC","Passito di Pantelleria DOC","Cerasuolo di Vittoria DOCG","Menfi DOC","Alcamo DOC"],
+    cepages:"Nero d'Avola, Nerello Mascalese, Nerello Cappuccio, Catarratto, Grillo, Inzolia",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[12.32,37.88],[13.5,38.3],[14.65,38.15],[15.82,37.95],[15.5,37.28],[13.9,36.8],[12.45,36.72],[11.9,37.18],[12.32,37.88]]]]}},
+
+  "sardaigne":{label:"Sardaigne",num:60,country:"Italie",color:"#bb6644",type:"rouge",
+    appellations:["Cannonau di Sardegna DOC","Vermentino di Sardegna DOC","Vermentino di Gallura DOCG","Carignano del Sulcis DOC","Monica di Sardegna DOC"],
+    cepages:"Cannonau/Grenache, Vermentino, Carignano/Carignan, Monica, Malvasia",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[8.18,41.05],[8.68,41.35],[9.5,41.15],[9.88,40.65],[9.68,39.88],[9.0,39.2],[8.4,38.9],[7.88,39.28],[7.82,40.05],[8.18,41.05]]]]}},
+
+  "abruzzo_molise":{label:"Abruzzes / Molise",num:61,country:"Italie",color:"#cc6644",type:"rouge",
+    appellations:["Montepulciano d'Abruzzo DOC","Trebbiano d'Abruzzo DOC","Cerasuolo d'Abruzzo DOC","Pecorino DOC","Biferno DOC"],
+    cepages:"Montepulciano, Trebbiano d'Abruzzo, Pecorino, Passerina",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[13.48,42.88],[14.88,42.98],[15.18,42.05],[14.75,41.42],[13.88,41.38],[13.22,41.72],[13.38,42.38],[13.48,42.88]]]]}},
+
+  "lazio":{label:"Latium / Calabre",num:62,country:"Italie",color:"#aa5533",type:"blanc",
+    appellations:["Frascati DOC","Castelli Romani DOC","Est! Est!! Est!!! di Montefiascone DOC","Cirò DOC","Greco di Bianco DOC"],
+    cepages:"Malvasia, Trebbiano, Gaglioppo, Greco Bianco",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[11.88,42.65],[14.05,42.72],[14.18,41.42],[13.75,40.85],[12.58,40.78],[11.72,41.28],[11.88,42.65]]],[[[15.78,40.35],[16.68,40.45],[16.82,39.35],[16.12,38.42],[15.62,38.18],[15.48,38.72],[15.78,40.35]]]]}},
+
+  /* ===== ALLEMAGNE ===== */
+  "mosel":{label:"Moselle (Mosel)",num:70,country:"Allemagne",color:"#44bb88",type:"blanc",
+    appellations:["Bernkasteler Doctor","Wehlener Sonnenuhr","Piesporter Goldtröpfchen","Saar-Ruwer","Moseltor","Ober-Mosel"],
+    cepages:"Riesling, Müller-Thurgau, Elbling, Auxerrois",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[6.1,50.48],[6.58,50.58],[6.95,50.48],[7.02,50.2],[6.78,49.92],[6.4,49.82],[6.05,49.95],[6.1,50.48]]]]}},
+
+  "saar":{label:"Sarre / Mittelrhein",num:71,country:"Allemagne",color:"#44cc88",type:"blanc",
+    appellations:["Ockfener Bockstein","Scharzhofberger","Wiltinger Braune Kupp","Bacharacher Hahn"],
+    cepages:"Riesling",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[6.55,49.72],[6.85,49.78],[6.98,49.62],[6.85,49.42],[6.55,49.38],[6.38,49.52],[6.55,49.72]]],[[[7.52,50.35],[7.75,50.45],[7.88,50.32],[7.72,50.15],[7.48,50.12],[7.38,50.25],[7.52,50.35]]]]}},
+
+  "rheingau":{label:"Rheingau",num:72,country:"Allemagne",color:"#88cc88",type:"blanc",
+    appellations:["Rüdesheimer Berg Schlossberg","Hochheimer Domdechaney","Johannisberger Klaus","Schloss Vollrads","Erbacher Marcobrunn"],
+    cepages:"Riesling, Spätburgunder/Pinot Noir",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[7.85,50.22],[8.32,50.25],[8.52,50.12],[8.42,50.02],[7.98,50.0],[7.78,50.08],[7.85,50.22]]]]}},
+
+  "rheinhessen":{label:"Rheinhessen",num:73,country:"Allemagne",color:"#77bb55",type:"blanc",
+    appellations:["Niersteiner Pettenthal","Oppenheimer Herrenberg","Wormser Liebfrauenstift","Dalsheimer Hubacker"],
+    cepages:"Riesling, Müller-Thurgau, Dornfelder, Silvaner, Grauburgunder",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[7.82,49.98],[8.5,50.0],[8.62,49.72],[8.5,49.42],[8.05,49.42],[7.82,49.58],[7.82,49.8],[7.82,49.98]]]]}},
+
+  "pfalz":{label:"Palatinat (Pfalz)",num:74,country:"Allemagne",color:"#55aa66",type:"blanc",
+    appellations:["Deidesheimer Hohenmorgen","Forster Jesuitengarten","Wachenheimer Gerümpel","Bad Dürkheimer Spielberg"],
+    cepages:"Riesling, Müller-Thurgau, Dornfelder, Weissburgunder, Portugieser",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[7.68,49.4],[8.28,49.4],[8.42,49.22],[8.22,48.98],[7.8,48.92],[7.52,49.08],[7.58,49.28],[7.68,49.4]]]]}},
+
+  "nahe":{label:"Nahe",num:75,country:"Allemagne",color:"#66bb66",type:"blanc",
+    appellations:["Bad Kreuznacher Brückes","Schlossböckelheimer Felsenberg","Roxheimer Höllenpfad"],
+    cepages:"Riesling, Müller-Thurgau, Silvaner, Grauburgunder",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[7.4,49.95],[7.78,50.02],[7.8,49.85],[7.8,49.62],[7.58,49.52],[7.38,49.65],[7.38,49.82],[7.4,49.95]]]]}},
+
+  "bade":{label:"Bade (Baden)",num:76,country:"Allemagne",color:"#33aa55",type:"rouge",
+    appellations:["Kaiserstühler Batzenberg","Markgräflerland","Ortenau Spätburgunder","Breisgau","Tuniberg"],
+    cepages:"Spätburgunder/Pinot Noir, Grauburgunder, Müller-Thurgau, Gutedel/Chasselas",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[7.7,48.58],[8.1,48.65],[8.3,48.45],[8.38,48.1],[8.12,47.78],[7.8,47.72],[7.68,47.88],[7.68,48.22],[7.7,48.58]]]]}},
+
+  "franconie":{label:"Franconie (Franken)",num:77,country:"Allemagne",color:"#88aa44",type:"blanc",
+    appellations:["Würzburger Stein","Iphofer Julius-Echter-Berg","Escherndorfer Lump","Volkacher Karthäuser"],
+    cepages:"Silvaner, Müller-Thurgau, Bacchus, Riesling, Spätburgunder",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[9.68,49.98],[10.32,50.15],[10.88,50.05],[11.05,49.75],[10.78,49.45],[10.15,49.35],[9.72,49.52],[9.68,49.98]]]]}},
+
+  "wurtemberg":{label:"Wurtemberg",num:78,country:"Allemagne",color:"#99aa55",type:"rouge",
+    appellations:["Württemberger Trollinger","Lemberger DOC","Württemberger Riesling","Stettener Brotwasser"],
+    cepages:"Trollinger, Lemberger/Blaufränkisch, Riesling, Schwarzriesling",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[8.95,49.55],[9.88,49.72],[10.18,49.45],[9.98,48.92],[9.42,48.75],[8.88,48.92],[8.78,49.25],[8.95,49.55]]]]}},
+
+  /* ===== AUTRICHE ===== */
+  "wachau":{label:"Wachau",num:80,country:"Autriche",color:"#88bbdd",type:"blanc",
+    appellations:["Grüner Veltliner Smaragd","Grüner Veltliner Federspiel","Riesling Smaragd","Steinfeder","Loibener Riesling"],
+    cepages:"Grüner Veltliner, Riesling",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[14.98,48.45],[15.4,48.52],[15.45,48.4],[15.38,48.22],[15.18,48.18],[14.98,48.28],[14.98,48.45]]]]}},
+
+  "kamptal_kremstal":{label:"Kamptal / Kremstal",num:81,country:"Autriche",color:"#66aacc",type:"blanc",
+    appellations:["Kamptal DAC","Kremstal DAC","Langenlois","Krems-Stein","Zöbing","Gaisberg"],
+    cepages:"Grüner Veltliner, Riesling, Pinot Blanc",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[15.48,48.62],[16.1,48.7],[16.32,48.55],[16.15,48.32],[15.68,48.28],[15.48,48.42],[15.48,48.62]]]]}},
+
+  "burgenland":{label:"Burgenland",num:82,country:"Autriche",color:"#cc8844",type:"rouge",
+    appellations:["Blaufränkisch DAC","Neusiedlersee DAC","Ruster Ausbruch DAC","Eisenwein","Leithaberg DAC"],
+    cepages:"Blaufränkisch, Zweigelt, Welschriesling, Chardonnay, Furmint",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[16.5,48.18],[16.95,48.12],[17.22,47.78],[17.05,47.42],[16.58,47.2],[16.05,47.35],[15.88,47.62],[16.25,48.02],[16.5,48.18]]]]}},
+
+  "styrie":{label:"Styrie (Steiermark)",num:83,country:"Autriche",color:"#55aa44",type:"blanc",
+    appellations:["Südsteiermark DAC","Weststeiermark Schilcher DAC","Vulkanland Steiermark DAC"],
+    cepages:"Sauvignon Blanc, Welschriesling, Weissburgunder, Schilcher/Blauer Wildbacher",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[14.58,47.48],[15.42,47.62],[16.02,47.35],[15.95,46.9],[15.25,46.68],[14.45,46.82],[14.18,47.18],[14.58,47.48]]]]}},
+
+  "wien_donauland":{label:"Vienne / Donauland",num:84,country:"Autriche",color:"#aabbcc",type:"blanc",
+    appellations:["Wiener Gemischter Satz DAC","Wagram DAC","Traisental DAC","Carnuntum DAC"],
+    cepages:"Grüner Veltliner, Riesling, Gemischter Satz, Roter Veltliner",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[15.55,48.35],[16.55,48.35],[16.6,48.12],[16.1,47.95],[15.72,48.05],[15.55,48.2],[15.55,48.35]]]]}},
+
+  /* ===== GRÈCE ===== */
+  "santorini":{label:"Santorin / Cyclades",num:90,country:"Grèce",color:"#4499cc",type:"blanc",
+    appellations:["Santorini PDO","Nykteri PDO","Vinsanto PDO","Muscat de Samos PDO","Rhodes PDO"],
+    cepages:"Assyrtiko, Aidani, Athiri, Muscat Blanc à Petits Grains",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[25.32,36.42],[25.58,36.54],[25.72,36.42],[25.55,36.28],[25.32,36.32],[25.32,36.42]]],[[[26.6,37.82],[26.9,37.94],[27.1,37.8],[26.9,37.64],[26.6,37.7],[26.6,37.82]]]]}},
+
+  "nemee":{label:"Némée / Péloponnèse",num:91,country:"Grèce",color:"#bb4455",type:"rouge",
+    appellations:["Nemea PDO","Mantinia PDO","Patras PDO","Muscat de Patras PDO"],
+    cepages:"Agiorgitiko, Moschofilero, Roditis, Mavrodaphne",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[21.98,37.88],[22.45,38.02],[22.9,37.9],[23.05,37.58],[22.72,37.28],[22.2,37.22],[21.88,37.42],[21.98,37.88]]]]}},
+
+  "naoussa_mak":{label:"Macédoine — Naoussa",num:92,country:"Grèce",color:"#8844aa",type:"rouge",
+    appellations:["Naoussa PDO","Amyntaion PDO","Goumenissa PDO","Drama","Kavala"],
+    cepages:"Xinomavro, Negoska",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[21.35,40.88],[21.95,41.02],[22.38,40.88],[22.42,40.58],[22.05,40.3],[21.45,40.32],[21.18,40.55],[21.35,40.88]]]]}},
+
+  "crete":{label:"Crète",num:93,country:"Grèce",color:"#cc6644",type:"rouge",
+    appellations:["Archanes PDO","Dafnes PDO","Peza PDO","Sitia PDO"],
+    cepages:"Kotsifali, Mandilari, Vilana, Thrapsathiri",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[23.52,35.52],[24.5,35.65],[25.55,35.6],[26.28,35.28],[25.82,34.92],[24.85,34.82],[23.98,34.95],[23.52,35.22],[23.52,35.52]]]]}},
+
+  /* ===== HONGRIE ===== */
+  "tokaj":{label:"Tokaj",num:100,country:"Hongrie",color:"#e8c850",type:"blanc",
+    appellations:["Tokaji Aszú","Tokaji Szamorodni","Tokaji Furmint","Tokaji Essencia","Tokaji Hárslevelű"],
+    cepages:"Furmint, Hárslevelű, Sárga Muskotály/Muscat",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[21.18,48.42],[21.58,48.55],[21.85,48.38],[21.78,48.1],[21.42,47.98],[21.1,48.1],[21.18,48.42]]]]}},
+
+  "eger":{label:"Eger — Egri Bikavér",num:101,country:"Hongrie",color:"#aa3344",type:"rouge",
+    appellations:["Egri Bikavér PDO","Egri Csillag PDO","Egri Leányka","Debrői Hárslevelű"],
+    cepages:"Kékfrankos/Blaufränkisch, Kadarka, Blauburger, Merlot",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[20.0,48.05],[20.45,48.15],[20.68,47.95],[20.62,47.7],[20.22,47.6],[19.9,47.75],[20.0,48.05]]]]}},
+
+  "villany":{label:"Villány / Szekszárd",num:102,country:"Hongrie",color:"#8b2244",type:"rouge",
+    appellations:["Villányi Franc PDO","Villányi Merlot","Szekszárdi Bikavér PDO","Szekszárdi Kadarka"],
+    cepages:"Cabernet Franc, Merlot, Kékfrankos, Kadarka",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[17.88,45.9],[18.38,46.0],[18.62,45.78],[18.45,45.52],[18.05,45.4],[17.78,45.55],[17.88,45.9]]]]}},
+
+  "somlo":{label:"Somló / Badacsony",num:103,country:"Hongrie",color:"#88aa55",type:"blanc",
+    appellations:["Somlói Juhfark PDO","Badacsonyi Szürkebarát PDO","Badacsonyi Kéknyelű PDO","Balaton-felvidéki Rizling"],
+    cepages:"Juhfark, Furmint, Szürkebarát/Pinot Gris, Kéknyelű",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[17.15,46.98],[17.48,47.1],[17.68,46.95],[17.58,46.75],[17.25,46.68],[17.02,46.8],[17.15,46.98]]]]}},
+
+  /* ===== SUISSE ===== */
+  "suisse_valais":{label:"Valais",num:110,country:"Suisse",color:"#ccaa88",type:"rouge",
+    appellations:["Fendant","Johannisberg","Dôle","Cornalin","Humagne Rouge","Heida/Savagnin","Ermitage/Marsanne","Petite Arvine"],
+    cepages:"Chasselas/Gutedel, Pinot Noir, Gamay, Cornalin, Syrah, Petite Arvine",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[6.98,46.38],[7.88,46.52],[8.48,46.25],[8.25,45.95],[7.18,45.95],[6.78,46.08],[6.98,46.38]]]]}},
+
+  "suisse_vaud":{label:"Vaud / Genève",num:111,country:"Suisse",color:"#ccbb99",type:"blanc",
+    appellations:["Lavaux AOC","Chablais AOC","La Côte AOC","Genève AOC","Mont-sur-Rolle","Aigle","Yvorne","Villeneuve"],
+    cepages:"Chasselas/Gutedel, Pinot Noir, Gamay, Garanoir",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[6.12,46.45],[6.88,46.58],[7.0,46.42],[6.98,46.18],[6.55,46.05],[6.12,46.22],[6.12,46.45]]]]}},
+
+  /* ===== AUTRES ===== */
+  "croatie_dalm":{label:"Croatie — Dalmatie",num:120,country:"Croatie",color:"#cc8855",type:"rouge",
+    appellations:["Dingač","Postup","Plavac Mali","Prošek","Grk","Pošip","Zlatarica"],
+    cepages:"Plavac Mali, Pošip, Grk, Zlatarica, Maraština",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[14.42,45.28],[15.92,45.35],[16.88,45.12],[17.58,44.75],[17.88,44.28],[16.72,43.32],[15.88,43.05],[14.88,43.18],[14.42,43.72],[14.42,45.28]]]]}},
+
+  "slovenie":{label:"Slovénie",num:121,country:"Slovénie",color:"#88bb77",type:"blanc",
+    appellations:["Goriška Brda","Kras","Vipavska Dolina","Štajerska Slovenija","Prekmurje"],
+    cepages:"Rebula/Ribolla Gialla, Malvazija, Pinot Gris, Welschriesling, Šipon/Furmint",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[13.38,46.52],[15.18,46.88],[16.52,46.52],[16.55,46.12],[15.62,45.48],[14.12,45.38],[13.62,45.52],[13.38,46.0],[13.38,46.52]]]]}},
+
+  "bulgarie":{label:"Bulgarie",num:130,country:"Bulgarie",color:"#aa6633",type:"rouge",
+    appellations:["Melnik DO","Plovdiv","Thrace","Danube","Suhindol"],
+    cepages:"Mavrud, Melnik, Rubin, Cabernet Sauvignon, Merlot, Dimyat",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[22.38,44.22],[26.62,44.28],[28.62,43.75],[28.62,41.88],[27.28,41.48],[25.28,41.32],[23.28,41.38],[22.32,42.05],[22.38,44.22]]]]}},
+
+  "roumanie":{label:"Roumanie",num:131,country:"Roumanie",color:"#bb8844",type:"rouge",
+    appellations:["Dealu Mare","Cotnari","Murfatlar","Recaș","Drăgășani","Odobești"],
+    cepages:"Fetească Neagră, Fetească Albă, Tămâioasă Românească, Cabernet Sauvignon, Merlot",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[22.38,48.22],[29.62,48.22],[30.12,45.48],[29.62,43.72],[27.72,43.62],[25.28,43.78],[23.28,44.22],[22.38,44.98],[22.38,48.22]]]]}},
+
+  "angleterre":{label:"Angleterre — South East",num:140,country:"Angleterre",color:"#aabbaa",type:"effervescent",
+    appellations:["English Sparkling Wine","Sussex","Kent","Surrey","Hampshire","Ridgeview","Nyetimber"],
+    cepages:"Chardonnay, Pinot Noir, Pinot Meunier, Bacchus, Seyval Blanc",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[-1.78,51.12],[1.48,51.38],[1.72,51.12],[0.88,50.72],[-0.48,50.72],[-1.28,50.82],[-1.78,51.12]]]]}},
+
+  "luxembourg":{label:"Luxembourg — Moselle",num:141,country:"Luxembourg",color:"#ddcc88",type:"blanc",
+    appellations:["Moselle Luxembourgeoise AOC","Wormeldange","Remich","Grevenmacher","Stadtbredimus"],
+    cepages:"Riesling, Auxerrois, Pinot Gris, Pinot Blanc, Rivaner/Müller-Thurgau",
+    geometry:{"type":"MultiPolygon","coordinates":[[[[6.12,49.62],[6.52,49.78],[6.52,49.42],[6.22,49.38],[6.05,49.48],[6.12,49.62]]]]}},
 };
 
 const TYPE_COLORS_CARTE = {
@@ -2979,7 +3442,7 @@ function renderCarte() {
         .attr('d', cartePath)
         .attr('fill', '#111e2b')
         .attr('stroke', '#1a2d3d')
-        .attr('stroke-width', 0.3)
+        .attr('stroke-width', 0.3);
         .on('mouseenter', () => d3.select('#carte-tooltip').style('display','none'));
       
       // Pays viticoles (fond légèrement plus clair)
@@ -2996,7 +3459,7 @@ function renderCarte() {
         .attr('d', cartePath)
         .attr('fill', f => countryColors[parseInt(f.id)] || '#141828')
         .attr('stroke', '#253545')
-        .attr('stroke-width', 0.5)
+        .attr('stroke-width', 0.5);
         .on('mouseenter', () => d3.select('#carte-tooltip').style('display','none'));
       
       // Frontières internes (borders)
@@ -3098,14 +3561,14 @@ function drawWineRegionPolygons(g) {
         .attr('fill', region.color)
         .attr('fill-opacity', 0.30)
         .attr('stroke', region.color)
-        .attr('stroke-width', 0.8)
+        .attr('stroke-width', 0.2)
         .attr('stroke-opacity', 0.85)
         .style('cursor', 'pointer')
         .on('mouseenter', function(event) {
           // Highlight tous les polygones de cette région
           d3.selectAll(`.wine-zone[data-key="${key}"]`)
             .attr('fill-opacity', 0.52)
-            .attr('stroke-width', 1.8);
+            .attr('stroke-width', 0.7);
           showRegionTooltip(event, key, region.label);
         })
         .on('mousemove', updateTooltipPos)
@@ -3113,16 +3576,16 @@ function drawWineRegionPolygons(g) {
           const isSel = carteSelectedRegion === key;
           d3.selectAll(`.wine-zone[data-key="${key}"]`)
             .attr('fill-opacity', isSel ? 0.52 : 0.30)
-            .attr('stroke-width', isSel ? 1.8 : 0.8);
+            .attr('stroke-width', isSel ? 0.7 : 0.4);
           d3.select('#carte-tooltip').style('display','none');
         })
         .on('click', function() {
           d3.selectAll('.wine-zone')
             .attr('fill-opacity', 0.30)
-            .attr('stroke-width', 0.8);
+            .attr('stroke-width', 0.2);
           d3.selectAll(`.wine-zone[data-key="${key}"]`)
             .attr('fill-opacity', 0.52)
-            .attr('stroke-width', 1.8);
+            .attr('stroke-width', 0.7);
           selectCarteRegion(key, region.label);
         });
     });
@@ -3201,7 +3664,7 @@ function drawWinePoints(g) {
       .attr('fill', color)
       .attr('opacity', isSel ? 0.90 : 0.38)
       .attr('stroke', isSel ? 'white' : 'rgba(255,255,255,0.22)')
-      .attr('stroke-width', isSel ? 1.8 : 0.6);
+      .attr('stroke-width', isSel ? 0.7 : 0.4);
     group.append('text')
       .attr('x', centroid[0]).attr('y', centroid[1] + 2)
       .attr('text-anchor','middle')
