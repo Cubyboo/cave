@@ -3442,7 +3442,7 @@ function renderCarte() {
         .attr('d', cartePath)
         .attr('fill', '#111e2b')
         .attr('stroke', '#1a2d3d')
-        .attr('stroke-width', 0.3);
+        .attr('stroke-width', 0.3)
         .on('mouseenter', () => d3.select('#carte-tooltip').style('display','none'));
       
       // Pays viticoles (fond légèrement plus clair)
@@ -3459,7 +3459,7 @@ function renderCarte() {
         .attr('d', cartePath)
         .attr('fill', f => countryColors[parseInt(f.id)] || '#141828')
         .attr('stroke', '#253545')
-        .attr('stroke-width', 0.5);
+        .attr('stroke-width', 0.5)
         .on('mouseenter', () => d3.select('#carte-tooltip').style('display','none'));
       
       // Frontières internes (borders)
@@ -3576,7 +3576,7 @@ function drawWineRegionPolygons(g) {
           const isSel = carteSelectedRegion === key;
           d3.selectAll(`.wine-zone[data-key="${key}"]`)
             .attr('fill-opacity', isSel ? 0.52 : 0.30)
-            .attr('stroke-width', isSel ? 0.7 : 0.4);
+            .attr('stroke-width', isSel ? 0.7 : 0.2);
           d3.select('#carte-tooltip').style('display','none');
         })
         .on('click', function() {
@@ -3636,7 +3636,6 @@ function drawWinePoints(g) {
       : { type:'Polygon', coordinates:[region.coords] };
     const polysCoords = geom.type === 'MultiPolygon' ? geom.coordinates : [geom.coordinates];
     const mainGeo = { type:'Feature', geometry:{ type:'Polygon', coordinates: polysCoords[0] }};
-    // Bourgogne : centroïde forcé à gauche de la Côte de Nuits
     const centroid = (key === 'bourgogne')
       ? carteProjection([4.60, 47.22])
       : cartePath.centroid(mainGeo);
@@ -3669,7 +3668,7 @@ function drawWinePoints(g) {
       .attr('x', centroid[0]).attr('y', centroid[1] + 2)
       .attr('text-anchor','middle')
       .attr('font-size','5').attr('font-weight','bold')
-      .attr('fill','rgba(255,255,255,0.75)').style('pointer-events','none')
+      .attr('fill','rgba(255,255,255,0.80)').style('pointer-events','none')
       .text(wines.length);
 
     group.on('mouseenter', (event) => {
