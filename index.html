@@ -1131,15 +1131,31 @@ function loadFromSheets() {
             localImageBySlot[key] = w.image;
           }
         });
+        // Récupérer les prix marché depuis localStorage (non stockés dans Sheet si nouveaux)
+        const localPrixMarche = {};
+        const localCaveData = JSON.parse(localStorage.getItem('caveData') || '[]');
+        localCaveData.forEach(w => {
+          if(w.id && (w.prix_marche || w.prix_marche_manuel)) {
+            localPrixMarche[String(w.id)] = {
+              prix_marche:         w.prix_marche,
+              prix_marche_manuel:  w.prix_marche_manuel,
+              prix_marche_min:     w.prix_marche_min,
+              prix_marche_max:     w.prix_marche_max,
+              prix_marche_tendance:w.prix_marche_tendance,
+              prix_marche_date:    w.prix_marche_date
+            };
+          }
+        });
         wineData = data.map(w => {
           const cave  = parseInt(w.cave)  || 1;
           const floor = parseInt(w.floor) || 1;
           const slot  = parseInt(w.slot)  || 1;
           const key   = `${cave}_${floor}_${slot}`;
           const id    = String(w.id || '');
-          // Priorité : imageStore (stable) > champ Sheet > localStorage par ID > localStorage par slot
           const resolvedImage = imgGet('wine_' + id) || w.image || localImageById[id] || localImageBySlot[key] || '';
-          if(resolvedImage && id) imgSave('wine_' + id, resolvedImage); // consolider dans imageStore
+          if(resolvedImage && id) imgSave('wine_' + id, resolvedImage);
+          // Préserver prix marché depuis Sheet OU localStorage
+          const pm = localPrixMarche[id] || {};
           return {
             ...w,
             cave,
@@ -1148,7 +1164,13 @@ function loadFromSheets() {
             annee: parseInt(w.annee) || '',
             prix:  parseFloat(w.prix) || '',
             note:  w.note || '',
-            image: resolvedImage
+            image: resolvedImage,
+            prix_marche:          w.prix_marche          || pm.prix_marche          || '',
+            prix_marche_manuel:   w.prix_marche_manuel   || pm.prix_marche_manuel   || '',
+            prix_marche_min:      w.prix_marche_min      || pm.prix_marche_min      || '',
+            prix_marche_max:      w.prix_marche_max      || pm.prix_marche_max      || '',
+            prix_marche_tendance: w.prix_marche_tendance || pm.prix_marche_tendance || '',
+            prix_marche_date:     w.prix_marche_date     || pm.prix_marche_date     || ''
           };
         });
         localStorage.setItem('caveData', JSON.stringify(wineData));
@@ -1156,6 +1178,8 @@ function loadFromSheets() {
         renderCave2D();
         showNotif('Cave synchronisée ✓');
         loadHistoriqueFromSheets();
+        // Estimation automatique des vins sans prix marché (en arrière-plan)
+        setTimeout(() => estimerTousLesVinsAuto(), 2000);
       } else {
         showNotif('Sheet vide — données locales conservées');
       }
@@ -1891,7 +1915,7 @@ function renderList() {
     return;
   }
   let html=`<table class="wine-table"><thead><tr>
-    <th>Nom</th><th>Appellation</th><th>Domaine / Producteur</th><th>Type</th><th>Format</th><th>Millésime</th><th>Région</th><th>Cave</th><th>Position</th><th>Prix</th><th></th>
+    <th>Nom</th><th>Appellation</th><th>Domaine / Producteur</th><th>Type</th><th>Format</th><th>Millésime</th><th>Région</th><th>Cave</th><th>Position</th><th>Prix marché</th><th></th>
   </tr></thead><tbody>`;
   wines.forEach(w => {
     const tLabel = TYPE_LABELS[w.type]||w.type;
@@ -1906,7 +1930,16 @@ function renderList() {
       <td>${w.region||'—'}</td>
       <td>Cave ${w.cave}</td>
       <td style="white-space:nowrap">Ét.${w.floor} #${w.slot}</td>
-      <td>${w.prix?w.prix+'€':'—'}</td>
+      <td style="white-space:nowrap">
+        ${w.prix_marche_manuel
+          ? `<span style="color:var(--gold)" title="Prix manuel">${w.prix_marche_manuel}€ ✏</span>`
+          : w.prix_marche
+            ? `<span style="color:var(--gold)" title="Fourchette: ${w.prix_marche_min||'?'}€–${w.prix_marche_max||'?'}€ · ${w.prix_marche_tendance||''}">${w.prix_marche}€</span>`
+            : w.prix
+              ? `<span style="color:var(--text2)" title="Prix d'achat">${w.prix}€</span>`
+              : '<span style="color:var(--text2);font-style:italic">—</span>'
+        }
+      </td>
       <td><button class="btn-danger" style="padding:4px 9px;font-size:0.78rem" onclick="event.stopPropagation();removeWine('${w.id}')">✕</button></td>
     </tr>`;
   });
@@ -1954,6 +1987,74 @@ function effacerPrixMarcheManuel(wineId) {
   const div = document.getElementById('saisie-prix-marche');
   if(div) div.style.display = 'none';
   showNotif('Prix manuel effacé — estimation Groq active');
+}
+
+async function estimerTousLesVinsAuto() {
+  const aEstimer = wineData.filter(w => !w.prix_marche && !w.prix_marche_manuel);
+  if(aEstimer.length === 0) return;
+
+  showNotif('💰 Estimation des prix marché en cours (' + aEstimer.length + ' vins)…');
+
+  // Envoyer tous les vins en une seule requête Groq (batch)
+  const BATCH = 15;
+  let estimés = 0;
+
+  for(let i = 0; i < aEstimer.length; i += BATCH) {
+    const batch = aEstimer.slice(i, i + BATCH);
+    const lignes = batch.map((w, idx) =>
+      `${idx+1}. ${w.nom}|${w.domaine||''}|${w.appellation||''}|${w.annee||''}|${w.type||''}|${w.format||'75cl'}`
+    ).join('\n');
+
+    const prompt = `Tu es expert en vins français et internationaux. Estime le prix de marché actuel pour chaque vin de cette liste (format: nom|domaine|appellation|millésime|type|format).
+
+${lignes}
+
+Réponds UNIQUEMENT avec un tableau JSON strict, un objet par vin, dans le même ordre :
+[
+  {"min": <prix_min>, "max": <prix_max>, "tendance": "hausse"|"stable"|"baisse"},
+  ...
+]
+Aucun texte autour. Juste le tableau JSON.`;
+
+    try {
+      const resp = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'estimerPrix', prompt })
+      });
+      const data = await resp.json();
+      const text = data.text || '';
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      if(!jsonMatch) continue;
+      const estimations = JSON.parse(jsonMatch[0]);
+
+      batch.forEach((wine, idx) => {
+        const est = estimations[idx];
+        if(!est || !est.min || !est.max) return;
+        const wIdx = wineData.findIndex(w => String(w.id) === String(wine.id));
+        if(wIdx === -1) return;
+        if(wineData[wIdx].prix_marche_manuel) return; // Ne pas écraser le manuel
+        wineData[wIdx].prix_marche          = Math.round((est.min + est.max) / 2);
+        wineData[wIdx].prix_marche_min      = est.min;
+        wineData[wIdx].prix_marche_max      = est.max;
+        wineData[wIdx].prix_marche_tendance = est.tendance || 'stable';
+        wineData[wIdx].prix_marche_date     = new Date().toISOString().split('T')[0];
+        estimés++;
+      });
+
+      // Sauvegarder après chaque batch
+      saveData();
+      renderList();
+      renderStats();
+
+    } catch(e) {
+      console.warn('Batch estimation échouée', e);
+    }
+
+    // Pause entre les batches pour ne pas surcharger Groq
+    if(i + BATCH < aEstimer.length) await new Promise(r => setTimeout(r, 1000));
+  }
+
+  if(estimés > 0) showNotif('💰 ' + estimés + ' vins estimés ✓');
 }
 
 async function estimerValeurCave() {
