@@ -599,7 +599,7 @@
     <div>
       <h2 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem">🥂 Dégustations</h2>
       <div style="color:var(--text2);font-size:0.78rem;margin-top:4px;display:flex;gap:14px;flex-wrap:wrap;align-items:center">
-        <span>Cave de ma cave</span>
+        <span>Vins de ma cave</span>
         <span style="border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:1px 8px;background:rgba(201,168,76,0.07);color:var(--text2)">hors cave</span>
       </div>
     </div>
@@ -2173,13 +2173,19 @@ let degustationData = JSON.parse(localStorage.getItem('degustationData') || '[]'
 
 function saveDegustationData() {
   localStorage.setItem('degustationData', JSON.stringify(degustationData));
-  // Sync to sheets if available
-  try {
-    fetch(SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'saveDegustation', data: degustationData })
-    }).catch(()=>{});
-  } catch(e) {}
+  // Sync vers Sheets : envoi du tableau complet pour écriture/remplacement
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'saveDegustation', data: degustationData })
+  }).catch(e => console.warn('Sync degustation échouée', e));
+}
+
+function saveDegustationEntryToSheets(entry) {
+  // Envoi d'une seule entrée (pour compatibilité Apps Script ligne par ligne)
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'saveDegustationEntry', data: entry })
+  }).catch(e => console.warn('Sync degustation entry échouée', e));
 }
 
 function openAddDegustation(editId) {
@@ -2260,6 +2266,7 @@ function saveDegustation() {
     degustationData.unshift(entry);
   }
   saveDegustationData();
+  saveDegustationEntryToSheets(entry); // Sync entrée individuelle aussi
   closeModal('modalDegustation');
   renderDegustations();
   renderHistorique();
@@ -2450,6 +2457,34 @@ function loadHistoriqueFromSheets() {
   };
   const script = document.createElement('script');
   script.src = SCRIPT_URL + '?sheet=Historique&callback=' + cbName + '&t=' + Date.now();
+  document.body.appendChild(script);
+  // Charger aussi les dégustations hors cave
+  loadDegustationFromSheets();
+}
+
+function loadDegustationFromSheets() {
+  const cbName = 'degCallback_' + Date.now();
+  const timeout = setTimeout(() => { delete window[cbName]; }, 8000);
+  window[cbName] = function(data) {
+    clearTimeout(timeout);
+    delete window[cbName];
+    if(Array.isArray(data) && data.length > 0) {
+      // Fusionner avec données locales : priorité aux données Sheets (plus récentes)
+      const localById = {};
+      degustationData.forEach(d => { if(d.id) localById[d.id] = d; });
+      // Reconstruire en préservant les images du imageStore
+      degustationData = data.map(d => {
+        const img = imgGet('deg_' + d.id) || d.image || (localById[d.id]?.image) || '';
+        if(img && d.id) imgSave('deg_' + d.id, img);
+        return { ...d, image: img };
+      });
+      localStorage.setItem('degustationData', JSON.stringify(degustationData));
+      renderHistorique();
+      renderDegustations();
+    }
+  };
+  const script = document.createElement('script');
+  script.src = SCRIPT_URL + '?sheet=Degustation&callback=' + cbName + '&t=' + Date.now();
   document.body.appendChild(script);
 }
 
