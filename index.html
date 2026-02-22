@@ -4,7 +4,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍷</text></svg>">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cave à Vin MMM</title>
+<title>🍷  Cave à Vin MMM</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
   /* ============================================================
@@ -4963,60 +4963,90 @@ function renderCarte() {
   renderAppellationsLayer();
 }
 
-// Couche permanente de points pour toutes les appellations européennes
-function renderAppellationsLayer() {
-  if(!leafletMap) return;
-  if(leafletMap._allAppelLayer) { leafletMap.removeLayer(leafletMap._allAppelLayer); }
+// ── Calcule le centroïde d'un polygone GeoJSON (coordonnées [lng,lat]) ──
+function geoCentroid(geometry) {
+  let coords = [];
+  if (geometry.type === 'Polygon') {
+    coords = geometry.coordinates[0];
+  } else if (geometry.type === 'MultiPolygon') {
+    let best = [];
+    geometry.coordinates.forEach(poly => { if (poly[0].length > best.length) best = poly[0]; });
+    coords = best;
+  }
+  if (!coords.length) return null;
+  return [coords.reduce((s,c)=>s+c[1],0)/coords.length, coords.reduce((s,c)=>s+c[0],0)/coords.length];
+}
 
-  const group = L.layerGroup();
-
-  Object.entries(APPELLATIONS).forEach(([regionKey, apps]) => {
-    apps.forEach(app => {
-      if(!app.bbox) return;
-      const clat = (app.bbox[0][0] + app.bbox[1][0]) / 2;
-      const clng = (app.bbox[0][1] + app.bbox[1][1]) / 2;
-      const isN2 = app.niveau === 2;
-
-      // Point
-      const dot = L.circleMarker([clat, clng], {
-        radius: isN2 ? 3 : 4.5,
-        color: isN2 ? '#b07ad4' : '#c9a84c',
-        fillColor: isN2 ? '#c89ee0' : '#e8c870',
-        fillOpacity: isN2 ? 0.75 : 0.85,
-        weight: isN2 ? 1 : 1.5,
-        opacity: 0.9
-      });
-
-      // Label
-      const lbl = L.marker([clat, clng], {
-        icon: L.divIcon({
-          className: '',
-          html: `<div style="
-            font-family:'Playfair Display',serif;
-            font-size:${isN2 ? '0.52rem' : '0.65rem'};
-            font-weight:${isN2 ? '500' : '700'};
-            color:${isN2 ? '#d4a8e8' : '#f0d888'};
-            text-shadow:0 1px 3px rgba(0,0,0,0.95),0 0 6px rgba(0,0,0,0.8);
-            white-space:nowrap;pointer-events:none;
-            transform:translate(6px,-50%);
-            opacity:${isN2 ? '0.85' : '1'};
-          ">${app.nom}</div>`,
-          iconSize: [0,0], iconAnchor: [0,0]
-        }),
-        interactive: false,
-        zIndexOffset: isN2 ? -200 : -100
-      });
-
-      dot.bindTooltip(`<div style="font-family:'Playfair Display',serif;color:${isN2?'#d4a8e8':'#c9a84c'};font-size:0.85rem;font-weight:600">${app.nom}</div>`,
-        { direction:'top', className:'leaflet-wine-tooltip' });
-
-      group.addLayer(dot);
-      group.addLayer(lbl);
-    });
+// ── Ajoute un label+point sur la carte à partir d'un centroïde réel ──
+function addAppelLabel(group, lat, lng, nom, isN2) {
+  const dot = L.circleMarker([lat, lng], {
+    radius: isN2 ? 3 : 5,
+    color: isN2 ? '#7b2fa8' : '#8b3a0f',
+    fillColor: isN2 ? '#a855d4' : '#c0440f',
+    fillOpacity: 0.9, weight: 1.5, opacity: 1
   });
+  dot.bindTooltip(`<div style="font-family:'Playfair Display',serif;color:#c9a84c;font-size:0.85rem;font-weight:600">${nom}</div>`,
+    { direction:'top', className:'leaflet-wine-tooltip' });
+  const lbl = L.marker([lat, lng], {
+    icon: L.divIcon({
+      className: '',
+      html: `<div style="
+        font-family:'Playfair Display',serif;
+        font-size:${isN2?'0.52rem':'0.66rem'};font-weight:700;
+        color:${isN2?'#4a0a6a':'#2a0a00'};
+        background:rgba(255,255,255,0.85);
+        padding:1px 4px;border-radius:2px;
+        white-space:nowrap;pointer-events:none;
+        transform:translate(6px,-50%);
+        box-shadow:0 1px 3px rgba(0,0,0,0.15);
+      ">${nom}</div>`,
+      iconSize:[0,0], iconAnchor:[0,0]
+    }),
+    interactive: false, zIndexOffset: isN2 ? -200 : -100
+  });
+  group.addLayer(dot);
+  group.addLayer(lbl);
+}
 
-  group.addTo(leafletMap);
+// ── Requête WFS IGN INAO — centroïdes réels des appellations ──
+async function fetchInaoFeatures(bbox) {
+  const [minLat,minLng] = bbox[0], [maxLat,maxLng] = bbox[1];
+  const url = `https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature`
+    +`&TYPENAMES=AOC-VITICOLES:aire_parcellaire`
+    +`&OUTPUTFORMAT=application/json&SRSNAME=CRS:84&COUNT=500`
+    +`&BBOX=${minLng},${minLat},${maxLng},${maxLat},CRS:84`;
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) return null;
+    return await resp.json();
+  } catch(e) { return null; }
+}
+
+// ── Couche permanente : labels placés sur les vrais centroïdes WFS INAO ──
+async function renderAppellationsLayer() {
+  if (!leafletMap) return;
+  if (leafletMap._allAppelLayer) { leafletMap.removeLayer(leafletMap._allAppelLayer); }
+  const group = L.layerGroup();
   leafletMap._allAppelLayer = group;
+  group.addTo(leafletMap);
+
+  const frenchRegions = ['bourgogne','bordeaux','champagne','alsace','cotes-du-rhone',
+    'loire','languedoc','roussillon','provence','jura','savoie','sud-ouest','corse','beaujolais'];
+
+  for (const key of frenchRegions) {
+    const bbox = REGION_BBOX[key];
+    if (!bbox) continue;
+    const data = await fetchInaoFeatures(bbox);
+    if (!data || !data.features) continue;
+    const seen = new Set();
+    data.features.forEach(f => {
+      const nom = f.properties?.appellation || f.properties?.libelle || f.properties?.nom_aoc || f.properties?.name;
+      if (!nom || seen.has(nom)) return;
+      seen.add(nom);
+      const c = geoCentroid(f.geometry);
+      if (c) addAppelLabel(group, c[0], c[1], nom, false);
+    });
+  }
 }
 
 function resetToEurope() {
@@ -5448,53 +5478,47 @@ const APPELLATIONS = {
   ],
 };
 
-// Fonction pour afficher les appellations d'une région sur la carte
-function showAppellations(regionKey, niveauMax) {
-  if(!leafletMap) return;
-  // Supprimer la couche précédente
-  if(leafletMap._appelLayer) {
+// Fonction pour afficher les appellations d'une région sur la carte — centroïdes réels WFS
+async function showAppellations(regionKey, niveauMax) {
+  if (!leafletMap) return;
+  if (leafletMap._appelLayer) {
     leafletMap.removeLayer(leafletMap._appelLayer);
     leafletMap._appelLayer = null;
   }
-  if(!regionKey) return;
+  if (!regionKey) return;
 
-  const apps = APPELLATIONS[regionKey];
-  if(!apps || !apps.length) return;
+  const bbox = REGION_BBOX[regionKey];
+  if (!bbox) return;
 
   leafletMap._appelRegion = regionKey;
-  const niveau = niveauMax || 2;
-
   const group = L.layerGroup();
-
-  apps.filter(a => a.niveau <= niveau).forEach(app => {
-    const isN2 = app.niveau === 2;
-
-    // Label centroïde uniquement — pas de polygone
-    if(app.bbox) {
-      const clat = (app.bbox[0][0] + app.bbox[1][0]) / 2;
-      const clng = (app.bbox[0][1] + app.bbox[1][1]) / 2;
-      const lbl = L.marker([clat, clng], {
-        icon: L.divIcon({
-          className: '',
-          html: `<div style="
-            font-family:'Playfair Display',serif;
-            font-size:${isN2 ? '0.55rem' : '0.7rem'};font-weight:700;
-            color:${isN2 ? '#d4a8e8' : '#f0d888'};
-            text-shadow:0 1px 3px rgba(0,0,0,0.9),0 0 8px rgba(0,0,0,0.8);
-            white-space:nowrap;pointer-events:none;
-            transform:translate(-50%,-50%);
-            opacity:${isN2 ? '0.85' : '1'};
-          ">${app.nom}</div>`,
-          iconSize: [0, 0], iconAnchor: [0, 0]
-        }),
-        interactive: false, zIndexOffset: isN2 ? -200 : -100
-      });
-      group.addLayer(lbl);
-    }
-  });
-
   group.addTo(leafletMap);
   leafletMap._appelLayer = group;
+
+  // Spinner discret pendant le chargement
+  const hint = document.getElementById('carte-zoom-hint');
+  if (hint) hint.innerHTML = '⏳ Chargement des appellations INAO…';
+
+  const data = await fetchInaoFeatures(bbox);
+  if (!data || !data.features) {
+    if (hint) hint.innerHTML = '⚠️ Données INAO indisponibles';
+    return;
+  }
+
+  const seen = new Set();
+  data.features.forEach(f => {
+    const nom = f.properties?.appellation || f.properties?.libelle || f.properties?.nom_aoc || f.properties?.name;
+    if (!nom || seen.has(nom)) return;
+    seen.add(nom);
+    const c = geoCentroid(f.geometry);
+    if (c) addAppelLabel(group, c[0], c[1], nom, false);
+  });
+
+  if (hint) {
+    const region = WINE_REGION_POLYGONS[regionKey];
+    hint.innerHTML = `🏛️ <b style="color:#e8c870">${region?.label||regionKey}</b> — ${seen.size} appellation${seen.size>1?'s':''} · centroïdes INAO officiels`;
+    hint.style.color = 'rgba(220,200,120,0.9)';
+  }
 }
 
 const REGION_BBOX = {
