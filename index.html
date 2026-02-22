@@ -2019,7 +2019,16 @@ function showNotif(msg, error=false) {
 // =====================================================================
 // PASSWORD
 // =====================================================================
-async async function checkPwd() {
+function migrateImagesToStore() {
+  try {
+    const cave = JSON.parse(localStorage.getItem('caveData') || '[]');
+    cave.forEach(w => { if(w.image && w.id) imgSave('wine_' + w.id, w.image); });
+    const deg = JSON.parse(localStorage.getItem('degustationData') || '[]');
+    deg.forEach(d => { if(d.image && d.id) imgSave('deg_' + d.id, d.image); });
+  } catch(e) {}
+}
+
+async function checkPwd() {
   const val = document.getElementById('pwd-input').value.trim();
   if(!val) return;
 
@@ -2048,18 +2057,8 @@ async async function checkPwd() {
     if(hashHex === storedHash) {
       sessionStorage.setItem('cave_auth', '1');
       document.getElementById('pwd-screen').classList.add('hidden');
-      // Migrer les images existantes vers imageStore au premier chargement
-(function migrateImagesToStore() {
-  try {
-    const cave = JSON.parse(localStorage.getItem('caveData') || '[]');
-    cave.forEach(w => { if(w.image && w.id) imgSave('wine_' + w.id, w.image); });
-    const deg = JSON.parse(localStorage.getItem('degustationData') || '[]');
-    deg.forEach(d => { if(d.image && d.id) imgSave('deg_' + d.id, d.image); });
-    // historiqueData comes from Sheets — migrated when loaded
-  } catch(e) {}
-})();
-
-loadFromSheets();
+      migrateImagesToStore();
+      loadFromSheets();
     } else {
       showLoginError();
     }
