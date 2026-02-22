@@ -4,7 +4,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍷</text></svg>">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cave à Vin MMM</title>
+<title>🍷  Cave à Vin MMM</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
   /* ============================================================
@@ -199,6 +199,11 @@
     display: flex;
     justify-content: center;
     box-shadow: inset 0 0 60px rgba(0,0,0,0.5);
+    max-width: 100%;
+  }
+  .cave-2d-wrap svg {
+    max-width: 100%;
+    height: auto;
   }
 
   /* ============================================================
@@ -1047,38 +1052,22 @@
 
 <!-- MODAL DUPLICATION -->
 <div class="modal-overlay" id="modalDupliquer">
-  <div class="modal" style="max-width:480px">
+  <div class="modal" style="max-width:540px;max-height:90vh;overflow-y:auto">
     <button class="modal-close" onclick="closeModal('modalDupliquer')">✕</button>
     <h2>⧉ Dupliquer la bouteille</h2>
     <p id="dup-wine-name" style="color:var(--cream);font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:4px"></p>
-    <p style="color:var(--text2);font-size:0.85rem;margin-bottom:20px">Une copie identique sera placée dans l'emplacement choisi.</p>
-    <div class="form-grid">
-      <div class="form-row">
-        <label>Cave</label>
-        <select id="dup-cave" onchange="updateDupEtage()">
-          <option value="1">Cave 1</option>
-          <option value="2">Cave 2</option>
-        </select>
-      </div>
-      <div class="form-row">
-        <label>Étage</label>
-        <select id="dup-etage" onchange="updateDupSlot()"></select>
-      </div>
-      <div class="form-row form-full">
-        <label>Emplacement</label>
-        <select id="dup-slot"></select>
-      </div>
-      <div class="form-row form-full">
-        <label>Nombre de copies</label>
-        <select id="dup-count">
-          <option value="1">1 copie</option>
-          <option value="2">2 copies</option>
-          <option value="3">3 copies</option>
-          <option value="4">4 copies</option>
-          <option value="5">5 copies</option>
-        </select>
-      </div>
+    <p style="color:var(--text2);font-size:0.85rem;margin-bottom:20px">Chaque copie recevra un emplacement et un identifiant unique.</p>
+    <div class="form-row form-full" style="margin-bottom:18px">
+      <label>Nombre de copies</label>
+      <select id="dup-count" onchange="renderDupSlots()">
+        <option value="1">1 copie</option>
+        <option value="2">2 copies</option>
+        <option value="3">3 copies</option>
+        <option value="4">4 copies</option>
+        <option value="5">5 copies</option>
+      </select>
     </div>
+    <div id="dup-slots-container"></div>
     <div id="dup-warning" style="display:none;margin-top:12px;padding:10px 14px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:3px;color:var(--text2);font-size:0.85rem"></div>
     <div class="modal-actions" style="margin-top:20px">
       <button class="btn-wine" onclick="confirmerDuplication()">⧉ Confirmer la duplication</button>
@@ -1515,9 +1504,20 @@ function renderCave2D() {
   const totalW = PAD_H + maxLayerW + PAD_H;
   const totalH = PAD_V + floors.reduce((s,f) => s + floorH(f), 0) + PAD_V;
 
-  svg.setAttribute('width',   totalW);
-  svg.setAttribute('height',  totalH);
+  // SVG responsive : viewBox fixe, width s'adapte au conteneur
   svg.setAttribute('viewBox', `0 0 ${totalW} ${totalH}`);
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  // Sur mobile, limiter à la largeur du conteneur
+  const isMobile = window.innerWidth <= 768;
+  if(isMobile) {
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', 'auto');
+    svg.style.maxWidth = '100%';
+  } else {
+    svg.setAttribute('width', totalW);
+    svg.setAttribute('height', totalH);
+    svg.style.maxWidth = '';
+  }
 
   let html = `
     <defs>
@@ -1856,15 +1856,53 @@ function openDupliquerModal(id) {
   dupliquerWineId = id;
   document.getElementById('dup-wine-name').textContent = (wine.nom||'') + (wine.annee ? ' · ' + wine.annee : '');
   document.getElementById('dup-warning').style.display = 'none';
-  // Pré-sélectionner la même cave
-  document.getElementById('dup-cave').value = wine.cave || 1;
-  updateDupEtage();
+  document.getElementById('dup-count').value = 1;
+  renderDupSlots();
   document.getElementById('modalDupliquer').classList.add('open');
 }
 
-function updateDupEtage(selectedFloor) {
-  const cave = parseInt(document.getElementById('dup-cave').value) || 1;
-  const sel  = document.getElementById('dup-etage');
+function renderDupSlots() {
+  const count = parseInt(document.getElementById('dup-count').value) || 1;
+  const wine = wineData.find(w => String(w.id) === String(dupliquerWineId));
+  const container = document.getElementById('dup-slots-container');
+  if(!container) return;
+
+  let html = '';
+  for(let i = 0; i < count; i++) {
+    html += `
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px">
+        <div style="font-size:0.72rem;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">Copie ${i+1}</div>
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Cave</label>
+            <select id="dup-cave-${i}" onchange="updateDupEtageN(${i})">
+              <option value="1"${wine && wine.cave==1?' selected':''}>Cave 1</option>
+              <option value="2"${wine && wine.cave==2?' selected':''}>Cave 2</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Étage</label>
+            <select id="dup-etage-${i}" onchange="updateDupSlotN(${i})"></select>
+          </div>
+          <div class="form-row form-full">
+            <label>Emplacement</label>
+            <select id="dup-slot-${i}"></select>
+          </div>
+        </div>
+      </div>`;
+  }
+  container.innerHTML = html;
+
+  // Initialiser les selects de chaque copie
+  for(let i = 0; i < count; i++) {
+    updateDupEtageN(i);
+  }
+}
+
+function updateDupEtageN(idx) {
+  const cave = parseInt(document.getElementById('dup-cave-' + idx).value) || 1;
+  const sel = document.getElementById('dup-etage-' + idx);
+  if(!sel) return;
   sel.innerHTML = '';
   CAVE_CONFIG[cave].floors.forEach(f => {
     const opt = document.createElement('option');
@@ -1872,21 +1910,32 @@ function updateDupEtage(selectedFloor) {
     opt.textContent = f.label + (f.isMagnum ? ' · Magnums' : '');
     sel.appendChild(opt);
   });
-  if(selectedFloor) sel.value = selectedFloor;
-  updateDupSlot();
+  updateDupSlotN(idx);
 }
 
-function updateDupSlot() {
-  const cave      = parseInt(document.getElementById('dup-cave').value) || 1;
-  const floor     = parseInt(document.getElementById('dup-etage').value) || 1;
+function updateDupSlotN(idx) {
+  const cave  = parseInt(document.getElementById('dup-cave-' + idx).value) || 1;
+  const floor = parseInt(document.getElementById('dup-etage-' + idx).value) || 1;
   const floorData = CAVE_CONFIG[cave].floors.find(f => f.id === floor);
-  const sel       = document.getElementById('dup-slot');
-  sel.innerHTML   = '';
-  if(!floorData) return;
+  const sel = document.getElementById('dup-slot-' + idx);
+  if(!sel || !floorData) return;
+  sel.innerHTML = '';
+
+  // Récupérer les slots déjà choisis par les autres copies
+  const count = parseInt(document.getElementById('dup-count').value) || 1;
+  const alreadyChosen = [];
+  for(let i = 0; i < count; i++) {
+    if(i === idx) continue;
+    const c = parseInt(document.getElementById('dup-cave-' + i)?.value);
+    const f = parseInt(document.getElementById('dup-etage-' + i)?.value);
+    const s = parseInt(document.getElementById('dup-slot-' + i)?.value);
+    if(c === cave && f === floor && s) alreadyChosen.push(s);
+  }
+
   let freeCount = 0;
   for(let i = 1; i <= floorData.slots; i++) {
-    const occupant = getWineAtSlot(cave, floor, i);
-    if(occupant) continue; // Duplication : emplacements libres seulement
+    if(getWineAtSlot(cave, floor, i)) continue;
+    if(alreadyChosen.includes(i)) continue;
     freeCount++;
     const opt = document.createElement('option');
     opt.value = i;
@@ -1899,71 +1948,54 @@ function updateDupSlot() {
     opt.textContent = '— Aucun emplacement libre —';
     sel.appendChild(opt);
   }
-  updateDupWarning();
 }
 
-function updateDupWarning() {
-  const count     = parseInt(document.getElementById('dup-count').value) || 1;
-  const cave      = parseInt(document.getElementById('dup-cave').value) || 1;
-  const floor     = parseInt(document.getElementById('dup-etage').value) || 1;
-  const floorData = CAVE_CONFIG[cave].floors.find(f => f.id === floor);
-  if(!floorData) return;
-  const free = Array.from({length: floorData.slots}, (_,i) => i+1)
-    .filter(i => !getWineAtSlot(cave, floor, i)).length;
-  const warn = document.getElementById('dup-warning');
-  if(count > free) {
-    warn.style.display = 'block';
-    warn.textContent = `⚠ Seulement ${free} emplacement${free>1?'s':''} libre${free>1?'s':''} sur cet étage — seules ${free} copie${free>1?'s':''} seront créées.`;
-  } else {
-    warn.style.display = 'none';
-  }
-}
+// Garder pour compatibilité (non utilisées mais peuvent être appelées ailleurs)
+function updateDupEtage() { updateDupEtageN(0); }
+function updateDupSlot()  { updateDupSlotN(0); }
+function updateDupWarning() {}
 
 function confirmerDuplication() {
   const wine = wineData.find(w => String(w.id) === String(dupliquerWineId));
   if(!wine) return;
-  const cave      = parseInt(document.getElementById('dup-cave').value);
-  const floor     = parseInt(document.getElementById('dup-etage').value);
-  const wantCount = parseInt(document.getElementById('dup-count').value) || 1;
-  const floorData = CAVE_CONFIG[cave].floors.find(f => f.id === floor);
-  if(!floorData) return;
-
-  // Trouver tous les emplacements libres sur cet étage
-  const freeSlots = Array.from({length: floorData.slots}, (_,i) => i+1)
-    .filter(i => !getWineAtSlot(cave, floor, i));
-
-  if(freeSlots.length === 0) {
-    showNotif('Aucun emplacement libre sur cet étage', true);
-    return;
-  }
-
-  const toCreate = Math.min(wantCount, freeSlots.length);
+  const count = parseInt(document.getElementById('dup-count').value) || 1;
   const imageUrl = imgGet('wine_' + wine.id) || wine.image || '';
+  let created = 0;
+  const errors = [];
 
-  for(let i = 0; i < toCreate; i++) {
-    const newId = Date.now().toString() + '_' + i;
+  for(let i = 0; i < count; i++) {
+    const cave  = parseInt(document.getElementById('dup-cave-' + i)?.value);
+    const floor = parseInt(document.getElementById('dup-etage-' + i)?.value);
+    const slot  = parseInt(document.getElementById('dup-slot-' + i)?.value);
+
+    if(!cave || !floor || !slot) { errors.push('Copie ' + (i+1) + ' : emplacement invalide'); continue; }
+    if(getWineAtSlot(cave, floor, slot)) { errors.push('Copie ' + (i+1) + ' : emplacement déjà occupé'); continue; }
+
+    // ID unique pour chaque copie
+    const newId = Date.now().toString() + '_dup' + i + '_' + Math.random().toString(36).slice(2,6);
     const copy = {
       ...wine,
-      id:    newId,
+      id:        newId,
       cave,
       floor,
-      slot:  freeSlots[i],
+      slot,
+      _prixEstime: wine._prixEstime || '',
       dateAjout: new Date().toISOString().split('T')[0]
     };
     wineData.push(copy);
-    // Copier l'image dans imageStore pour le nouvel ID
     if(imageUrl) imgSave('wine_' + newId, imageUrl);
+    created++;
   }
 
-  saveData();
-  closeModal('modalDupliquer');
-  closeModal('modalSlot');
-  renderCave2D();
-  renderList();
-  const msg = toCreate === 1
-    ? `1 copie de "${wine.nom}" ajoutée ✓`
-    : `${toCreate} copies de "${wine.nom}" ajoutées ✓`;
-  showNotif(msg);
+  if(created > 0) {
+    saveData();
+    closeModal('modalDupliquer');
+    closeModal('modalSlot');
+    renderCave2D();
+    renderList();
+    showNotif(created + ' copie' + (created > 1 ? 's' : '') + ' de "' + wine.nom + '" ajoutée' + (created > 1 ? 's' : '') + ' ✓');
+  }
+  if(errors.length > 0) showNotif(errors.join(' · '), true);
 }
 
 // =====================================================================
