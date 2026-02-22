@@ -4,7 +4,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍷</text></svg>">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cave à Vin MMM</title>
+<title>🍷  Cave à Vin MMM</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -2061,11 +2061,13 @@ Réponds UNIQUEMENT avec un nombre entier. Ex: 45`;
 
 function renderStats() {
   const total   = wineData.length;
-  const val     = wineData.reduce((s,w)=>s+(parseFloat(w.prix)||0),0);
-  const valTotale = wineData.reduce((s,w)=>s+(parseFloat(w.prix)||parseFloat(w._prixEstime)||0),0);
-  const nbEstimes = wineData.filter(w => w._prixEstime && !w.prix).length;
+  // valTotale = prix saisi EN PRIORITÉ, sinon estimation Groq
+  const valTotale  = wineData.reduce((s,w)=>s+(parseFloat(w.prix)||parseFloat(w._prixEstime)||0),0);
+  const nbEstimes  = wineData.filter(w => w._prixEstime && !w.prix).length;
   const nbAvecPrix = wineData.filter(w => w.prix).length;
-  const avgPrix = total ? Math.round(val/total) : 0;
+  const nbAvecValeur = nbAvecPrix + nbEstimes;
+  // Prix moyen basé sur tous les vins ayant une valeur (saisi ou estimé)
+  const avgPrix = nbAvecValeur ? Math.round(valTotale / nbAvecValeur) : 0;
   const types   = {}; wineData.forEach(w=>{ const t=w.type||'autre'; types[t]=(types[t]||0)+1; });
   const decades = {}; wineData.forEach(w=>{ if(w.annee){ const d=Math.floor(w.annee/10)*10; decades[d]=(decades[d]||0)+1; }});
   const regions = {}; wineData.forEach(w=>{ if(w.region){ regions[w.region]=(regions[w.region]||0)+1; }});
@@ -2079,14 +2081,12 @@ function renderStats() {
   // Stat cards
   document.getElementById('statsGrid').innerHTML=`
     <div class="stat-card"><div class="s-val">${total}</div><div class="s-lbl">Bouteilles total</div></div>
-    <div class="stat-card"><div class="s-val" style="color:var(--green2)">${Math.round(valTotale).toLocaleString('fr-FR')} €</div><div class="s-lbl">Valeur estimée cave<br><span style="font-size:0.7rem;opacity:0.7">${nbAvecPrix} prix saisis · ${nbEstimes} estimés</span></div></div>
-    <div class="stat-card"><div class="s-val">${avgPrix} €</div><div class="s-lbl">Prix moyen / bouteille</div></div>
-    <div class="stat-card"><div class="s-val">${occ1+occ2}/${cap1+cap2}</div><div class="s-lbl">Taux remplissage global</div></div>
-    <div class="stat-card" style="grid-column:1/-1;cursor:pointer;border-color:rgba(201,168,76,0.3)" onclick="estimerValeurCave()">
-      <div class="s-val" id="cave-valeur-marche" style="color:var(--gold)">${valTotale > 0 ? Math.round(valTotale).toLocaleString('fr-FR') + '€' : '—'}</div>
-      <div class="s-lbl">💰 Valeur estimée totale <span style="font-size:0.7rem;opacity:0.7">· cliquer pour estimer les vins sans prix</span></div>
-      <div id="cave-valeur-detail" style="font-size:0.75rem;color:var(--text2);margin-top:6px">${nbEstimes > 0 ? nbEstimes + ' vins estimés par Groq · ' + nbAvecPrix + ' prix saisis manuellement' : 'Cliquez pour lancer les estimations'}</div>
-    </div>`;
+    <div class="stat-card" style="cursor:pointer;border-color:rgba(201,168,76,0.3)" onclick="estimerValeurCave()">
+      <div class="s-val" style="color:var(--green2)">${Math.round(valTotale).toLocaleString('fr-FR')} €</div>
+      <div class="s-lbl">Valeur estimée cave<br><span style="font-size:0.7rem;opacity:0.7">${nbAvecPrix} prix saisis · ${nbEstimes} estimés Groq · cliquer pour estimer les manquants</span></div>
+    </div>
+    <div class="stat-card"><div class="s-val">${avgPrix} €</div><div class="s-lbl">Prix moyen / bouteille<br><span style="font-size:0.7rem;opacity:0.7">sur ${nbAvecValeur} vins avec valeur</span></div></div>
+    <div class="stat-card"><div class="s-val">${occ1+occ2}/${cap1+cap2}</div><div class="s-lbl">Taux remplissage global</div></div>`;
 
   // Helper pour générer les barres
   function makeBarChart(elId, data, colorFn, limit=15) {
