@@ -787,7 +787,7 @@
         <label>Photo étiquette</label>
         <div id="deg-img-preview-wrap" style="display:none;margin-bottom:10px;position:relative;width:fit-content">
           <img id="deg-img-preview" src="" alt="" style="max-height:160px;max-width:100%;object-fit:contain;border-radius:4px;border:1px solid var(--border);box-shadow:0 4px 16px rgba(0,0,0,0.5)">
-          <button type="button" onclick="clearDegImage()" style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:var(--wine2);border:none;color:white;cursor:pointer;font-size:0.75rem;line-height:1">✕</button>
+          <button type="button" onclick="clearDegImageAndNotify()" title="Retirer l'image" style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:var(--wine2);border:none;color:white;cursor:pointer;font-size:0.75rem;line-height:1">✕</button>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
           <label for="deg-photo-camera" style="padding:8px 14px;background:var(--wine);color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:0.9rem;cursor:pointer;border-radius:2px;display:inline-flex;align-items:center;gap:5px" onmouseover="this.style.background='var(--wine2)'" onmouseout="this.style.background='var(--wine)'">📷 Photo</label>
@@ -900,6 +900,48 @@
   </div>
 </div>
 
+<!-- MODAL DUPLICATION -->
+<div class="modal-overlay" id="modalDupliquer">
+  <div class="modal" style="max-width:480px">
+    <button class="modal-close" onclick="closeModal('modalDupliquer')">✕</button>
+    <h2>⧉ Dupliquer la bouteille</h2>
+    <p id="dup-wine-name" style="color:var(--cream);font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:4px"></p>
+    <p style="color:var(--text2);font-size:0.85rem;margin-bottom:20px">Une copie identique sera placée dans l'emplacement choisi.</p>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Cave</label>
+        <select id="dup-cave" onchange="updateDupEtage()">
+          <option value="1">Cave 1</option>
+          <option value="2">Cave 2</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Étage</label>
+        <select id="dup-etage" onchange="updateDupSlot()"></select>
+      </div>
+      <div class="form-row form-full">
+        <label>Emplacement</label>
+        <select id="dup-slot"></select>
+      </div>
+      <div class="form-row form-full">
+        <label>Nombre de copies</label>
+        <select id="dup-count">
+          <option value="1">1 copie</option>
+          <option value="2">2 copies</option>
+          <option value="3">3 copies</option>
+          <option value="4">4 copies</option>
+          <option value="5">5 copies</option>
+        </select>
+      </div>
+    </div>
+    <div id="dup-warning" style="display:none;margin-top:12px;padding:10px 14px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:3px;color:var(--text2);font-size:0.85rem"></div>
+    <div class="modal-actions" style="margin-top:20px">
+      <button class="btn-wine" onclick="confirmerDuplication()">⧉ Confirmer la duplication</button>
+      <button class="btn-outline" onclick="closeModal('modalDupliquer')">Annuler</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL HISTORIQUE (retirer un vin) -->
 <div class="modal-overlay" id="modalHistorique">
   <div class="modal" style="max-width:480px">
@@ -937,6 +979,56 @@
       <button class="btn-wine" onclick="confirmRetirer(true)">📜 Enregistrer et retirer</button>
       <button class="btn-outline" onclick="confirmRetirer(false)">🗑 Retirer sans enregistrer</button>
       <button class="btn-outline" onclick="document.getElementById('modalHistorique').classList.remove('open')">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ÉDITION HISTORIQUE CAVE -->
+<div class="modal-overlay" id="modalEditHistorique">
+  <div class="modal" style="max-width:580px;max-height:90vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeModal('modalEditHistorique')">✕</button>
+    <h2 id="edit-histo-title" style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.2rem;margin-bottom:18px">✏️ Modifier la dégustation</h2>
+    <!-- Image -->
+    <div class="form-row">
+      <label>Photo étiquette</label>
+      <div id="edit-histo-img-wrap" style="display:none;margin-bottom:10px;position:relative;width:fit-content">
+        <img id="edit-histo-img-preview" src="" alt="" style="max-height:140px;max-width:100%;object-fit:contain;border-radius:4px;border:1px solid var(--border);box-shadow:0 2px 12px rgba(0,0,0,0.5)">
+        <button type="button" onclick="clearHistoImage()" title="Supprimer l'image" style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:var(--wine2);border:none;color:white;cursor:pointer;font-size:0.75rem;line-height:1">✕</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <label for="edit-histo-photo-camera" style="padding:7px 13px;background:var(--wine);color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:0.88rem;cursor:pointer;border-radius:2px;display:inline-flex;align-items:center;gap:5px" onmouseover="this.style.background='var(--wine2)'" onmouseout="this.style.background='var(--wine)'">📷 Photo</label>
+        <input type="file" id="edit-histo-photo-camera" accept="image/*" capture="environment" style="display:none" onchange="handleHistoImageFile(this)">
+        <label for="edit-histo-photo-file" style="padding:7px 13px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.88rem;cursor:pointer;border-radius:2px;display:inline-flex;align-items:center;gap:5px" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">🖼 Galerie</label>
+        <input type="file" id="edit-histo-photo-file" accept="image/*" style="display:none" onchange="handleHistoImageFile(this)">
+      </div>
+      <input type="text" id="edit-histo-image" placeholder="ou URL d'image…" style="width:100%;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:2px;outline:none;font-family:'Cormorant Garamond',serif;font-size:0.88rem" oninput="onHistoImageUrlChange(this.value)" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">
+    </div>
+    <div class="form-grid" style="margin-top:4px">
+      <div class="form-row">
+        <label>Date de dégustation</label>
+        <input type="date" id="edit-histo-date">
+      </div>
+      <div class="form-row">
+        <label>Note /5</label>
+        <select id="edit-histo-note">
+          <option value="">—</option>
+          <option value="1">★ 1</option><option value="2">★★ 2</option>
+          <option value="3">★★★ 3</option><option value="4">★★★★ 4</option>
+          <option value="5">★★★★★ 5</option>
+        </select>
+      </div>
+      <div class="form-row form-full">
+        <label>Occasion / Lieu</label>
+        <input type="text" id="edit-histo-occasion" placeholder="Repas en famille, anniversaire…">
+      </div>
+      <div class="form-row form-full">
+        <label>Commentaire de dégustation</label>
+        <textarea id="edit-histo-commentaire" rows="3" placeholder="Arômes, texture, impression générale…"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:18px">
+      <button class="btn-wine" onclick="saveEditHistorique()">💾 Enregistrer</button>
+      <button class="btn-outline" onclick="closeModal('modalEditHistorique')">Annuler</button>
     </div>
   </div>
 </div>
@@ -990,6 +1082,25 @@ const CLOUDINARY_CLOUD = 'dvrevescl';
 const CLOUDINARY_PRESET = 'Degustation';
 const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`;
 
+// =====================================================================
+// IMAGE STORE — stockage persistant des URLs Cloudinary
+// indépendant de la sync Google Sheets
+// clé : "wine_<id>" | "hist_<id>" | "deg_<id>"
+// =====================================================================
+const _imgStore = JSON.parse(localStorage.getItem('imageStore') || '{}');
+
+function imgSave(key, url) {
+  if(url) _imgStore[key] = url;
+  else     delete _imgStore[key];
+  localStorage.setItem('imageStore', JSON.stringify(_imgStore));
+}
+function imgGet(key) { return _imgStore[key] || ''; }
+
+// Retourne l'URL d'image pour un vin : priorité imageStore > champ .image
+function wineImg(w)    { return imgGet('wine_' + w.id)    || w.image    || ''; }
+function histImg(h)    { return imgGet('hist_' + h.id)    || h.image    || ''; }
+function degImg(d)     { return imgGet('deg_'  + d.id)    || d.image    || ''; }
+
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_GkA2thpGf_tCdgMtoVYt5-xANAztBu6Rmks9SE5-9yF8_jdbBu7iXbgS13_5iqH_6Q/exec';
 
 let wineData = JSON.parse(localStorage.getItem('caveData') || '[]');
@@ -1030,14 +1141,15 @@ function loadFromSheets() {
     clearTimeout(timeout);
     try {
       if(Array.isArray(data) && data.length > 0) {
-        // Récupérer les images stockées localement avant d'écraser les données
+        // Récupérer les images depuis imageStore (par ID) et localStorage (par ID ou cave_floor_slot)
         const localData = JSON.parse(localStorage.getItem('caveData') || '[]');
-        // Créer un index des images locales par clé unique (cave+floor+slot)
-        const localImageMap = {};
+        const localImageById = {};
+        const localImageBySlot = {};
         localData.forEach(w => {
           if(w.image) {
+            if(w.id) localImageById[String(w.id)] = w.image;
             const key = `${w.cave}_${w.floor}_${w.slot}`;
-            localImageMap[key] = w.image;
+            localImageBySlot[key] = w.image;
           }
         });
         wineData = data.map(w => {
@@ -1045,6 +1157,10 @@ function loadFromSheets() {
           const floor = parseInt(w.floor) || 1;
           const slot  = parseInt(w.slot)  || 1;
           const key   = `${cave}_${floor}_${slot}`;
+          const id    = String(w.id || '');
+          // Priorité : imageStore (stable) > champ Sheet > localStorage par ID > localStorage par slot
+          const resolvedImage = imgGet('wine_' + id) || w.image || localImageById[id] || localImageBySlot[key] || '';
+          if(resolvedImage && id) imgSave('wine_' + id, resolvedImage); // consolider dans imageStore
           return {
             ...w,
             cave,
@@ -1053,8 +1169,7 @@ function loadFromSheets() {
             annee: parseInt(w.annee) || '',
             prix:  parseFloat(w.prix) || '',
             note:  w.note || '',
-            // Conserver l'image du Sheet si elle existe, sinon celle du localStorage
-            image: w.image || localImageMap[key] || ''
+            image: resolvedImage
           };
         });
         localStorage.setItem('caveData', JSON.stringify(wineData));
@@ -1337,7 +1452,8 @@ function renderCave2D() {
           <br><small style="color:#4a3840">Ét.${floor} · #${slot}</small>`;
         const imgWrap = document.getElementById('tt-img-wrap');
         const imgEl   = document.getElementById('tt-img');
-        if(wine.image) { imgEl.src = wine.image; imgWrap.style.display = 'block'; }
+        const _mbImg = imgGet('wine_' + wine.id) || wine.image || '';
+  if(_mbImg) { imgEl.src = _mbImg; imgWrap.style.display = 'block'; }
         else { imgWrap.style.display = 'none'; }
       } else {
         document.getElementById('tt-img-wrap').style.display = 'none';
@@ -1373,14 +1489,15 @@ function openSlotModal(cave, floor, slot) {
     const stars  = '★'.repeat(parseInt(wine.note)||0)+'☆'.repeat(5-(parseInt(wine.note)||0));
     const tLabel = TYPE_LABELS[wine.type] || wine.type;
     const fLabel = FORMAT_LABELS[wine.format] || (wine.format||'75 cl');
-    const imgHtml = wine.image ? `<div style="text-align:center;margin-bottom:18px">
-        <img src="${wine.image}" alt="Étiquette" id="etiquette-img" style="max-height:200px;max-width:100%;object-fit:contain;border-radius:4px;border:1px solid #3a2830;box-shadow:0 4px 20px rgba(0,0,0,0.7);cursor:pointer;transition:max-height 0.4s ease" onclick="this.style.maxHeight=this.style.maxHeight==='200px'||!this.style.maxHeight?'520px':'200px'" title="Cliquer pour agrandir">
+    const _wImg = imgGet('wine_' + wine.id) || wine.image || '';
+    const imgHtml = _wImg ? `<div style="text-align:center;margin-bottom:18px">
+        <img src="${_wImg}" alt="Étiquette" id="etiquette-img" style="max-height:200px;max-width:100%;object-fit:contain;border-radius:4px;border:1px solid #3a2830;box-shadow:0 4px 20px rgba(0,0,0,0.7);cursor:pointer;transition:max-height 0.4s ease" onclick="this.style.maxHeight=this.style.maxHeight==='200px'||!this.style.maxHeight?'520px':'200px'" title="Cliquer pour agrandir">
         <div style="font-size:0.68rem;color:var(--text2);margin-top:5px;letter-spacing:1px">↕ CLIQUER POUR AGRANDIR</div>
       </div>` : '';
     // Sur mobile portrait, image au-dessus à pleine largeur
     const isMobileDevice = window.matchMedia('(max-width: 768px) and (orientation: portrait)').matches;
-    const imgHtmlMobile = wine.image ? `<div style="width:calc(100% + 28px);margin:-18px -14px 18px;background:var(--bg3);text-align:center;padding:16px 14px">
-        <img src="${wine.image}" alt="Étiquette" id="etiquette-img" style="max-height:220px;max-width:100%;object-fit:contain;border-radius:4px;border:1px solid #3a2830;box-shadow:0 4px 20px rgba(0,0,0,0.7);cursor:pointer;transition:max-height 0.4s ease" onclick="this.style.maxHeight=this.style.maxHeight==='220px'||!this.style.maxHeight?'440px':'220px'" title="Cliquer pour agrandir">
+    const imgHtmlMobile = _wImg ? `<div style="width:calc(100% + 28px);margin:-18px -14px 18px;background:var(--bg3);text-align:center;padding:16px 14px">
+        <img src="${_wImg}" alt="Étiquette" id="etiquette-img" style="max-height:220px;max-width:100%;object-fit:contain;border-radius:4px;border:1px solid #3a2830;box-shadow:0 4px 20px rgba(0,0,0,0.7);cursor:pointer;transition:max-height 0.4s ease" onclick="this.style.maxHeight=this.style.maxHeight==='220px'||!this.style.maxHeight?'440px':'220px'" title="Cliquer pour agrandir">
       </div>` : '';
     const imgHtmlFinal = isMobileDevice ? imgHtmlMobile : imgHtml;
     body.innerHTML = `
@@ -1407,6 +1524,7 @@ function openSlotModal(cave, floor, slot) {
           <div class="modal-actions">
             <button class="btn-outline" data-edit-id="${wine.id}" onclick="openEditModal(this.dataset.editId)">✏ Modifier</button>
             <button class="btn-outline" data-mv-id="${wine.id}"   onclick="openDeplacerModal(this.dataset.mvId)">📦 Déplacer</button>
+            <button class="btn-outline" data-dup-id="${wine.id}"  onclick="openDupliquerModal(this.dataset.dupId)">⧉ Dupliquer</button>
             <button class="btn-danger"  data-rm-id="${wine.id}"   onclick="removeWine(this.dataset.rmId)">🗑 Retirer</button>
             <button class="btn-wine"    onclick="closeModal('modalSlot')">Fermer</button>
           </div>
@@ -1465,12 +1583,13 @@ function openEditModal(id) {
   const accordsField = document.getElementById('f-accords'); if(accordsField) accordsField.value = wine.accords||'';
   const apDebut = document.getElementById('f-apogee-debut'); if(apDebut) apDebut.value = wine.apogeeDebut||'';
   const apFin   = document.getElementById('f-apogee-fin');   if(apFin)   apFin.value   = wine.apogeeFin||'';
-  const imgField = document.getElementById('f-image'); if(imgField) imgField.value = wine.image||'';
+  const imgField = document.getElementById('f-image'); if(imgField) imgField.value = imgGet('wine_' + wine.id) || wine.image||'';
   // Restore image preview if editing
-  if(wine.image) {
+  const _wImgEdit = imgGet('wine_' + wine.id) || wine.image || '';
+  if(_wImgEdit) {
     const pw = document.getElementById('img-preview-wrap');
     const pi = document.getElementById('img-preview');
-    if(pw && pi) { pi.src = wine.image; pw.style.display = 'block'; }
+    if(pw && pi) { pi.src = _wImgEdit; pw.style.display = 'block'; }
   }
   document.getElementById('f-cave').value        = wine.cave;
   addingToSlot = {editing:String(id), cave:wine.cave, floor:wine.floor, slot:wine.slot};
@@ -1516,9 +1635,11 @@ function confirmRetirer(saveToHisto) {
       note:         document.getElementById('histo-note').value,
       commentaire:  document.getElementById('histo-commentaire').value,
       occasion:     document.getElementById('histo-occasion').value,
-      image:        wine.image || ''
+      image:        imgGet('wine_' + wine.id) || wine.image || ''
     };
     historiqueData.unshift(entry);
+    // Persist image URL independently of Sheets sync
+    if(entry.image) imgSave('hist_' + entry.id, entry.image);
     saveHistoriqueToSheets(entry);
     showNotif('Dégustation enregistrée ✓');
   }
@@ -1531,6 +1652,127 @@ function confirmRetirer(saveToHisto) {
   renderList();
   renderHistorique();
   if(!saveToHisto) showNotif('Vin retiré ✓');
+}
+
+// =====================================================================
+// DUPLICATION DE BOUTEILLE
+// =====================================================================
+let dupliquerWineId = null;
+
+function openDupliquerModal(id) {
+  const wine = wineData.find(w => String(w.id) === String(id));
+  if(!wine) return;
+  dupliquerWineId = id;
+  document.getElementById('dup-wine-name').textContent = (wine.nom||'') + (wine.annee ? ' · ' + wine.annee : '');
+  document.getElementById('dup-warning').style.display = 'none';
+  // Pré-sélectionner la même cave
+  document.getElementById('dup-cave').value = wine.cave || 1;
+  updateDupEtage();
+  document.getElementById('modalDupliquer').classList.add('open');
+}
+
+function updateDupEtage(selectedFloor) {
+  const cave = parseInt(document.getElementById('dup-cave').value) || 1;
+  const sel  = document.getElementById('dup-etage');
+  sel.innerHTML = '';
+  CAVE_CONFIG[cave].floors.forEach(f => {
+    const opt = document.createElement('option');
+    opt.value = f.id;
+    opt.textContent = f.label + (f.isMagnum ? ' · Magnums' : '');
+    sel.appendChild(opt);
+  });
+  if(selectedFloor) sel.value = selectedFloor;
+  updateDupSlot();
+}
+
+function updateDupSlot() {
+  const cave      = parseInt(document.getElementById('dup-cave').value) || 1;
+  const floor     = parseInt(document.getElementById('dup-etage').value) || 1;
+  const floorData = CAVE_CONFIG[cave].floors.find(f => f.id === floor);
+  const sel       = document.getElementById('dup-slot');
+  sel.innerHTML   = '';
+  if(!floorData) return;
+  let freeCount = 0;
+  for(let i = 1; i <= floorData.slots; i++) {
+    const occupant = getWineAtSlot(cave, floor, i);
+    if(occupant) continue; // Duplication : emplacements libres seulement
+    freeCount++;
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = 'Empl. ' + i + ' — libre';
+    sel.appendChild(opt);
+  }
+  if(freeCount === 0) {
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = '— Aucun emplacement libre —';
+    sel.appendChild(opt);
+  }
+  updateDupWarning();
+}
+
+function updateDupWarning() {
+  const count     = parseInt(document.getElementById('dup-count').value) || 1;
+  const cave      = parseInt(document.getElementById('dup-cave').value) || 1;
+  const floor     = parseInt(document.getElementById('dup-etage').value) || 1;
+  const floorData = CAVE_CONFIG[cave].floors.find(f => f.id === floor);
+  if(!floorData) return;
+  const free = Array.from({length: floorData.slots}, (_,i) => i+1)
+    .filter(i => !getWineAtSlot(cave, floor, i)).length;
+  const warn = document.getElementById('dup-warning');
+  if(count > free) {
+    warn.style.display = 'block';
+    warn.textContent = `⚠ Seulement ${free} emplacement${free>1?'s':''} libre${free>1?'s':''} sur cet étage — seules ${free} copie${free>1?'s':''} seront créées.`;
+  } else {
+    warn.style.display = 'none';
+  }
+}
+
+function confirmerDuplication() {
+  const wine = wineData.find(w => String(w.id) === String(dupliquerWineId));
+  if(!wine) return;
+  const cave      = parseInt(document.getElementById('dup-cave').value);
+  const floor     = parseInt(document.getElementById('dup-etage').value);
+  const wantCount = parseInt(document.getElementById('dup-count').value) || 1;
+  const floorData = CAVE_CONFIG[cave].floors.find(f => f.id === floor);
+  if(!floorData) return;
+
+  // Trouver tous les emplacements libres sur cet étage
+  const freeSlots = Array.from({length: floorData.slots}, (_,i) => i+1)
+    .filter(i => !getWineAtSlot(cave, floor, i));
+
+  if(freeSlots.length === 0) {
+    showNotif('Aucun emplacement libre sur cet étage', true);
+    return;
+  }
+
+  const toCreate = Math.min(wantCount, freeSlots.length);
+  const imageUrl = imgGet('wine_' + wine.id) || wine.image || '';
+
+  for(let i = 0; i < toCreate; i++) {
+    const newId = Date.now().toString() + '_' + i;
+    const copy = {
+      ...wine,
+      id:    newId,
+      cave,
+      floor,
+      slot:  freeSlots[i],
+      dateAjout: new Date().toISOString().split('T')[0]
+    };
+    wineData.push(copy);
+    // Copier l'image dans imageStore pour le nouvel ID
+    if(imageUrl) imgSave('wine_' + newId, imageUrl);
+  }
+
+  saveData();
+  closeModal('modalDupliquer');
+  closeModal('modalSlot');
+  renderCave2D();
+  renderList();
+  const msg = toCreate === 1
+    ? `1 copie de "${wine.nom}" ajoutée ✓`
+    : `${toCreate} copies de "${wine.nom}" ajoutées ✓`;
+  showNotif(msg);
 }
 
 // =====================================================================
@@ -1604,6 +1846,9 @@ function addWine() {
     cave:  parseInt(cave), floor: parseInt(floor), slot: parseInt(slot),
     dateAjout: new Date().toISOString().split('T')[0]
   });
+  // Save image URL to imageStore indexed by wine id
+  const _newWine = wineData[wineData.length - 1];
+  if(_newWine && _newWine.image) imgSave('wine_' + _newWine.id, _newWine.image);
   saveData(); addingToSlot = null;
   ['f-nom','f-appellation','f-domaine','f-region','f-annee','f-prix','f-notes','f-image','f-accords','f-apogee-debut','f-apogee-fin'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
   // Clear image preview
@@ -1803,7 +2048,18 @@ async function checkPwd() {
     if(hashHex === storedHash) {
       sessionStorage.setItem('cave_auth', '1');
       document.getElementById('pwd-screen').classList.add('hidden');
-      loadFromSheets();
+      // Migrer les images existantes vers imageStore au premier chargement
+(function migrateImagesToStore() {
+  try {
+    const cave = JSON.parse(localStorage.getItem('caveData') || '[]');
+    cave.forEach(w => { if(w.image && w.id) imgSave('wine_' + w.id, w.image); });
+    const deg = JSON.parse(localStorage.getItem('degustationData') || '[]');
+    deg.forEach(d => { if(d.image && d.id) imgSave('deg_' + d.id, d.image); });
+    // historiqueData comes from Sheets — migrated when loaded
+  } catch(e) {}
+})();
+
+loadFromSheets();
     } else {
       showLoginError();
     }
@@ -1876,6 +2132,8 @@ async function handleImageFile(input) {
       const imgField = document.getElementById('f-image');
       if(imgField) imgField.value = data.secure_url;
       if(pi) pi.src = data.secure_url;
+      // Sauvegarder dans imageStore avec l'ID du vin en cours d'édition si disponible
+      if(addingToSlot?.editing) imgSave('wine_' + addingToSlot.editing, data.secure_url);
       showNotif('Photo sauvegardée ✓');
     } else {
       throw new Error(data.error?.message || 'Erreur Cloudinary');
@@ -1976,8 +2234,9 @@ function saveDegustation() {
   if(!nom) { showNotif('Le nom est requis', true); return; }
   const modal = document.getElementById('modalDegustation');
   const editId = modal._editId;
+  const _degId = editId || 'dg_' + Date.now();
   const entry = {
-    id:          editId || 'dg_' + Date.now(),
+    id:          _degId,
     nom,
     appellation: document.getElementById('deg-appellation').value.trim(),
     domaine:     document.getElementById('deg-domaine').value.trim(),
@@ -1993,6 +2252,9 @@ function saveDegustation() {
     image:       document.getElementById('deg-image').value,
     dateAjout:   new Date().toISOString().split('T')[0]
   };
+  // Persist image URL in imageStore
+  if(entry.image) imgSave('deg_' + _degId, entry.image);
+  else imgSave('deg_' + _degId, '');
   if(editId) {
     degustationData = degustationData.map(d => d.id === editId ? entry : d);
   } else {
@@ -2001,6 +2263,7 @@ function saveDegustation() {
   saveDegustationData();
   closeModal('modalDegustation');
   renderDegustations();
+  renderHistorique();
   showNotif(editId ? 'Dégustation modifiée ✓' : 'Dégustation enregistrée ✓');
 }
 
@@ -2009,6 +2272,7 @@ function deleteDegustation(id) {
   degustationData = degustationData.filter(d => d.id !== id);
   saveDegustationData();
   renderDegustations();
+  renderHistorique();
   showNotif('Dégustation supprimée');
 }
 
@@ -2067,6 +2331,12 @@ function clearDegImage() {
   if(pi) pi.src = '';
 }
 
+// Appelé depuis le bouton ✕ sur l'image existante dans le modal deg
+function clearDegImageAndNotify() {
+  clearDegImage();
+  showNotif('Image retirée — enregistrez pour confirmer');
+}
+
 function renderDegustations() {
   const list   = document.getElementById('deg-list');
   const empty  = document.getElementById('deg-empty');
@@ -2102,8 +2372,9 @@ function renderDegustations() {
   list.innerHTML = data.map(d => {
     const stars   = d.note ? ('★'.repeat(parseInt(d.note)) + '☆'.repeat(5-parseInt(d.note))) : '';
     const dot     = TYPE_DOT[d.type] || '#555';
-    const imgHtml = d.image
-      ? `<img src="${d.image}" alt="" style="width:100%;height:140px;object-fit:contain;background:var(--bg);border-radius:3px;border:1px solid var(--border)">`
+    const _dImg = imgGet('deg_' + d.id) || d.image || '';
+    const imgHtml = _dImg
+      ? `<img src="${_dImg}" alt="" style="width:100%;height:140px;object-fit:contain;background:var(--bg);border-radius:3px;border:1px solid var(--border)">`
       : `<div style="width:100%;height:80px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:var(--border)">🍷</div>`;
     const rach = d.racheter ? `<span style="font-size:0.8rem">${RACHETER[d.racheter]||''} ${d.racheter==='oui'?'À racheter':d.racheter==='non'?'Ne pas racheter':'Peut-être'}</span>` : '';
     return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:4px;overflow:hidden;display:flex;flex-direction:column;transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--border)'" onmouseout="this.style.borderColor='var(--border)'">
@@ -2173,6 +2444,8 @@ function loadHistoriqueFromSheets() {
     delete window[cbName];
     if(Array.isArray(data)) {
       historiqueData = data.map(h => ({...h}));
+      // Migrer les images historique vers imageStore
+      historiqueData.forEach(h => { if(h.image && h.id) imgSave('hist_' + h.id, h.image); });
       renderHistorique();
     }
   };
@@ -2225,18 +2498,23 @@ function renderHistorique() {
 
   container.innerHTML = allEntries.map((h) => {
     const stars   = '★'.repeat(parseInt(h.note)||0) + '☆'.repeat(5-(parseInt(h.note)||0));
-    const imgHtml = h.image
-      ? `<img src="${h.image}" alt="" style="width:50px;height:70px;object-fit:contain;border-radius:3px;flex-shrink:0;border:1px solid var(--border)">`
+    const _hImg = h._source === 'hors_cave' ? (imgGet('deg_' + h.id) || h.image || '') : (imgGet('hist_' + h.id) || h.image || '');
+    const imgHtml = _hImg
+      ? `<img src="${_hImg}" alt="" style="width:50px;height:70px;object-fit:contain;border-radius:3px;flex-shrink:0;border:1px solid var(--border)">`
       : `<div style="width:50px;height:70px;background:var(--bg3);border-radius:3px;flex-shrink:0;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:1.4rem">🍷</div>`;
     const isHorsCave = h._source === 'hors_cave';
     const sourceBadge = isHorsCave
       ? `<span style="font-size:0.67rem;color:var(--text2);border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:1px 7px;background:rgba(201,168,76,0.07);white-space:nowrap;margin-left:5px">hors cave</span>`
-      : '';
+      : `<span style="font-size:0.67rem;color:var(--text2);border:1px solid rgba(80,80,80,0.3);border-radius:10px;padding:1px 7px;background:rgba(80,80,80,0.07);white-space:nowrap;margin-left:5px">cave</span>`;
     const editBtns = isHorsCave
       ? `<div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end">
            <button onclick="openAddDegustation('${h.id}')" style="padding:4px 9px;background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.78rem;cursor:pointer;border-radius:2px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">✏️</button>
            <button onclick="deleteDegustation('${h.id}')" style="padding:4px 9px;background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.78rem;cursor:pointer;border-radius:2px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--wine2)';this.style.color='var(--wine2)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">🗑</button>
-         </div>` : '';
+         </div>`
+      : `<div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end">
+           <button onclick="openEditHistorique('${h.id}')" style="padding:4px 9px;background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.78rem;cursor:pointer;border-radius:2px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">✏️</button>
+           <button onclick="deleteHistorique('${h.id}')" style="padding:4px 9px;background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.78rem;cursor:pointer;border-radius:2px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--wine2)';this.style.color='var(--wine2)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">🗑</button>
+         </div>`;
     const borderCol = isHorsCave ? 'rgba(201,168,76,0.2)' : 'var(--border)';
     const bgCol     = isHorsCave ? 'rgba(201,168,76,0.025)' : 'var(--bg2)';
     return `<div style="display:flex;gap:16px;align-items:flex-start;padding:16px;background:${bgCol};border:1px solid ${borderCol};border-radius:4px;margin-bottom:10px">
@@ -2260,6 +2538,113 @@ function renderHistorique() {
   }).join('');
 }
 
+
+// =====================================================================
+// ÉDITION HISTORIQUE CAVE
+// =====================================================================
+
+function openEditHistorique(id) {
+  const entry = historiqueData.find(h => String(h.id) === String(id));
+  if(!entry) return;
+  const modal = document.getElementById('modalEditHistorique');
+  modal._editId = id;
+  document.getElementById('edit-histo-title').textContent = '✏️ ' + (entry.nom||'') + (entry.annee ? ' ' + entry.annee : '');
+  document.getElementById('edit-histo-date').value        = entry.date || '';
+  document.getElementById('edit-histo-note').value        = entry.note || '';
+  document.getElementById('edit-histo-occasion').value    = entry.occasion || '';
+  document.getElementById('edit-histo-commentaire').value = entry.commentaire || '';
+  document.getElementById('edit-histo-image').value       = entry.image || '';
+  const pw = document.getElementById('edit-histo-img-wrap');
+  const pi = document.getElementById('edit-histo-img-preview');
+  if(entry.image && pw && pi) { pi.src = entry.image; pw.style.display = 'block'; }
+  else if(pw) pw.style.display = 'none';
+  modal.classList.add('open');
+}
+
+function saveEditHistorique() {
+  const modal = document.getElementById('modalEditHistorique');
+  const id = modal._editId;
+  if(!id) return;
+  const idx = historiqueData.findIndex(h => String(h.id) === String(id));
+  if(idx === -1) return;
+  const _newImage = document.getElementById('edit-histo-image').value.trim();
+  historiqueData[idx] = {
+    ...historiqueData[idx],
+    date:        document.getElementById('edit-histo-date').value,
+    note:        document.getElementById('edit-histo-note').value,
+    occasion:    document.getElementById('edit-histo-occasion').value.trim(),
+    commentaire: document.getElementById('edit-histo-commentaire').value.trim(),
+    image:       _newImage
+  };
+  // Persist image to imageStore (survit aux sync Sheets)
+  imgSave('hist_' + id, _newImage);
+  // Persist locally and sync to Sheets
+  localStorage.setItem('historiqueLocal', JSON.stringify(historiqueData));
+  saveHistoriqueToSheets(historiqueData[idx]);
+  closeModal('modalEditHistorique');
+  renderHistorique();
+  showNotif('Dégustation mise à jour ✓');
+}
+
+function deleteHistorique(id) {
+  if(!confirm('Supprimer cette entrée de l'historique ?')) return;
+  historiqueData = historiqueData.filter(h => String(h.id) !== String(id));
+  localStorage.setItem('historiqueLocal', JSON.stringify(historiqueData));
+  renderHistorique();
+  showNotif('Entrée supprimée');
+}
+
+// Handlers image pour le modal édition historique cave
+async function handleHistoImageFile(input) {
+  const file = input.files && input.files[0];
+  if(!file) return;
+  input.value = '';
+  const pw = document.getElementById('edit-histo-img-wrap');
+  const pi = document.getElementById('edit-histo-img-preview');
+  const reader = new FileReader();
+  reader.onload = e => { if(pw && pi) { pi.src = e.target.result; pw.style.display = 'block'; } };
+  reader.readAsDataURL(file);
+  showNotif('📤 Upload en cours…');
+  try {
+    const publicId = 'histo_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', CLOUDINARY_PRESET);
+    fd.append('public_id', publicId);
+    fd.append('asset_folder', 'cave_vins');
+    const res  = await fetch(CLOUDINARY_URL, { method:'POST', body:fd });
+    const data = await res.json();
+    if(data.secure_url) {
+      document.getElementById('edit-histo-image').value = data.secure_url;
+      if(pi) pi.src = data.secure_url;
+      showNotif('Photo sauvegardée ✓');
+    } else {
+      throw new Error(data.error?.message || 'Erreur Cloudinary');
+    }
+  } catch(e) {
+    showNotif('Erreur upload : ' + e.message, true);
+  }
+}
+
+function onHistoImageUrlChange(url) {
+  const pw = document.getElementById('edit-histo-img-wrap');
+  const pi = document.getElementById('edit-histo-img-preview');
+  if(!pw || !pi) return;
+  if(url && url.startsWith('http')) {
+    pi.src = url; pw.style.display = 'block';
+    pi.onerror = () => { pw.style.display = 'none'; };
+  } else if(!url) {
+    pw.style.display = 'none'; pi.src = '';
+  }
+}
+
+function clearHistoImage() {
+  document.getElementById('edit-histo-image').value = '';
+  const pw = document.getElementById('edit-histo-img-wrap');
+  const pi = document.getElementById('edit-histo-img-preview');
+  if(pw) pw.style.display = 'none';
+  if(pi) pi.src = '';
+}
 
 // =====================================================================
 // ACCORDS METS-VINS
@@ -2775,7 +3160,7 @@ function rechercherParVin(id) {
 function wineCardHtml(w) {
   const tLabel = {rouge:'Rouge',blanc:'Blanc','rosé':'Rosé',effervescent:'Effervescent',vdn:'VDN',magnum:'Magnum'}[w.type] || w.type;
   return `<div style="display:flex;gap:12px;align-items:center;padding:10px;background:var(--bg3);border-radius:3px;margin-bottom:8px;border:1px solid var(--border)">
-    ${w.image?`<img src="${w.image}" style="width:36px;height:50px;object-fit:contain;border-radius:2px;flex-shrink:0">`:'<div style="width:36px;height:50px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">🍷</div>'}
+    ${(imgGet('wine_'+w.id)||w.image)?`<img src="${imgGet('wine_'+w.id)||w.image}" style="width:36px;height:50px;object-fit:contain;border-radius:2px;flex-shrink:0">`:'<div style="width:36px;height:50px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">🍷</div>'}
     <div style="flex:1;min-width:0">
       <div style="color:var(--cream);font-size:0.95rem">${w.nom||'—'}${w.annee?' <span style="color:var(--text2);font-size:0.8rem">'+w.annee+'</span>':''}</div>
       <div style="color:var(--text2);font-size:0.78rem;margin-top:2px">${[w.domaine,w.region].filter(Boolean).join(' · ')}</div>
@@ -2985,7 +3370,7 @@ function renderApogee(filtre) {
 
     return `<div style="display:flex;gap:14px;align-items:center;padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-left:3px solid ${st.color};border-radius:3px;margin-bottom:8px;cursor:pointer"
       onclick="openSlotModal(${w.cave},${w.floor},${w.slot})">
-      ${w.image ? `<img src="${w.image}" style="width:40px;height:56px;object-fit:contain;border-radius:2px;flex-shrink:0">` : `<div style="width:40px;height:56px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">🍷</div>`}
+      ${(imgGet('wine_'+w.id)||w.image) ? `<img src="${imgGet('wine_'+w.id)||w.image}" style="width:40px;height:56px;object-fit:contain;border-radius:2px;flex-shrink:0">` : `<div style="width:40px;height:56px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">🍷</div>`}
       <div style="flex:1;min-width:0">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">
           <div>
@@ -3251,7 +3636,8 @@ function showMobileBubble(cave, floor, slot) {
     ].filter(Boolean).join('<br>');
     const imgWrap = document.getElementById('mb-img-wrap');
     const imgEl   = document.getElementById('mb-img');
-    if(wine.image) { imgEl.src = wine.image; imgWrap.style.display = 'block'; }
+    const _mbImg2 = imgGet('wine_' + wine.id) || wine.image || '';
+    if(_mbImg2) { imgEl.src = _mbImg2; imgWrap.style.display = 'block'; }
     else           { imgWrap.style.display = 'none'; }
     document.getElementById('mb-btn-fiche').style.display = 'block';
   } else {
