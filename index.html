@@ -296,7 +296,7 @@
   .info-cell { background: var(--bg3); padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); transition: var(--transition); }
   .info-cell:hover { border-color: var(--border2); }
   .info-cell .lbl { font-size: 0.67rem; color: var(--text3); text-transform: uppercase; letter-spacing: 1.5px; }
-  .info-cell .val { font-size: 1.05rem; color: var(--cream); margin-top: 3px; }
+  .info-cell .val { font-size: 1.05rem; color: var(--text); margin-top: 3px; }
   .modal-actions { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
 
   /* ============================================================
@@ -346,7 +346,7 @@
   .wine-card-img { width: 52px; height: 72px; object-fit: contain; border-radius: 3px; border: 1px solid var(--border); flex-shrink: 0; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; }
   .wine-card-img img { width: 100%; height: 100%; object-fit: contain; border-radius: 3px; }
   .wine-card-body { flex: 1; min-width: 0; }
-  .wine-card-name { font-family: 'Playfair Display', serif; color: var(--cream); font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wine-card-name { font-family: 'Playfair Display', serif; color: var(--text); font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .wine-card-sub { font-size: 0.82rem; color: var(--text2); font-style: italic; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .wine-card-tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
   .wine-card-price { margin-left: auto; text-align: right; flex-shrink: 0; }
@@ -2208,7 +2208,7 @@ function renderList() {
     const tLabel = TYPE_LABELS[w.type]||w.type;
     const fLabel = FORMAT_LABELS[w.format]||(w.format||'75 cl');
     html += `<tr onclick="openSlotModal(${w.cave},${w.floor},${w.slot})" title="Voir">
-      <td><b style="color:var(--cream)">${w.nom||'—'}</b></td>
+      <td><b style="color:var(--text)">${w.nom||'—'}</b></td>
       <td style="color:var(--text2);font-style:italic">${w.appellation||'—'}</td>
       <td style="color:var(--text2)">${w.domaine||'—'}</td>
       <td><span class="type-badge badge-${w.type}">${tLabel}</span></td>
@@ -5738,8 +5738,53 @@ function selectCarteRegion(key, label) {
   // Mettre à jour le hint avec infos région
   const hint = document.getElementById('carte-zoom-hint');
   if (hint) {
+    let cepagesHtml = '';
+    if (region?.cepages) {
+      const CEPAGES_BLANCS = ['chardonnay','sauvignon blanc','sauvignon','sémillon','semillon','riesling',
+        'gewurztraminer','gewürztraminer','pinot gris','pinot blanc','aligoté','aligote','muscat',
+        'viognier','marsanne','roussanne','clairette','bourboulenc','ugni blanc','ugni','rolle',
+        'vermentino','grenache blanc','macabeu','macabeo','viura','malvasia','malvasía',
+        'palomino','palomino fino','pedro ximénez','pedro ximenez','moscatel','albariño','albarino',
+        'treixadura','loureira','verdejo','godello','arinto','alvarinho','loureiro','trajadura','azal',
+        'encruzado','bical','antão vaz','antao vaz','fernão pires','fernao pires','sercial','verdelho',
+        'bual','malmsey','terrantez','cortese','arneis','turbiana','garganega','glera','pinot grigio',
+        'friulano','tocai','ribolla gialla','müller-thurgau','muller-thurgau','savagnin',
+        'jacquère','jacquere','altesse','roussette','chasselas','gros manseng','petit manseng',
+        'melon de bourgogne','chenin blanc','chenin','hondarrabi zuri','xarel·lo','xarello','parellada',
+        'furmint','hárslevelű','harslevelü','harslevelu','assyrtiko','moschofilero'];
+      const CEPAGES_ROUGES = ['cabernet sauvignon','merlot','cabernet franc','pinot noir','syrah',
+        'grenache','mourvèdre','mourvedre','carignan','cinsault','gamay','gamay noir','malbec',
+        'côt','cot','tannat','fer servadou','tempranillo','garnacha','mazuelo','graciano',
+        'mencía','mencia','tinto fino','cariñena','carinena','touriga nacional','touriga franca',
+        'tinta roriz','tinta barroca','tinta cão','tinta cao','aragonez','trincadeira',
+        'alicante bouschet','castelão','castelao','nebbiolo','barbera','dolcetto','corvina',
+        'molinara','rondinella','sangiovese','primitivo','aglianico','teroldego','lagrein',
+        'schiava','vernatsch','refosco','nielluccio','sciaccarello','poulsard','trousseau',
+        'mondeuse','hondarrabi beltza','blaufränkisch','zweigelt','pinot meunier','mavrud',
+        'tempranillo/tinto fino','xinomavro','agiorgitiko'];
+      const rawList = region.cepages.split(',').map(s => s.trim());
+      const rouges = [], blancs = [], autres = [];
+      rawList.forEach(c => {
+        const keyFull = c.toLowerCase().trim();
+        const isRouge = CEPAGES_ROUGES.some(r => keyFull === r || keyFull.startsWith(r) || keyFull.includes(r));
+        const isBlanc = CEPAGES_BLANCS.some(b => keyFull === b || keyFull.startsWith(b) || keyFull.includes(b));
+        if (isRouge) rouges.push(c);
+        else if (isBlanc) blancs.push(c);
+        else autres.push(c);
+      });
+      if (rouges.length || blancs.length) {
+        cepagesHtml = ' — <span style="font-style:italic;font-size:0.88em">';
+        if (rouges.length) cepagesHtml += `<span style="color:#c87080">🍷 ${rouges.join(', ')}</span>`;
+        if (rouges.length && blancs.length) cepagesHtml += '<span style="color:#4a3a3a"> · </span>';
+        if (blancs.length) cepagesHtml += `<span style="color:#b8a050">🥂 ${blancs.join(', ')}</span>`;
+        if (autres.length) cepagesHtml += `<span style="color:#908070"> · ${autres.join(', ')}</span>`;
+        cepagesHtml += '</span>';
+      } else {
+        cepagesHtml = ` — <span style="color:#a09080;font-style:italic">🍇 ${region.cepages}</span>`;
+      }
+    }
     hint.innerHTML = `🏛️ <b style="color:#e8c870">${label}</b>`
-      + (region?.cepages ? ` — <span style="color:#a09080;font-style:italic">🍇 ${region.cepages}</span>` : '')
+      + cepagesHtml
       + (nbAoc ? ` — <span style="color:#c08050">${nbAoc} AOC</span>` : '')
       + (nbCru  ? ` · <span style="color:#9b60d0">${nbCru} cru${nbCru>1?'s':''}</span>` : '');
     hint.style.color = 'rgba(220,200,120,0.9)';
@@ -5768,7 +5813,7 @@ function selectCarteRegion(key, label) {
               style="display:flex;gap:8px;align-items:center;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;cursor:pointer;min-width:180px;flex:1;max-width:260px">
               ${w.image?`<img src="${w.image}" style="width:28px;height:40px;object-fit:contain;border-radius:2px;flex-shrink:0">`:`<span style="font-size:1rem;flex-shrink:0">🍷</span>`}
               <div style="min-width:0">
-                <div style="color:var(--cream);font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${w.nom||'—'}</div>
+                <div style="color:var(--text);font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${w.nom||'—'}</div>
                 <div style="color:var(--text2);font-size:0.75rem">${w.annee||''} ${w.domaine?'· '+w.domaine:''}</div>
               </div>
             </div>`).join('')}
