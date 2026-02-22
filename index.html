@@ -4957,7 +4957,7 @@ function renderCarte() {
     const marker = L.marker([lat, lng], { icon, zIndexOffset: hasWines ? 1000 : 0 });
 
     // Popup au clic
-    marker.on('click', () => { selectCarteRegion(key, region.label); });
+    marker.on('click', (e) => { L.DomEvent.stopPropagation(e); selectCarteRegion(key, region.label); });
 
     // Tooltip : cépages + appellations phares + vins en cave
     const appellationsPhares = {
@@ -4984,7 +4984,19 @@ function renderCarte() {
     marker.bindTooltip(`
       <div style="font-family:'Playfair Display',serif;min-width:200px;max-width:270px">
         <div style="color:#c9a84c;font-size:0.95rem;font-weight:700;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid rgba(201,168,76,0.25)">${region.label}</div>
-        ${region.cepages ? `<div style="color:#a09080;font-size:0.72rem;margin-bottom:6px">🍇 ${region.cepages}</div>` : ''}
+        ${region.cepages ? (() => {
+          const RBLANCS = ['chardonnay','sauvignon blanc','sauvignon','sémillon','semillon','riesling','gewurztraminer','gewürztraminer','pinot gris','pinot blanc','aligoté','aligote','muscat','viognier','marsanne','roussanne','clairette','bourboulenc','ugni blanc','ugni','rolle','vermentino','grenache blanc','macabeu','macabeo','viura','malvasia','malvasía','palomino','palomino fino','pedro ximénez','pedro ximenez','moscatel','albariño','albarino','treixadura','loureira','verdejo','godello','arinto','alvarinho','loureiro','trajadura','azal','encruzado','bical','antão vaz','antao vaz','fernão pires','fernao pires','sercial','verdelho','bual','malmsey','terrantez','cortese','arneis','turbiana','garganega','glera','pinot grigio','friulano','tocai','ribolla gialla','müller-thurgau','muller-thurgau','savagnin','jacquère','jacquere','altesse','roussette','chasselas','gros manseng','petit manseng','melon de bourgogne','chenin blanc','chenin','hondarrabi zuri','xarel·lo','xarello','parellada','furmint','hárslevelű','harslevelü','harslevelu','assyrtiko','moschofilero'];
+          const RROUGES = ['cabernet sauvignon','merlot','cabernet franc','pinot noir','syrah','grenache','mourvèdre','mourvedre','carignan','cinsault','gamay','gamay noir','malbec','côt','cot','tannat','fer servadou','tempranillo','garnacha','mazuelo','graciano','mencía','mencia','tinto fino','cariñena','carinena','touriga nacional','touriga franca','tinta roriz','tinta barroca','tinta cão','tinta cao','aragonez','trincadeira','alicante bouschet','castelão','castelao','nebbiolo','barbera','dolcetto','corvina','molinara','rondinella','sangiovese','primitivo','aglianico','teroldego','lagrein','schiava','vernatsch','refosco','nielluccio','sciaccarello','poulsard','trousseau','mondeuse','hondarrabi beltza','blaufränkisch','zweigelt','pinot meunier','mavrud','tempranillo/tinto fino','xinomavro','agiorgitiko'];
+          const lst = region.cepages.split(',').map(s=>s.trim());
+          const r=[], b=[], a=[];
+          lst.forEach(c=>{const k=c.toLowerCase().trim();if(RROUGES.some(x=>k===x||k.startsWith(x)||k.includes(x)))r.push(c);else if(RBLANCS.some(x=>k===x||k.startsWith(x)||k.includes(x)))b.push(c);else a.push(c);});
+          let h='<div style="font-size:0.72rem;margin-bottom:6px">';
+          if(r.length)h+=`<span style="color:#c87080">🍷 ${r.join(', ')}</span>`;
+          if(r.length&&b.length)h+=' <span style="color:#555">·</span> ';
+          if(b.length)h+=`<span style="color:#b8a050">🥂 ${b.join(', ')}</span>`;
+          if(a.length)h+=`<span style="color:#908070"> · ${a.join(', ')}</span>`;
+          return h+'</div>';
+        })() : ''}
         ${phares ? `<div style="color:#d4c4b0;font-size:0.70rem;line-height:1.65">${phares.split(' · ').map(a=>`<span style="display:inline-block;background:rgba(180,140,80,0.15);border-radius:2px;padding:0 3px;margin:1px 2px 1px 0">${a}</span>`).join('')}</div>` : ''}
         ${wineInfo}
       </div>
@@ -4999,6 +5011,20 @@ function renderCarte() {
   });
 
   renderCarteLegend();
+  // Clic sur le fond de la carte (hors marqueur) → effacer les appellations
+  leafletMap.on('click', function(e) {
+    // Only clear if the click was not on a marker (markers stop propagation)
+    if (leafletMap._appelLayer) {
+      leafletMap.removeLayer(leafletMap._appelLayer);
+      leafletMap._appelLayer = null;
+      leafletMap._appelRegion = null;
+    }
+    carteSelectedRegion = null;
+    document.getElementById('carte-region-title').textContent = 'Cliquez sur un point pour voir les vins';
+    document.getElementById('carte-region-list').innerHTML = '';
+    updateZoomHint(null);
+    refreshCarteMarkers();
+  });
   // Les appellations n'apparaissent qu'au clic sur une région
 }
 
@@ -5023,10 +5049,10 @@ function geoCentroid(geometry) {
 // cru  = Grand Cru / cru classé, AOC distincte à part entière (point violet, italique)
 function addAppelLabel(group, lat, lng, nom, type) {
   const S = {
-    zone: { dot:false, r:0,   stroke:'',        fill:'',        txtColor:'#3a2000', bg:'rgba(255,245,210,0.75)', size:'0.60rem', weight:'800', italic:false, upper:true  },
-    aoc:  { dot:true,  r:5,   stroke:'#6b1020', fill:'#9b2030', txtColor:'#1a0800', bg:'rgba(255,248,235,0.90)', size:'0.65rem', weight:'700', italic:false, upper:false },
-    cru:  { dot:true,  r:3.5, stroke:'#3a0868', fill:'#6a18b0', txtColor:'#2a0050', bg:'rgba(245,235,255,0.90)', size:'0.60rem', weight:'600', italic:true,  upper:false },
-  }[type] || { dot:true, r:4, stroke:'#444', fill:'#666', txtColor:'#111', bg:'rgba(255,255,255,0.85)', size:'0.62rem', weight:'600', italic:false, upper:false };
+    zone: { dot:false, r:0,   stroke:'',        fill:'',        txtColor:'#5ab4e0', bg:'rgba(10,25,45,0.72)',  size:'0.60rem', weight:'800', italic:false, upper:true  },
+    aoc:  { dot:true,  r:5,   stroke:'#6b1020', fill:'#9b2030', txtColor:'#7dd4f5', bg:'rgba(8,22,40,0.82)',  size:'0.65rem', weight:'700', italic:false, upper:false },
+    cru:  { dot:true,  r:3.5, stroke:'#3a0868', fill:'#6a18b0', txtColor:'#a8e0ff', bg:'rgba(10,18,38,0.82)', size:'0.60rem', weight:'600', italic:true,  upper:false },
+  }[type] || { dot:true, r:4, stroke:'#444', fill:'#666', txtColor:'#7dd4f5', bg:'rgba(8,20,38,0.80)', size:'0.62rem', weight:'600', italic:false, upper:false };
 
   if (S.dot) {
     const dot = L.circleMarker([lat, lng], {
@@ -5819,13 +5845,8 @@ function selectCarteRegion(key, label) {
     hint.style.color = 'rgba(220,200,120,0.9)';
   }
 
-  // Bloc cépages dans le panneau région (toujours affiché si dispo)
-  const cepagesPanelHtml = region?.cepages ? buildCepagesHtml(region.cepages, 'panel') : '';
-
   if(!wines.length) {
-    document.getElementById('carte-region-list').innerHTML =
-      cepagesPanelHtml +
-      '<div style="color:var(--text2);font-style:italic">Aucun vin de cette région</div>';
+    document.getElementById('carte-region-list').innerHTML = '<div style="color:var(--text2);font-style:italic">Aucun vin de cette région</div>';
     refreshCarteMarkers(); return;
   }
 
@@ -5837,7 +5858,6 @@ function selectCarteRegion(key, label) {
   });
 
   document.getElementById('carte-region-list').innerHTML =
-    cepagesPanelHtml +
     Object.entries(byApp)
     .sort((a,b) => b[1].length - a[1].length)
     .map(([app, ws]) => `
