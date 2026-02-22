@@ -1165,12 +1165,7 @@ function loadFromSheets() {
             prix:  parseFloat(w.prix) || '',
             note:  w.note || '',
             image: resolvedImage,
-            prix_marche:          w.prix_marche          || pm.prix_marche          || '',
-            prix_marche_manuel:   w.prix_marche_manuel   || pm.prix_marche_manuel   || '',
-            prix_marche_min:      w.prix_marche_min      || pm.prix_marche_min      || '',
-            prix_marche_max:      w.prix_marche_max      || pm.prix_marche_max      || '',
-            prix_marche_tendance: w.prix_marche_tendance || pm.prix_marche_tendance || '',
-            prix_marche_date:     w.prix_marche_date     || pm.prix_marche_date     || ''
+            _prixEstime: parseFloat(w.prix_marche || w._prixEstime || pm.prix_marche || '') || ''
           };
         });
         localStorage.setItem('caveData', JSON.stringify(wineData));
@@ -1516,22 +1511,11 @@ function openSlotModal(cave, floor, slot) {
             <div class="info-cell"><div class="lbl">Type</div><div class="val"><span class="type-badge badge-${wine.type}">${tLabel}</span></div></div>
             <div class="info-cell"><div class="lbl">Format</div><div class="val"><span class="format-badge">${fLabel}</span></div></div>
             <div class="info-cell"><div class="lbl">Millésime</div><div class="val">${wine.annee||'—'}</div></div>
-            <div class="info-cell"><div class="lbl">Prix achat</div><div class="val">${wine.prix?wine.prix+'€':'—'}</div></div>
             <div class="info-cell">
-              <div class="lbl">Prix marché
-                ${wine.prix_marche_manuel ? '<span style="font-size:0.65rem;color:var(--gold)">✏ manuel</span>' : (wine.prix_marche ? '<span style="font-size:0.65rem;color:var(--text2)">~ estimé</span>' : '')}
-              </div>
-              <div class="val" style="display:flex;align-items:center;gap:8px">
-                <span id="prix-marche-display">${wine.prix_marche_manuel ? wine.prix_marche_manuel+'€' : (wine.prix_marche ? '~'+wine.prix_marche+'€' : '—')}</span>
-                <button onclick="ouvrirSaisiePrixMarche('${wine.id}')" style="padding:2px 7px;font-size:0.7rem;background:transparent;border:1px solid var(--border);color:var(--text2);cursor:pointer;border-radius:2px" title="Saisir un prix manuel">✏</button>
-              </div>
-              <div id="saisie-prix-marche" style="display:none;margin-top:6px;display:none">
-                <input type="number" id="input-prix-marche" placeholder="Prix €" style="width:80px;padding:4px 8px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:2px;font-size:0.9rem">
-                <button onclick="sauvegarderPrixMarcheManuel('${wine.id}')" style="padding:4px 9px;font-size:0.8rem;background:var(--wine);border:none;color:var(--cream);cursor:pointer;border-radius:2px;margin-left:4px">OK</button>
-                <button onclick="effacerPrixMarcheManuel('${wine.id}')" style="padding:4px 9px;font-size:0.8rem;background:transparent;border:1px solid var(--border);color:var(--text2);cursor:pointer;border-radius:2px;margin-left:2px" title="Effacer et utiliser estimation">✕</button>
-              </div>
+              <div class="lbl">Prix</div>
+              <div class="val">${wine.prix ? wine.prix+'€' : wine._prixEstime ? '~'+wine._prixEstime+'€' : '—'}</div>
             </div>
-            <div class="info-cell"><div class="lbl">Domaine</div><div class="val">${wine.domaine||'—'}</div></div>
+                        <div class="info-cell"><div class="lbl">Domaine</div><div class="val">${wine.domaine||'—'}</div></div>
             <div class="info-cell"><div class="lbl">Région</div><div class="val">${wine.region||'—'}</div></div>
             <div class="info-cell"><div class="lbl">Note</div><div class="val rating-stars" style="font-size:1rem">${stars}</div></div>
           </div>
@@ -1849,8 +1833,12 @@ function addWine() {
   if(!nom)  { showNotif('Le nom est requis', true); return; }
   if(!slot) { showNotif('Aucun emplacement disponible', true); return; }
   const editingId = addingToSlot?.editing;
+  // Préserver les champs prix_marche et autres champs non présents dans le formulaire
+  const existingWine = editingId ? wineData.find(w => String(w.id) === String(editingId)) : null;
   if(editingId) wineData = wineData.filter(w=>String(w.id)!==String(editingId));
   wineData.push({
+    // Préserver tous les champs existants d'abord
+    ...(existingWine || {}),
     id: editingId || Date.now().toString(),
     nom,
     appellation: document.getElementById('f-appellation').value.trim(),
@@ -1867,7 +1855,7 @@ function addWine() {
     apogeeFin:   document.getElementById('f-apogee-fin')   ? document.getElementById('f-apogee-fin').value   : '',
     image:       document.getElementById('f-image') ? document.getElementById('f-image').value.trim() : '',
     cave:  parseInt(cave), floor: parseInt(floor), slot: parseInt(slot),
-    dateAjout: new Date().toISOString().split('T')[0]
+    dateAjout: existingWine?.dateAjout || new Date().toISOString().split('T')[0]
   });
   // Save image URL to imageStore indexed by wine id
   const _newWine = wineData[wineData.length - 1];
@@ -1931,13 +1919,11 @@ function renderList() {
       <td>Cave ${w.cave}</td>
       <td style="white-space:nowrap">Ét.${w.floor} #${w.slot}</td>
       <td style="white-space:nowrap">
-        ${w.prix_marche_manuel
-          ? `<span style="color:var(--gold)" title="Prix manuel">${w.prix_marche_manuel}€ ✏</span>`
-          : w.prix_marche
-            ? `<span style="color:var(--gold)" title="Fourchette: ${w.prix_marche_min||'?'}€–${w.prix_marche_max||'?'}€ · ${w.prix_marche_tendance||''}">${w.prix_marche}€</span>`
-            : w.prix
-              ? `<span style="color:var(--text2)" title="Prix d'achat">${w.prix}€</span>`
-              : '<span style="color:var(--text2);font-style:italic">—</span>'
+        ${w.prix
+          ? `<span style="color:var(--cream)">${w.prix}€</span>`
+          : w._prixEstime
+            ? `<span style="color:var(--gold)" title="Estimation Groq">~${w._prixEstime}€</span>`
+            : '<span style="color:var(--text2);font-style:italic">—</span>'
         }
       </td>
       <td><button class="btn-danger" style="padding:4px 9px;font-size:0.78rem" onclick="event.stopPropagation();removeWine('${w.id}')">✕</button></td>
@@ -1951,51 +1937,19 @@ function renderList() {
 // STATS
 // =====================================================================
 
-function ouvrirSaisiePrixMarche(wineId) {
-  const div = document.getElementById('saisie-prix-marche');
-  if(div) { div.style.display = div.style.display === 'none' ? 'block' : 'none'; }
-  const wine = wineData.find(w => String(w.id) === String(wineId));
-  const input = document.getElementById('input-prix-marche');
-  if(input && wine) input.value = wine.prix_marche_manuel || wine.prix_marche || '';
-}
 
-function sauvegarderPrixMarcheManuel(wineId) {
-  const input = document.getElementById('input-prix-marche');
-  if(!input) return;
-  const val = parseFloat(input.value);
-  if(!val || val <= 0) { showNotif('Prix invalide', true); return; }
-  const wIdx = wineData.findIndex(w => String(w.id) === String(wineId));
-  if(wIdx === -1) return;
-  wineData[wIdx].prix_marche_manuel = val;
-  wineData[wIdx].prix_marche = val; // Le manuel écrase l'estimé
-  saveData();
-  // Mettre à jour l'affichage
-  const display = document.getElementById('prix-marche-display');
-  if(display) display.textContent = val + '€';
-  const div = document.getElementById('saisie-prix-marche');
-  if(div) div.style.display = 'none';
-  showNotif('Prix marché sauvegardé ✓');
-}
 
-function effacerPrixMarcheManuel(wineId) {
-  const wIdx = wineData.findIndex(w => String(w.id) === String(wineId));
-  if(wIdx === -1) return;
-  delete wineData[wIdx].prix_marche_manuel;
-  saveData();
-  const display = document.getElementById('prix-marche-display');
-  if(display) display.textContent = wineData[wIdx].prix_marche ? '~' + wineData[wIdx].prix_marche + '€' : '—';
-  const div = document.getElementById('saisie-prix-marche');
-  if(div) div.style.display = 'none';
-  showNotif('Prix manuel effacé — estimation Groq active');
-}
+
+
+
 
 async function estimerTousLesVinsAuto() {
-  const aEstimer = wineData.filter(w => !w.prix_marche && !w.prix_marche_manuel);
+  // N'estimer que les vins sans prix saisi manuellement
+  const aEstimer = wineData.filter(w => !w.prix && !w._prixEstime);
   if(aEstimer.length === 0) return;
 
-  showNotif('💰 Estimation des prix marché en cours (' + aEstimer.length + ' vins)…');
+  showNotif('💰 Estimation des prix en cours (' + aEstimer.length + ' vins)…');
 
-  // Envoyer tous les vins en une seule requête Groq (batch)
   const BATCH = 15;
   let estimés = 0;
 
@@ -2005,16 +1959,13 @@ async function estimerTousLesVinsAuto() {
       `${idx+1}. ${w.nom}|${w.domaine||''}|${w.appellation||''}|${w.annee||''}|${w.type||''}|${w.format||'75cl'}`
     ).join('\n');
 
-    const prompt = `Tu es expert en vins français et internationaux. Estime le prix de marché actuel pour chaque vin de cette liste (format: nom|domaine|appellation|millésime|type|format).
+    const prompt = `Tu es expert en vins. Pour chaque vin de cette liste (nom|domaine|appellation|millésime|type|format), donne un prix de marché moyen en euros (une seule valeur arrondie).
 
 ${lignes}
 
-Réponds UNIQUEMENT avec un tableau JSON strict, un objet par vin, dans le même ordre :
-[
-  {"min": <prix_min>, "max": <prix_max>, "tendance": "hausse"|"stable"|"baisse"},
-  ...
-]
-Aucun texte autour. Juste le tableau JSON.`;
+Réponds UNIQUEMENT avec un tableau JSON, un nombre par vin dans le même ordre :
+[45, 120, 28, ...]
+Aucun texte autour. Juste le tableau.`;
 
     try {
       const resp = await fetch(SCRIPT_URL, {
@@ -2023,25 +1974,20 @@ Aucun texte autour. Juste le tableau JSON.`;
       });
       const data = await resp.json();
       const text = data.text || '';
-      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      const jsonMatch = text.match(/\[[\s\S]*?\]/);
       if(!jsonMatch) continue;
-      const estimations = JSON.parse(jsonMatch[0]);
+      const prix = JSON.parse(jsonMatch[0]);
 
       batch.forEach((wine, idx) => {
-        const est = estimations[idx];
-        if(!est || !est.min || !est.max) return;
+        const p = parseFloat(prix[idx]);
+        if(!p || p <= 0) return;
         const wIdx = wineData.findIndex(w => String(w.id) === String(wine.id));
         if(wIdx === -1) return;
-        if(wineData[wIdx].prix_marche_manuel) return; // Ne pas écraser le manuel
-        wineData[wIdx].prix_marche          = Math.round((est.min + est.max) / 2);
-        wineData[wIdx].prix_marche_min      = est.min;
-        wineData[wIdx].prix_marche_max      = est.max;
-        wineData[wIdx].prix_marche_tendance = est.tendance || 'stable';
-        wineData[wIdx].prix_marche_date     = new Date().toISOString().split('T')[0];
+        if(wineData[wIdx].prix) return; // Ne pas écraser un prix saisi
+        wineData[wIdx]._prixEstime = Math.round(p);
         estimés++;
       });
 
-      // Sauvegarder après chaque batch
       saveData();
       renderList();
       renderStats();
@@ -2050,100 +1996,35 @@ Aucun texte autour. Juste le tableau JSON.`;
       console.warn('Batch estimation échouée', e);
     }
 
-    // Pause entre les batches pour ne pas surcharger Groq
-    if(i + BATCH < aEstimer.length) await new Promise(r => setTimeout(r, 1000));
+    if(i + BATCH < aEstimer.length) await new Promise(r => setTimeout(r, 800));
   }
 
-  if(estimés > 0) showNotif('💰 ' + estimés + ' vins estimés ✓');
+  if(estimés > 0) showNotif('💰 ' + estimés + ' prix estimés ✓');
 }
 
 async function estimerValeurCave() {
-  const box    = document.getElementById('cave-valeur-marche');
-  const detail = document.getElementById('cave-valeur-detail');
-  if(!box) return;
-
-  box.textContent = '⏳ Calcul…';
-  if(detail) detail.textContent = 'Consultation de Claude pour chaque appellation…';
-
-  // Grouper les vins par appellation/domaine pour réduire le nombre d'appels
-  const groupes = {};
-  wineData.forEach(w => {
-    const key = [w.appellation || w.region || 'Autre', w.type || ''].join('|');
-    if(!groupes[key]) groupes[key] = { appellation: w.appellation || w.region || 'Autre', type: w.type, vins: [] };
-    groupes[key].vins.push(w);
-  });
-
-  // Construire la liste des vins pour l'estimation
-  const listeVins = wineData.slice(0, 50).map(w =>
-    `${w.nom}|${w.domaine||''}|${w.annee||''}|${w.type||''}|${w.format||'75cl'}`
-  ).join('\n');
-
-  const prompt = `Tu es un expert en vins. Estime la valeur de marché totale de cette cave à vin.
-Voici les ${wineData.length} bouteilles (nom|domaine|millésime|type|format) :
-${listeVins}${wineData.length > 50 ? '\n... et ' + (wineData.length-50) + ' autres bouteilles similaires' : ''}
-
-Valeur d'achat totale connue : ${Math.round(wineData.reduce((s,w)=>s+(parseFloat(w.prix)||0),0)).toLocaleString('fr-FR')} €
-
-Réponds UNIQUEMENT avec ce JSON strict :
-{
-  "valeur_min": <nombre total cave en euros>,
-  "valeur_max": <nombre total cave en euros>,
-  "tendance_globale": "hausse" | "stable" | "baisse",
-  "commentaire": "<3 phrases max sur la composition et la valeur de cette cave>"
-}`;
-
-  try {
-    const resp = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'estimerPrix', prompt })
-    });
-    const data = await resp.json();
-    const text = data.text || '';
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if(!jsonMatch) throw new Error('Format inattendu');
-    const est = JSON.parse(jsonMatch[0]);
-
-    const tendanceIcon = est.tendance_globale === 'hausse' ? '📈' : est.tendance_globale === 'baisse' ? '📉' : '➡️';
-    box.textContent = est.valeur_min.toLocaleString('fr-FR') + '€ – ' + est.valeur_max.toLocaleString('fr-FR') + '€';
-    if(detail) detail.innerHTML = `${tendanceIcon} Tendance ${est.tendance_globale} · ${est.commentaire || ''}`;
-
-  } catch(err) {
-    box.textContent = '—';
-    if(detail) detail.textContent = 'Estimation indisponible : ' + err.message;
-  }
+  // Estimer tous les vins sans prix puis recalculer
+  await estimerTousLesVinsAuto();
+  // La valeur totale est déjà affichée dans renderStats après saveData()
 }
 
 async function estimerPrixMarche(wineId) {
   const wine = wineData.find(w => String(w.id) === String(wineId));
   if(!wine) return;
+  if(wine.prix) { showNotif('Prix saisi manuellement — estimation ignorée', true); return; }
 
   const box = document.getElementById('price-estimate-box');
   const btn = document.getElementById('btn-estimer');
   if(!box || !btn) return;
 
   btn.disabled = true;
-  btn.textContent = '⏳ Estimation…';
+  btn.textContent = '⏳…';
   box.style.display = 'block';
-  box.innerHTML = '<div style="color:var(--text2);font-style:italic;font-size:0.9rem">Consultation de Claude en cours…</div>';
+  box.innerHTML = '<div style="color:var(--text2);font-style:italic;font-size:0.9rem">Estimation en cours…</div>';
 
-  const prompt = `Tu es un expert en vins français et internationaux. Donne-moi une estimation du prix de marché actuel pour ce vin :
-- Nom/Cuvée : ${wine.nom || '—'}
-- Domaine/Producteur : ${wine.domaine || '—'}
-- Appellation : ${wine.appellation || '—'}
-- Région : ${wine.region || '—'}
-- Type : ${wine.type || '—'}
-- Millésime : ${wine.annee || '—'}
-- Format : ${wine.format || '75cl'}
-- Prix d'achat : ${wine.prix ? wine.prix + '€' : 'non renseigné'}
-
-Réponds UNIQUEMENT avec ce format JSON strict (aucun texte autour) :
-{
-  "fourchette_min": <nombre>,
-  "fourchette_max": <nombre>,
-  "tendance": "hausse" | "stable" | "baisse",
-  "commentaire": "<2 phrases max sur ce vin et sa cote>",
-  "fiabilite": "haute" | "moyenne" | "faible"
-}`;
+  const prompt = `Tu es expert en vins. Donne le prix de marché moyen actuel en euros (une seule valeur entière arrondie) pour ce vin :
+Nom: ${wine.nom||'—'} | Domaine: ${wine.domaine||'—'} | Appellation: ${wine.appellation||'—'} | Millésime: ${wine.annee||'—'} | Type: ${wine.type||'—'} | Format: ${wine.format||'75cl'}
+Réponds UNIQUEMENT avec un nombre entier. Ex: 45`;
 
   try {
     const response = await fetch(SCRIPT_URL, {
@@ -2151,44 +2032,23 @@ Réponds UNIQUEMENT avec ce format JSON strict (aucun texte autour) :
       body: JSON.stringify({ action: 'estimerPrix', prompt })
     });
     const data = await response.json();
-    const text = data.text || '';
-    // Extraire le JSON de la réponse
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if(!jsonMatch) throw new Error('Format inattendu');
-    const est = JSON.parse(jsonMatch[0]);
+    const text = (data.text || '').trim();
+    const prix = parseInt(text.match(/\d+/)?.[0]);
+    if(!prix || prix <= 0) throw new Error('Prix invalide');
 
-    const tendanceIcon = est.tendance === 'hausse' ? '📈' : est.tendance === 'baisse' ? '📉' : '➡️';
-    const tendanceCouleur = est.tendance === 'hausse' ? '#4caf50' : est.tendance === 'baisse' ? '#e57373' : 'var(--gold)';
-    const fiabiliteLabel = { haute: '🟢 Fiable', moyenne: '🟡 Approximatif', faible: '🔴 Indicatif' };
+    const wIdx = wineData.findIndex(w => String(w.id) === String(wineId));
+    if(wIdx !== -1) {
+      wineData[wIdx]._prixEstime = prix;
+      saveData();
+      renderList();
+      renderStats();
+    }
 
     box.innerHTML = `
-      <div style="font-size:0.68rem;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">💰 Estimation marché</div>
-      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:8px;flex-wrap:wrap">
-        <div style="font-size:1.4rem;font-family:'Playfair Display',serif;color:var(--gold)">
-          ${est.fourchette_min}€ – ${est.fourchette_max}€
-        </div>
-        <div style="color:${tendanceCouleur};font-size:0.9rem">${tendanceIcon} ${est.tendance}</div>
-        <div style="font-size:0.75rem;color:var(--text2)">${fiabiliteLabel[est.fiabilite] || '🟡 Indicatif'}</div>
-      </div>
-      ${est.commentaire ? `<div style="color:var(--text2);font-size:0.85rem;font-style:italic;line-height:1.5">${est.commentaire}</div>` : ''}
-      ${wine.prix ? `<div style="margin-top:8px;font-size:0.8rem;color:var(--text2)">Prix d'achat : ${wine.prix}€ · 
-        <span style="color:${(est.fourchette_min+est.fourchette_max)/2 > wine.prix ? '#4caf50' : '#e57373'}">
-          ${(est.fourchette_min+est.fourchette_max)/2 > wine.prix ? '↑ Plus-value' : '↓ Moins-value'} estimée
-        </span>
-      </div>` : ''}`;
+      <div style="font-size:0.68rem;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">💰 Prix marché estimé</div>
+      <div style="font-size:1.4rem;font-family:'Playfair Display',serif;color:var(--gold)">${prix} €</div>
+      ${wine.prix ? '' : '<div style="font-size:0.78rem;color:var(--text2);margin-top:4px">Saisissez un prix dans la fiche pour remplacer cette estimation</div>'}`;
 
-    // Sauvegarder l'estimation dans wineData (prix_marche = milieu fourchette)
-    const prixMarcheEstime = Math.round((est.fourchette_min + est.fourchette_max) / 2);
-    const wIdx = wineData.findIndex(w => String(w.id) === String(wineId));
-    if(wIdx !== -1 && !wineData[wIdx].prix_marche_manuel) {
-      // Ne pas écraser si l'utilisateur a saisi un prix manuel
-      wineData[wIdx].prix_marche = prixMarcheEstime;
-      wineData[wIdx].prix_marche_min = est.fourchette_min;
-      wineData[wIdx].prix_marche_max = est.fourchette_max;
-      wineData[wIdx].prix_marche_tendance = est.tendance;
-      wineData[wIdx].prix_marche_date = new Date().toISOString().split('T')[0];
-      saveData();
-    }
     btn.textContent = '💰 Ré-estimer';
     btn.disabled = false;
 
@@ -2202,8 +2062,9 @@ Réponds UNIQUEMENT avec ce format JSON strict (aucun texte autour) :
 function renderStats() {
   const total   = wineData.length;
   const val     = wineData.reduce((s,w)=>s+(parseFloat(w.prix)||0),0);
-  const valMarche = wineData.reduce((s,w)=>s+(parseFloat(w.prix_marche_manuel||w.prix_marche)||0),0);
-  const nbEstimes = wineData.filter(w => w.prix_marche || w.prix_marche_manuel).length;
+  const valTotale = wineData.reduce((s,w)=>s+(parseFloat(w.prix)||parseFloat(w._prixEstime)||0),0);
+  const nbEstimes = wineData.filter(w => w._prixEstime && !w.prix).length;
+  const nbAvecPrix = wineData.filter(w => w.prix).length;
   const avgPrix = total ? Math.round(val/total) : 0;
   const types   = {}; wineData.forEach(w=>{ const t=w.type||'autre'; types[t]=(types[t]||0)+1; });
   const decades = {}; wineData.forEach(w=>{ if(w.annee){ const d=Math.floor(w.annee/10)*10; decades[d]=(decades[d]||0)+1; }});
@@ -2218,13 +2079,13 @@ function renderStats() {
   // Stat cards
   document.getElementById('statsGrid').innerHTML=`
     <div class="stat-card"><div class="s-val">${total}</div><div class="s-lbl">Bouteilles total</div></div>
-    <div class="stat-card"><div class="s-val" style="color:var(--green2)">${Math.round(val).toLocaleString('fr-FR')} €</div><div class="s-lbl">Valeur d'achat totale</div></div>
+    <div class="stat-card"><div class="s-val" style="color:var(--green2)">${Math.round(valTotale).toLocaleString('fr-FR')} €</div><div class="s-lbl">Valeur estimée cave<br><span style="font-size:0.7rem;opacity:0.7">${nbAvecPrix} prix saisis · ${nbEstimes} estimés</span></div></div>
     <div class="stat-card"><div class="s-val">${avgPrix} €</div><div class="s-lbl">Prix moyen / bouteille</div></div>
     <div class="stat-card"><div class="s-val">${occ1+occ2}/${cap1+cap2}</div><div class="s-lbl">Taux remplissage global</div></div>
     <div class="stat-card" style="grid-column:1/-1;cursor:pointer;border-color:rgba(201,168,76,0.3)" onclick="estimerValeurCave()">
-      <div class="s-val" id="cave-valeur-marche" style="color:var(--gold)">${valMarche > 0 ? valMarche.toLocaleString('fr-FR') + '€' : '—'}</div>
-      <div class="s-lbl">💰 Valeur marché ${nbEstimes > 0 ? '(' + nbEstimes + '/' + total + ' vins estimés)' : ''} <span style="font-size:0.7rem;opacity:0.7">· cliquer pour tout estimer</span></div>
-      <div id="cave-valeur-detail" style="font-size:0.75rem;color:var(--text2);margin-top:6px"></div>
+      <div class="s-val" id="cave-valeur-marche" style="color:var(--gold)">${valTotale > 0 ? Math.round(valTotale).toLocaleString('fr-FR') + '€' : '—'}</div>
+      <div class="s-lbl">💰 Valeur estimée totale <span style="font-size:0.7rem;opacity:0.7">· cliquer pour estimer les vins sans prix</span></div>
+      <div id="cave-valeur-detail" style="font-size:0.75rem;color:var(--text2);margin-top:6px">${nbEstimes > 0 ? nbEstimes + ' vins estimés par Groq · ' + nbAvecPrix + ' prix saisis manuellement' : 'Cliquez pour lancer les estimations'}</div>
     </div>`;
 
   // Helper pour générer les barres
