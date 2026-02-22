@@ -4807,16 +4807,16 @@ function renderCarte() {
     // Zoom en bas à droite
     L.control.zoom({ position: 'bottomright' }).addTo(leafletMap);
 
-    // Tuiles satellite Esri
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 19,
-      attribution: 'Tiles © Esri'
+    // Tuiles relief topographique (Stadia Stamen Terrain — open, sans clé)
+    L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png', {
+      maxZoom: 18,
+      attribution: '© Stadia Maps, © Stamen Design, © OpenMapTiles © OpenStreetMap contributors'
     }).addTo(leafletMap);
 
-    // Labels OpenStreetMap discrets (noms de villes / pays)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
+    // Labels CartoCDN clairs pour superposition (noms de villes / pays)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', {
       maxZoom: 19,
-      opacity: 0.7
+      opacity: 0.75
     }).addTo(leafletMap);
 
     // ── Frontières des pays viticoles européens (GeoJSON naturalearth) ──
@@ -4831,11 +4831,11 @@ function renderCarte() {
         L.geoJSON(data, {
           filter: f => WINE_COUNTRIES.includes(f.properties.ADMIN || f.properties.NAME),
           style: {
-            color: '#c9a84c',
-            weight: 1.2,
+            color: '#7a3a1e',
+            weight: 1.5,
             fillOpacity: 0,
-            opacity: 0.55,
-            dashArray: '3,3'
+            opacity: 0.5,
+            dashArray: '4,3'
           },
           onEachFeature: (feature, layer) => {
             layer.bindTooltip(feature.properties.ADMIN || feature.properties.NAME, {
@@ -4853,7 +4853,7 @@ function renderCarte() {
       'https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0' +
       '&LAYER=Aire-Parcellaire&STYLE=normal&TILEMATRIXSET=PM' +
       '&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image%2Fpng',
-      { maxZoom: 19, opacity: 0.85, attribution: '© IGN/INAO' }
+      { maxZoom: 19, opacity: 0.70, attribution: '© IGN/INAO' }
     );
     inaoTiles.addTo(leafletMap);
     leafletMap._inaoLayer = inaoTiles;
