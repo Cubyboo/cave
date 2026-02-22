@@ -2586,7 +2586,7 @@ function saveEditHistorique() {
 }
 
 function deleteHistorique(id) {
-  if(!confirm('Supprimer cette entrée de l'historique ?')) return;
+  if(!confirm("Supprimer cette entrée de l'historique ?")) return;
   historiqueData = historiqueData.filter(h => String(h.id) !== String(id));
   localStorage.setItem('historiqueLocal', JSON.stringify(historiqueData));
   renderHistorique();
