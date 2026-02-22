@@ -1625,6 +1625,7 @@ function confirmRetirer(saveToHisto) {
   if(saveToHisto) {
     const entry = {
       id:           'h_' + Date.now(),
+      source:       'cave',
       date:         document.getElementById('histo-date').value,
       nom:          wine.nom || '',
       appellation:  wine.appellation || '',
@@ -1635,12 +1636,15 @@ function confirmRetirer(saveToHisto) {
       note:         document.getElementById('histo-note').value,
       commentaire:  document.getElementById('histo-commentaire').value,
       occasion:     document.getElementById('histo-occasion').value,
-      image:        imgGet('wine_' + wine.id) || wine.image || ''
+      image:        imgGet('wine_' + wine.id) || wine.image || '',
+      dateAjout:    new Date().toISOString().split('T')[0]
     };
-    historiqueData.unshift(entry);
-    // Persist image URL independently of Sheets sync
+    // Tout dans degustationData (plus de tableaux séparés)
+    degustationData.unshift(entry);
+    localStorage.setItem('degustationData', JSON.stringify(degustationData));
     if(entry.image) imgSave('hist_' + entry.id, entry.image);
-    saveHistoriqueToSheets(entry);
+    syncHistoriqueFromDeg();
+    saveDegustationEntryToSheets(entry);
     showNotif('Dégustation enregistrée ✓');
   }
 
@@ -2174,7 +2178,6 @@ let degustationData = (() => {
   // Nettoyer : exclure tout objet qui ressemble à un vin de cave (champs cave/floor/slot)
   const clean = raw.filter(d => !('cave' in d) && !('floor' in d) && !('slot' in d));
   if(clean.length !== raw.length) {
-    // Des vins de cave s'étaient glissés dedans — on sauvegarde la version nettoyée
     localStorage.setItem('degustationData', JSON.stringify(clean));
   }
   return clean;
@@ -2182,6 +2185,7 @@ let degustationData = (() => {
 
 function saveDegustationData() {
   localStorage.setItem('degustationData', JSON.stringify(degustationData));
+  syncHistoriqueFromDeg();
   // Sync vers Sheets : envoi du tableau complet pour écriture/remplacement
   fetch(SCRIPT_URL, {
     method: 'POST',
@@ -2251,6 +2255,7 @@ function saveDegustation() {
   const _degId = editId || 'dg_' + Date.now();
   const entry = {
     id:          _degId,
+    source:      'hors_cave',
     nom,
     appellation: document.getElementById('deg-appellation').value.trim(),
     domaine:     document.getElementById('deg-domaine').value.trim(),
@@ -2442,32 +2447,22 @@ function searchVivino() {
 // =====================================================================
 // HISTORIQUE
 // =====================================================================
-let historiqueData = [];
+let historiqueData = []; // alias calculé — voir syncHistoriqueFromDeg()
+
+function syncHistoriqueFromDeg() {
+  historiqueData = degustationData.filter(d => d.source === 'cave' || (!d.source && d.id && String(d.id).startsWith('h_')));
+}
+
+// Initialiser l'alias au boot
+syncHistoriqueFromDeg();
 
 function saveHistoriqueToSheets(entry) {
-  fetch(SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify({ action: 'saveHistorique', data: entry })
-  }).catch(e => console.warn('Sync historique échouée', e));
+  // Tout va dans le sheet Degustation maintenant
+  saveDegustationEntryToSheets(entry);
 }
 
 function loadHistoriqueFromSheets() {
-  const cbName = 'histoCallback_' + Date.now();
-  const timeout = setTimeout(() => { delete window[cbName]; }, 8000);
-  window[cbName] = function(data) {
-    clearTimeout(timeout);
-    delete window[cbName];
-    if(Array.isArray(data)) {
-      historiqueData = data.map(h => ({...h}));
-      // Migrer les images historique vers imageStore
-      historiqueData.forEach(h => { if(h.image && h.id) imgSave('hist_' + h.id, h.image); });
-      renderHistorique();
-    }
-  };
-  const script = document.createElement('script');
-  script.src = SCRIPT_URL + '?sheet=Historique&callback=' + cbName + '&t=' + Date.now();
-  document.body.appendChild(script);
-  // Charger aussi les dégustations hors cave
+  // Redirige vers loadDegustationFromSheets — tout est fusionné dans Degustation
   loadDegustationFromSheets();
 }
 
@@ -2479,21 +2474,24 @@ function loadDegustationFromSheets() {
     delete window[cbName];
     if(!Array.isArray(data) || data.length === 0) return;
     // Vérifier que ce sont bien des dégustations (pas des vins de cave)
-    // Les dégus ont un champ 'dateAjout' ou 'racheter', les vins ont 'cave'/'floor'/'slot'
     const isDegustation = data[0] && !('cave' in data[0]) && !('floor' in data[0]) && !('slot' in data[0]);
     if(!isDegustation) {
-      console.warn('loadDegustationFromSheets: données reçues ne sont pas des dégustations, ignorées');
+      console.warn('loadDegustationFromSheets: données cave reçues, ignorées');
       return;
     }
     // Fusionner avec données locales en préservant les images du imageStore
     const localById = {};
     degustationData.forEach(d => { if(d.id) localById[d.id] = d; });
     degustationData = data.map(d => {
-      const img = imgGet('deg_' + d.id) || d.image || (localById[d.id]?.image) || '';
-      if(img && d.id) imgSave('deg_' + d.id, img);
-      return { ...d, image: img };
+      // Attribuer source selon l'ID si absent (migration anciens enregistrements)
+      const source = d.source || (String(d.id).startsWith('h_') ? 'cave' : 'hors_cave');
+      const imgKey = source === 'cave' ? ('hist_' + d.id) : ('deg_' + d.id);
+      const img = imgGet(imgKey) || d.image || (localById[d.id]?.image) || '';
+      if(img && d.id) imgSave(imgKey, img);
+      return { ...d, source, image: img };
     });
     localStorage.setItem('degustationData', JSON.stringify(degustationData));
+    syncHistoriqueFromDeg();
     renderHistorique();
     renderDegustations();
   };
@@ -2512,10 +2510,8 @@ function renderHistorique() {
   const sourceF = document.getElementById('histo-filter-source')?.value || '';
   const typeF   = document.getElementById('histo-filter-type')?.value || '';
 
-  // Fusionner historique cave + dégustations hors cave
-  const histoEntries = historiqueData.map(h => ({...h, _source: 'cave'}));
-  const degEntries   = degustationData.map(d => ({...d, _source: 'hors_cave'}));
-  let allEntries = [...histoEntries, ...degEntries];
+  // Tout vient de degustationData (source = 'cave' ou 'hors_cave')
+  let allEntries = degustationData.map(d => ({...d, _source: d.source || (String(d.id).startsWith('h_') ? 'cave' : 'hors_cave')}));
 
   // Filtres
   allEntries = allEntries.filter(h => {
@@ -2546,7 +2542,7 @@ function renderHistorique() {
 
   container.innerHTML = allEntries.map((h) => {
     const stars   = '★'.repeat(parseInt(h.note)||0) + '☆'.repeat(5-(parseInt(h.note)||0));
-    const _hImg = h._source === 'hors_cave' ? (imgGet('deg_' + h.id) || h.image || '') : (imgGet('hist_' + h.id) || h.image || '');
+    const _hImg = h._source === 'cave' ? (imgGet('hist_' + h.id) || h.image || '') : (imgGet('deg_' + h.id) || h.image || '');
     const imgHtml = _hImg
       ? `<img src="${_hImg}" alt="" style="width:50px;height:70px;object-fit:contain;border-radius:3px;flex-shrink:0;border:1px solid var(--border)">`
       : `<div style="width:50px;height:70px;background:var(--bg3);border-radius:3px;flex-shrink:0;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:1.4rem">🍷</div>`;
@@ -2592,7 +2588,7 @@ function renderHistorique() {
 // =====================================================================
 
 function openEditHistorique(id) {
-  const entry = historiqueData.find(h => String(h.id) === String(id));
+  const entry = degustationData.find(d => String(d.id) === String(id));
   if(!entry) return;
   const modal = document.getElementById('modalEditHistorique');
   modal._editId = id;
@@ -2616,19 +2612,20 @@ function saveEditHistorique() {
   const idx = historiqueData.findIndex(h => String(h.id) === String(id));
   if(idx === -1) return;
   const _newImage = document.getElementById('edit-histo-image').value.trim();
-  historiqueData[idx] = {
-    ...historiqueData[idx],
-    date:        document.getElementById('edit-histo-date').value,
-    note:        document.getElementById('edit-histo-note').value,
-    occasion:    document.getElementById('edit-histo-occasion').value.trim(),
-    commentaire: document.getElementById('edit-histo-commentaire').value.trim(),
-    image:       _newImage
-  };
-  // Persist image to imageStore (survit aux sync Sheets)
-  imgSave('hist_' + id, _newImage);
-  // Persist locally and sync to Sheets
-  localStorage.setItem('historiqueLocal', JSON.stringify(historiqueData));
-  saveHistoriqueToSheets(historiqueData[idx]);
+  const degIdx = degustationData.findIndex(d => String(d.id) === String(id));
+  if(degIdx !== -1) {
+    degustationData[degIdx] = {
+      ...degustationData[degIdx],
+      date:        document.getElementById('edit-histo-date').value,
+      note:        document.getElementById('edit-histo-note').value,
+      occasion:    document.getElementById('edit-histo-occasion').value.trim(),
+      commentaire: document.getElementById('edit-histo-commentaire').value.trim(),
+      image:       _newImage
+    };
+    imgSave('hist_' + id, _newImage);
+    saveDegustationData();
+    saveDegustationEntryToSheets(degustationData[degIdx]);
+  }
   closeModal('modalEditHistorique');
   renderHistorique();
   showNotif('Dégustation mise à jour ✓');
@@ -2636,8 +2633,8 @@ function saveEditHistorique() {
 
 function deleteHistorique(id) {
   if(!confirm("Supprimer cette entrée de l'historique ?")) return;
-  historiqueData = historiqueData.filter(h => String(h.id) !== String(id));
-  localStorage.setItem('historiqueLocal', JSON.stringify(historiqueData));
+  degustationData = degustationData.filter(d => String(d.id) !== String(id));
+  saveDegustationData();
   renderHistorique();
   showNotif('Entrée supprimée');
 }
