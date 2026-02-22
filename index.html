@@ -543,6 +543,18 @@
   }
 
   /* Leaflet tooltip wine style */
+  .leaflet-country-tooltip {
+    background: rgba(14,10,11,0.7) !important;
+    border: 1px solid #c9a84c55 !important;
+    border-radius: 3px !important;
+    padding: 3px 8px !important;
+    font-family: 'Cormorant Garamond', serif !important;
+    font-size: 0.75rem !important;
+    color: #c9a84c !important;
+    letter-spacing: 0.05em !important;
+    box-shadow: none !important;
+  }
+  .leaflet-country-tooltip::before { display:none !important; }
   .leaflet-wine-tooltip {
     background: rgba(14,10,11,0.96) !important;
     border: 1px solid #c9a84c !important;
@@ -920,7 +932,7 @@
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
     <div>
       <h2 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem">🗺️ Carte des vignobles</h2>
-      <div style="color:var(--text2);font-size:0.75rem;margin-top:2px">102 appellations · 9 pays · polygones officiels</div>
+      <div style="color:var(--text2);font-size:0.75rem;margin-top:2px">102 régions · couches WMS officielles INAO + frontières pays</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <div id="carte-legend" style="display:flex;gap:10px;flex-wrap:wrap;font-size:0.78rem;color:var(--text2)"></div>
@@ -929,6 +941,7 @@
   <!-- Filtres rapides par pays -->
   <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
     <button onclick="resetToEurope()" style="padding:4px 11px;background:var(--bg2);border:1px solid var(--gold);color:var(--gold);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s;font-weight:600">🌍 Europe</button>
+    <button id="btn-inao-toggle" onclick="toggleInaoLayer()" style="padding:4px 10px;background:#1a2e1a;border:1px solid #4a8a4a;color:#7aba7a;cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s;font-weight:600" title="Afficher/masquer les délimitations officielles INAO (France)">🏛️ AOC France</button>
     <button onclick="carteZoomPays('France')"    style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#3a2830';this.style.color='var(--text2)'">🇫🇷 France</button>
     <button onclick="carteZoomPays('Espagne')"   style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#3a2830';this.style.color='var(--text2)'">🇪🇸 Espagne</button>
     <button onclick="carteZoomPays('Portugal')"  style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#3a2830';this.style.color='var(--text2)'">🇵🇹 Portugal</button>
@@ -4786,9 +4799,12 @@ function renderCarte() {
     leafletMap = L.map('carte-leaflet', {
       center: [46.0, 10.0],
       zoom: 5,
-      zoomControl: true,
+      zoomControl: false,           // on le recrée en bas à droite
       attributionControl: false
     });
+
+    // Zoom en bas à droite
+    L.control.zoom({ position: 'bottomright' }).addTo(leafletMap);
 
     // Tuiles satellite Esri
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
@@ -4796,11 +4812,56 @@ function renderCarte() {
       attribution: 'Tiles © Esri'
     }).addTo(leafletMap);
 
-    // Labels discrets par dessus
-    L.tileLayer('https://stamen-tiles.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      opacity: 0.35
+    // Labels OpenStreetMap discrets (noms de villes / pays)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      opacity: 0.7
     }).addTo(leafletMap);
+
+    // ── Frontières des pays viticoles européens (GeoJSON naturalearth) ──
+    fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries_lakes.geojson')
+      .then(r => r.ok ? r.json() : null)
+      .catch(() => null)
+      .then(data => {
+        if(!data || !leafletMap) return;
+        const WINE_COUNTRIES = ['France','Spain','Italy','Germany','Portugal','Austria','Greece','Hungary',
+                                'Switzerland','Croatia','Slovenia','Bulgaria','Romania','Czech Republic',
+                                'Slovakia','Luxembourg','United Kingdom','Georgia','Armenia','Moldova'];
+        L.geoJSON(data, {
+          filter: f => WINE_COUNTRIES.includes(f.properties.ADMIN || f.properties.NAME),
+          style: {
+            color: '#c9a84c',
+            weight: 1.2,
+            fillOpacity: 0,
+            opacity: 0.55,
+            dashArray: '3,3'
+          },
+          onEachFeature: (feature, layer) => {
+            layer.bindTooltip(feature.properties.ADMIN || feature.properties.NAME, {
+              permanent: false,
+              className: 'leaflet-country-tooltip',
+              direction: 'center'
+            });
+          }
+        }).addTo(leafletMap);
+      });
+
+    // ── Couche WMS INAO — délimitations parcellaires AOC (France officielle) ──
+    // Source : IGN Géoplateforme / INAO — couche "Aire-Parcellaire"
+    const inaoWMS = L.tileLayer.wms('https://data.geopf.fr/wms-v/ows', {
+      layers: 'Aire-Parcellaire',
+      format: 'image/png',
+      transparent: true,
+      version: '1.3.0',
+      opacity: 0.55,
+      attribution: '© IGN/INAO',
+      maxZoom: 19,
+      tileSize: 256
+    });
+    inaoWMS.addTo(leafletMap);
+
+    // Stocker la couche pour pouvoir la toggler
+    leafletMap._inaoLayer = inaoWMS;
 
     // Fix taille après affichage
     setTimeout(() => { if(leafletMap) leafletMap.invalidateSize(); }, 200);
@@ -4897,6 +4958,20 @@ function renderCarte() {
 function resetToEurope() {
   if(!leafletMap) return;
   leafletMap.setView([46.0, 10.0], 5, {animate: true, duration: 0.6});
+}
+
+function toggleInaoLayer() {
+  if(!leafletMap) return;
+  const layer = leafletMap._inaoLayer;
+  const btn = document.getElementById('btn-inao-toggle');
+  if(!layer) return;
+  if(leafletMap.hasLayer(layer)) {
+    leafletMap.removeLayer(layer);
+    if(btn) { btn.style.background='var(--bg3)'; btn.style.borderColor='#3a2830'; btn.style.color='var(--text2)'; }
+  } else {
+    leafletMap.addLayer(layer);
+    if(btn) { btn.style.background='#1a2e1a'; btn.style.borderColor='#4a8a4a'; btn.style.color='#7aba7a'; }
+  }
 }
 
 function carteZoomIn() {
