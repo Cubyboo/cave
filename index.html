@@ -4,7 +4,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍷</text></svg>">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cave à Vin MMM</title>
+<title>🍷  Cave à Vin MMM</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
   /* ============================================================
@@ -4957,8 +4957,9 @@ function renderCarte() {
 
     // Tooltip enrichi : cépages + toutes appellations + terroirs + vins
     const allApps = APPELLATIONS[key] || [];
-    const nbApp = region.appellations ? region.appellations.length : allApps.filter(a=>a.niveau===1).length;
-    const nbTerroirs = allApps.filter(a=>a.niveau===2).length;
+    const nbAoc = allApps.filter(a=>a.type==='aoc').length;
+    const nbCru = allApps.filter(a=>a.type==='cru').length;
+    const nbApp = region.appellations ? region.appellations.length : nbAoc;
     const appList = (region.appellations || []).join(' · ') || allApps.map(a=>a.nom).slice(0,12).join(' · ');
     const wineInfo = hasWines
       ? `<div style="color:#e8c870;font-weight:600;margin-top:6px;font-size:0.8rem">🍷 ${wines.length} bouteille${wines.length>1?'s':''} en cave</div>`
@@ -4968,7 +4969,7 @@ function renderCarte() {
       <div style="font-family:'Playfair Display',serif;color:#c9a84c;font-size:1rem;margin-bottom:5px;border-bottom:1px solid rgba(201,168,76,0.3);padding-bottom:4px">${region.label}</div>
       ${region.cepages ? `<div style="color:#a09080;font-size:0.73rem;margin-bottom:5px">🍇 <em>${region.cepages}</em></div>` : ''}
       <div style="color:#b0a090;font-size:0.68rem;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.8px">
-        ${nbApp} appellation${nbApp>1?'s':''} ${nbTerroirs>0?'· '+nbTerroirs+' terroir'+(nbTerroirs>1?'s':''):''}
+        <span style="color:#c08050">${nbAoc} AOC</span>${nbCru>0?' · <span style="color:#9b60d0">'+nbCru+' cru'+(nbCru>1?'s':'')+'</span>':''}
       </div>
       ${appList ? `<div style="color:#e0d4c4;font-size:0.71rem;line-height:1.6;max-width:260px">${appList}</div>` : ''}
       ${wineInfo}
@@ -5002,33 +5003,50 @@ function geoCentroid(geometry) {
 }
 
 // ── Ajoute un label+point sur la carte à partir d'un centroïde réel ──
-function addAppelLabel(group, lat, lng, nom, isN2) {
-  const dot = L.circleMarker([lat, lng], {
-    radius: isN2 ? 3 : 5,
-    color: isN2 ? '#7b2fa8' : '#8b3a0f',
-    fillColor: isN2 ? '#a855d4' : '#c0440f',
-    fillOpacity: 0.9, weight: 1.5, opacity: 1
-  });
-  dot.bindTooltip(`<div style="font-family:'Playfair Display',serif;color:#c9a84c;font-size:0.85rem;font-weight:600">${nom}</div>`,
-    { direction:'top', className:'leaflet-wine-tooltip' });
+// ── Label+point selon le type : 'zone' | 'aoc' | 'cru' ──────
+// zone = grande aire géographique (nom en majuscules, sans point)
+// aoc  = appellation AOC/AOP officielle INAO (point bordeaux)
+// cru  = Grand Cru / cru classé, AOC distincte à part entière (point violet, italique)
+function addAppelLabel(group, lat, lng, nom, type) {
+  const S = {
+    zone: { dot:false, r:0,   stroke:'',        fill:'',        txtColor:'#3a2000', bg:'rgba(255,245,210,0.75)', size:'0.60rem', weight:'800', italic:false, upper:true  },
+    aoc:  { dot:true,  r:5,   stroke:'#6b1020', fill:'#9b2030', txtColor:'#1a0800', bg:'rgba(255,248,235,0.90)', size:'0.65rem', weight:'700', italic:false, upper:false },
+    cru:  { dot:true,  r:3.5, stroke:'#3a0868', fill:'#6a18b0', txtColor:'#2a0050', bg:'rgba(245,235,255,0.90)', size:'0.60rem', weight:'600', italic:true,  upper:false },
+  }[type] || { dot:true, r:4, stroke:'#444', fill:'#666', txtColor:'#111', bg:'rgba(255,255,255,0.85)', size:'0.62rem', weight:'600', italic:false, upper:false };
+
+  if (S.dot) {
+    const dot = L.circleMarker([lat, lng], {
+      radius: S.r, color: S.stroke, fillColor: S.fill,
+      fillOpacity: 0.88, weight: 1.5, opacity: 1
+    });
+    const badge = type === 'cru' ? ' <span style="color:#9b60d0;font-size:0.62rem">★ Cru</span>'
+                : type === 'aoc' ? ' <span style="color:#c08050;font-size:0.62rem">AOC</span>' : '';
+    dot.bindTooltip(
+      `<span style="font-family:'Playfair Display',serif;font-size:0.85rem;color:#c9a84c;font-weight:700">${nom}</span>${badge}`,
+      { direction:'top', className:'leaflet-wine-tooltip' }
+    );
+    group.addLayer(dot);
+  }
+
   const lbl = L.marker([lat, lng], {
     icon: L.divIcon({
       className: '',
       html: `<div style="
         font-family:'Playfair Display',serif;
-        font-size:${isN2?'0.52rem':'0.66rem'};font-weight:700;
-        color:${isN2?'#4a0a6a':'#2a0a00'};
-        background:rgba(255,255,255,0.85);
-        padding:1px 4px;border-radius:2px;
+        font-size:${S.size};font-weight:${S.weight};
+        color:${S.txtColor};background:${S.bg};
+        padding:1px 5px;border-radius:2px;
         white-space:nowrap;pointer-events:none;
-        transform:translate(6px,-50%);
-        box-shadow:0 1px 3px rgba(0,0,0,0.15);
+        transform:translate(${S.dot ? '7px' : '-50%'},-50%);
+        box-shadow:0 1px 3px rgba(0,0,0,0.12);
+        ${S.upper ? 'text-transform:uppercase;letter-spacing:0.7px;' : ''}
+        ${S.italic ? 'font-style:italic;' : ''}
       ">${nom}</div>`,
       iconSize:[0,0], iconAnchor:[0,0]
     }),
-    interactive: false, zIndexOffset: isN2 ? -200 : -100
+    interactive: false,
+    zIndexOffset: type === 'zone' ? -300 : type === 'cru' ? -200 : -100
   });
-  group.addLayer(dot);
   group.addLayer(lbl);
 }
 
@@ -5055,7 +5073,7 @@ function renderAppellationsLayer() {
   Object.values(APPELLATIONS).forEach(apps => {
     apps.forEach(app => {
       if (app.lat == null || app.lng == null) return;
-      addAppelLabel(group, app.lat, app.lng, app.nom, app.niveau === 2);
+      addAppelLabel(group, app.lat, app.lng, app.nom, app.type || 'aoc');
     });
   });
 
@@ -5133,360 +5151,435 @@ const PAYS_ZOOM = {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// APPELLATIONS — centroïdes précis embarqués (lat, lng)
-// Source : coordonnées géographiques réelles des AOC françaises
-// niveau 1 = grande appellation   niveau 2 = terroir/commune
+// APPELLATIONS — centroïdes précis embarqués
+// type:'zone'   = grande zone géographique (pas une AOC en soi : Côte de Nuits, Médoc…)
+// type:'aoc'    = appellation AOC/AOP officielle reconnue par l'INAO
+// type:'cru'    = Grand Cru ou 1er Cru, lui-même AOC distincte (Chambertin, Musigny…)
 // ═══════════════════════════════════════════════════════════════
 const APPELLATIONS = {
 
   // ─── BOURGOGNE ─────────────────────────────────────────────
   'bourgogne': [
-    // Grandes zones
-    { nom:'Chablis',              niveau:1, lat:47.814, lng:3.796 },
-    { nom:'Chablis Grand Cru',    niveau:2, lat:47.820, lng:3.823 },
-    { nom:'Chablis 1er Cru',      niveau:2, lat:47.812, lng:3.800 },
-    { nom:'Petit Chablis',        niveau:2, lat:47.830, lng:3.760 },
-    { nom:'Irancy',               niveau:2, lat:47.758, lng:3.660 },
-    { nom:'Saint-Bris',           niveau:2, lat:47.742, lng:3.614 },
-    { nom:'Côte de Nuits-Villages',niveau:1,lat:47.175, lng:4.963 },
-    { nom:'Gevrey-Chambertin',    niveau:2, lat:47.228, lng:4.971 },
-    { nom:'Chambolle-Musigny',    niveau:2, lat:47.168, lng:4.964 },
-    { nom:'Morey-Saint-Denis',    niveau:2, lat:47.188, lng:4.964 },
-    { nom:'Vougeot',              niveau:2, lat:47.162, lng:4.963 },
-    { nom:'Vosne-Romanée',        niveau:2, lat:47.149, lng:4.960 },
-    { nom:'Nuits-Saint-Georges',  niveau:2, lat:47.113, lng:4.953 },
-    { nom:'Fixin',                niveau:2, lat:47.262, lng:4.980 },
-    { nom:'Marsannay',            niveau:2, lat:47.280, lng:4.996 },
-    { nom:'Côte de Beaune-Villages',niveau:1,lat:47.020,lng:4.840 },
-    { nom:'Aloxe-Corton',         niveau:2, lat:47.064, lng:4.847 },
-    { nom:'Pernand-Vergelesses',  niveau:2, lat:47.072, lng:4.835 },
-    { nom:'Savigny-lès-Beaune',   niveau:2, lat:47.055, lng:4.823 },
-    { nom:'Beaune',               niveau:2, lat:47.023, lng:4.840 },
-    { nom:'Chorey-lès-Beaune',    niveau:2, lat:47.042, lng:4.862 },
-    { nom:'Pommard',              niveau:2, lat:46.990, lng:4.797 },
-    { nom:'Volnay',               niveau:2, lat:46.975, lng:4.792 },
-    { nom:'Monthélie',            niveau:2, lat:46.968, lng:4.783 },
-    { nom:'Auxey-Duresses',       niveau:2, lat:46.962, lng:4.771 },
-    { nom:'Saint-Romain',         niveau:2, lat:46.952, lng:4.754 },
-    { nom:'Meursault',            niveau:2, lat:46.974, lng:4.769 },
-    { nom:'Puligny-Montrachet',   niveau:2, lat:46.951, lng:4.762 },
-    { nom:'Chassagne-Montrachet', niveau:2, lat:46.940, lng:4.758 },
-    { nom:'Santenay',             niveau:2, lat:46.912, lng:4.720 },
-    { nom:'Maranges',             niveau:2, lat:46.896, lng:4.698 },
-    { nom:'Côte Chalonnaise',     niveau:1, lat:46.720, lng:4.700 },
-    { nom:'Rully',                niveau:2, lat:46.868, lng:4.742 },
-    { nom:'Mercurey',             niveau:2, lat:46.839, lng:4.726 },
-    { nom:'Givry',                niveau:2, lat:46.783, lng:4.748 },
-    { nom:'Montagny',             niveau:2, lat:46.672, lng:4.742 },
-    { nom:'Bouzeron',             niveau:2, lat:46.884, lng:4.745 },
-    { nom:'Mâconnais',            niveau:1, lat:46.380, lng:4.730 },
-    { nom:'Pouilly-Fuissé',       niveau:2, lat:46.288, lng:4.759 },
-    { nom:'Pouilly-Vinzelles',    niveau:2, lat:46.278, lng:4.770 },
-    { nom:'Pouilly-Loché',        niveau:2, lat:46.282, lng:4.773 },
-    { nom:'Saint-Véran',          niveau:2, lat:46.264, lng:4.750 },
-    { nom:'Viré-Clessé',          niveau:2, lat:46.428, lng:4.760 },
-    { nom:'Mâcon-Villages',       niveau:2, lat:46.348, lng:4.840 },
+    // Zones géographiques (pas des AOC seules)
+    { nom:'Chablis',                   type:'zone', lat:47.814, lng:3.796 },
+    { nom:'Côte de Nuits',             type:'zone', lat:47.190, lng:4.970 },
+    { nom:'Côte de Beaune',            type:'zone', lat:47.000, lng:4.830 },
+    { nom:'Côte Chalonnaise',          type:'zone', lat:46.750, lng:4.720 },
+    { nom:'Mâconnais',                 type:'zone', lat:46.380, lng:4.730 },
+    // AOC officielles — Chablisien
+    { nom:'Petit Chablis',             type:'aoc',  lat:47.830, lng:3.760 },
+    { nom:'Chablis AOC',               type:'aoc',  lat:47.814, lng:3.800 },
+    { nom:'Chablis 1er Cru',           type:'aoc',  lat:47.812, lng:3.812 },
+    { nom:'Chablis Grand Cru',         type:'aoc',  lat:47.820, lng:3.823 },
+    { nom:'Irancy',                    type:'aoc',  lat:47.758, lng:3.660 },
+    { nom:'Saint-Bris',                type:'aoc',  lat:47.742, lng:3.614 },
+    { nom:'Bourgogne Côte d\'Auxerre', type:'aoc',  lat:47.798, lng:3.572 },
+    // AOC — Côte de Nuits
+    { nom:'Marsannay',                 type:'aoc',  lat:47.280, lng:4.996 },
+    { nom:'Fixin',                     type:'aoc',  lat:47.262, lng:4.980 },
+    { nom:'Gevrey-Chambertin',         type:'aoc',  lat:47.228, lng:4.971 },
+    { nom:'Morey-Saint-Denis',         type:'aoc',  lat:47.188, lng:4.964 },
+    { nom:'Chambolle-Musigny',         type:'aoc',  lat:47.168, lng:4.964 },
+    { nom:'Vougeot',                   type:'aoc',  lat:47.162, lng:4.963 },
+    { nom:'Vosne-Romanée',             type:'aoc',  lat:47.149, lng:4.960 },
+    { nom:'Nuits-Saint-Georges',       type:'aoc',  lat:47.113, lng:4.953 },
+    { nom:'Côte de Nuits-Villages',    type:'aoc',  lat:47.090, lng:4.945 },
+    // Grands Crus Côte de Nuits (AOC à part entière)
+    { nom:'Chambertin',                type:'cru',  lat:47.219, lng:4.970 },
+    { nom:'Chambertin-Clos de Bèze',   type:'cru',  lat:47.222, lng:4.971 },
+    { nom:'Musigny',                   type:'cru',  lat:47.163, lng:4.966 },
+    { nom:'Bonnes-Mares',              type:'cru',  lat:47.175, lng:4.966 },
+    { nom:'Clos de Vougeot',           type:'cru',  lat:47.159, lng:4.965 },
+    { nom:'Échézeaux',                 type:'cru',  lat:47.152, lng:4.964 },
+    { nom:'Grands Échézeaux',          type:'cru',  lat:47.155, lng:4.965 },
+    { nom:'Romanée-Conti',             type:'cru',  lat:47.145, lng:4.962 },
+    { nom:'La Tâche',                  type:'cru',  lat:47.143, lng:4.961 },
+    { nom:'Richebourg',                type:'cru',  lat:47.147, lng:4.963 },
+    // AOC — Côte de Beaune
+    { nom:'Aloxe-Corton',              type:'aoc',  lat:47.064, lng:4.847 },
+    { nom:'Pernand-Vergelesses',       type:'aoc',  lat:47.072, lng:4.835 },
+    { nom:'Savigny-lès-Beaune',        type:'aoc',  lat:47.055, lng:4.823 },
+    { nom:'Chorey-lès-Beaune',         type:'aoc',  lat:47.042, lng:4.862 },
+    { nom:'Beaune',                    type:'aoc',  lat:47.023, lng:4.840 },
+    { nom:'Pommard',                   type:'aoc',  lat:46.990, lng:4.797 },
+    { nom:'Volnay',                    type:'aoc',  lat:46.975, lng:4.792 },
+    { nom:'Monthélie',                 type:'aoc',  lat:46.968, lng:4.783 },
+    { nom:'Auxey-Duresses',            type:'aoc',  lat:46.962, lng:4.771 },
+    { nom:'Saint-Romain',              type:'aoc',  lat:46.952, lng:4.754 },
+    { nom:'Meursault',                 type:'aoc',  lat:46.974, lng:4.769 },
+    { nom:'Puligny-Montrachet',        type:'aoc',  lat:46.951, lng:4.762 },
+    { nom:'Chassagne-Montrachet',      type:'aoc',  lat:46.940, lng:4.758 },
+    { nom:'Santenay',                  type:'aoc',  lat:46.912, lng:4.720 },
+    { nom:'Maranges',                  type:'aoc',  lat:46.896, lng:4.698 },
+    { nom:'Côte de Beaune-Villages',   type:'aoc',  lat:47.020, lng:4.840 },
+    // Grands Crus Côte de Beaune
+    { nom:'Corton',                    type:'cru',  lat:47.063, lng:4.850 },
+    { nom:'Corton-Charlemagne',        type:'cru',  lat:47.066, lng:4.843 },
+    { nom:'Montrachet',                type:'cru',  lat:46.947, lng:4.761 },
+    { nom:'Bâtard-Montrachet',         type:'cru',  lat:46.945, lng:4.759 },
+    { nom:'Chevalier-Montrachet',      type:'cru',  lat:46.949, lng:4.762 },
+    // AOC — Côte Chalonnaise
+    { nom:'Bouzeron',                  type:'aoc',  lat:46.884, lng:4.745 },
+    { nom:'Rully',                     type:'aoc',  lat:46.868, lng:4.742 },
+    { nom:'Mercurey',                  type:'aoc',  lat:46.839, lng:4.726 },
+    { nom:'Givry',                     type:'aoc',  lat:46.783, lng:4.748 },
+    { nom:'Montagny',                  type:'aoc',  lat:46.672, lng:4.742 },
+    // AOC — Mâconnais
+    { nom:'Mâcon-Villages',            type:'aoc',  lat:46.348, lng:4.840 },
+    { nom:'Viré-Clessé',               type:'aoc',  lat:46.428, lng:4.760 },
+    { nom:'Pouilly-Fuissé',            type:'aoc',  lat:46.288, lng:4.759 },
+    { nom:'Pouilly-Loché',             type:'aoc',  lat:46.282, lng:4.773 },
+    { nom:'Pouilly-Vinzelles',         type:'aoc',  lat:46.278, lng:4.770 },
+    { nom:'Saint-Véran',               type:'aoc',  lat:46.264, lng:4.750 },
   ],
 
   // ─── BORDEAUX ──────────────────────────────────────────────
   'bordeaux': [
-    { nom:'Médoc',                niveau:1, lat:45.350, lng:-0.920 },
-    { nom:'Haut-Médoc',           niveau:1, lat:45.120, lng:-0.780 },
-    { nom:'Saint-Estèphe',        niveau:2, lat:45.363, lng:-0.765 },
-    { nom:'Pauillac',             niveau:2, lat:45.197, lng:-0.746 },
-    { nom:'Saint-Julien',         niveau:2, lat:45.157, lng:-0.760 },
-    { nom:'Listrac-Médoc',        niveau:2, lat:45.073, lng:-0.821 },
-    { nom:'Moulis-en-Médoc',      niveau:2, lat:45.053, lng:-0.798 },
-    { nom:'Margaux',              niveau:2, lat:45.040, lng:-0.740 },
-    { nom:'Pessac-Léognan',       niveau:1, lat:44.760, lng:-0.586 },
-    { nom:'Graves',               niveau:1, lat:44.540, lng:-0.420 },
-    { nom:'Sauternes',            niveau:2, lat:44.548, lng:-0.340 },
-    { nom:'Barsac',               niveau:2, lat:44.574, lng:-0.330 },
-    { nom:'Cérons',               niveau:2, lat:44.620, lng:-0.321 },
-    { nom:'Saint-Émilion',        niveau:1, lat:44.893, lng:-0.150 },
-    { nom:'Saint-Émilion Grand Cru',niveau:2,lat:44.896,lng:-0.153 },
-    { nom:'Pomerol',              niveau:2, lat:44.924, lng:-0.188 },
-    { nom:'Lalande-de-Pomerol',   niveau:2, lat:44.942, lng:-0.188 },
-    { nom:'Fronsac',              niveau:2, lat:44.974, lng:-0.249 },
-    { nom:'Canon-Fronsac',        niveau:2, lat:44.966, lng:-0.256 },
-    { nom:'Entre-deux-Mers',      niveau:1, lat:44.710, lng:-0.200 },
-    { nom:'Blaye',                niveau:1, lat:45.127, lng:-0.654 },
-    { nom:'Bourg',                niveau:2, lat:45.047, lng:-0.562 },
-    { nom:'Côtes de Bordeaux',    niveau:1, lat:44.850, lng:-0.300 },
-    { nom:'Castillon',            niveau:2, lat:44.859, lng:-0.063 },
-    { nom:'Francs',               niveau:2, lat:44.877, lng:-0.021 },
-    { nom:'Sainte-Foy-Bordeaux',  niveau:2, lat:44.834, lng: 0.219 },
+    // Zones
+    { nom:'Médoc',                     type:'zone', lat:45.350, lng:-0.920 },
+    { nom:'Rive droite',               type:'zone', lat:44.940, lng:-0.180 },
+    { nom:'Graves & Sauternes',        type:'zone', lat:44.550, lng:-0.390 },
+    // AOC — Médoc
+    { nom:'Médoc AOC',                 type:'aoc',  lat:45.520, lng:-1.010 },
+    { nom:'Haut-Médoc',                type:'aoc',  lat:45.120, lng:-0.780 },
+    { nom:'Saint-Estèphe',             type:'aoc',  lat:45.363, lng:-0.765 },
+    { nom:'Pauillac',                  type:'aoc',  lat:45.197, lng:-0.746 },
+    { nom:'Saint-Julien',              type:'aoc',  lat:45.157, lng:-0.760 },
+    { nom:'Listrac-Médoc',             type:'aoc',  lat:45.073, lng:-0.821 },
+    { nom:'Moulis-en-Médoc',           type:'aoc',  lat:45.053, lng:-0.798 },
+    { nom:'Margaux',                   type:'aoc',  lat:45.040, lng:-0.740 },
+    // AOC — Graves
+    { nom:'Pessac-Léognan',            type:'aoc',  lat:44.760, lng:-0.586 },
+    { nom:'Graves',                    type:'aoc',  lat:44.540, lng:-0.420 },
+    { nom:'Graves Supérieures',        type:'aoc',  lat:44.530, lng:-0.350 },
+    { nom:'Sauternes',                 type:'aoc',  lat:44.548, lng:-0.340 },
+    { nom:'Barsac',                    type:'aoc',  lat:44.574, lng:-0.330 },
+    { nom:'Cérons',                    type:'aoc',  lat:44.620, lng:-0.321 },
+    { nom:'Loupiac',                   type:'aoc',  lat:44.625, lng:-0.278 },
+    { nom:'Sainte-Croix-du-Mont',      type:'aoc',  lat:44.618, lng:-0.275 },
+    // AOC — Rive droite
+    { nom:'Saint-Émilion',             type:'aoc',  lat:44.893, lng:-0.150 },
+    { nom:'Saint-Émilion Grand Cru',   type:'aoc',  lat:44.896, lng:-0.153 },
+    { nom:'Pomerol',                   type:'aoc',  lat:44.924, lng:-0.188 },
+    { nom:'Lalande-de-Pomerol',        type:'aoc',  lat:44.942, lng:-0.188 },
+    { nom:'Fronsac',                   type:'aoc',  lat:44.974, lng:-0.249 },
+    { nom:'Canon-Fronsac',             type:'aoc',  lat:44.966, lng:-0.256 },
+    { nom:'Castillon-Côtes de Bordeaux',type:'aoc', lat:44.859, lng:-0.063 },
+    { nom:'Francs-Côtes de Bordeaux',  type:'aoc',  lat:44.877, lng:-0.021 },
+    // AOC — Entre-deux-Mers & divers
+    { nom:'Entre-deux-Mers',           type:'aoc',  lat:44.710, lng:-0.200 },
+    { nom:'Blaye-Côtes de Bordeaux',   type:'aoc',  lat:45.127, lng:-0.654 },
+    { nom:'Bourg',                     type:'aoc',  lat:45.047, lng:-0.562 },
+    { nom:'Sainte-Foy-Bordeaux',       type:'aoc',  lat:44.834, lng: 0.219 },
   ],
 
   // ─── CHAMPAGNE ─────────────────────────────────────────────
   'champagne': [
-    { nom:'Montagne de Reims',    niveau:1, lat:49.175, lng:4.005 },
-    { nom:'Mailly-Champagne',     niveau:2, lat:49.215, lng:4.068 },
-    { nom:'Verzenay',             niveau:2, lat:49.187, lng:4.141 },
-    { nom:'Verzy',                niveau:2, lat:49.166, lng:4.155 },
-    { nom:'Bouzy',                niveau:2, lat:49.148, lng:4.209 },
-    { nom:'Ambonnay',             niveau:2, lat:49.143, lng:4.228 },
-    { nom:'Vallée de la Marne',   niveau:1, lat:49.048, lng:3.700 },
-    { nom:'Aÿ-Champagne',         niveau:2, lat:49.058, lng:3.993 },
-    { nom:'Épernay',              niveau:2, lat:49.043, lng:3.957 },
-    { nom:'Hautvillers',          niveau:2, lat:49.075, lng:3.938 },
-    { nom:'Côte des Blancs',      niveau:1, lat:48.905, lng:3.995 },
-    { nom:'Cramant',              niveau:2, lat:48.967, lng:3.993 },
-    { nom:'Avize',                niveau:2, lat:48.975, lng:4.002 },
-    { nom:'Oger',                 niveau:2, lat:48.953, lng:4.016 },
-    { nom:'Le Mesnil-sur-Oger',   niveau:2, lat:48.933, lng:4.020 },
-    { nom:'Côte de Sézanne',      niveau:1, lat:48.660, lng:3.740 },
-    { nom:'Côte des Bar',         niveau:1, lat:48.140, lng:4.490 },
-    { nom:'Les Riceys',           niveau:2, lat:47.999, lng:4.371 },
+    // Zones viticoles
+    { nom:'Montagne de Reims',         type:'zone', lat:49.175, lng:4.005 },
+    { nom:'Vallée de la Marne',        type:'zone', lat:49.048, lng:3.700 },
+    { nom:'Côte des Blancs',           type:'zone', lat:48.905, lng:3.995 },
+    { nom:'Côte de Sézanne',           type:'zone', lat:48.660, lng:3.740 },
+    { nom:'Côte des Bar',              type:'zone', lat:48.140, lng:4.490 },
+    // AOC (une seule : Champagne, déclinée par villages — crus classés)
+    { nom:'Champagne AOC',             type:'aoc',  lat:49.050, lng:3.950 },
+    { nom:'Coteaux Champenois',        type:'aoc',  lat:49.100, lng:3.980 },
+    { nom:'Rosé des Riceys',           type:'aoc',  lat:47.999, lng:4.371 },
+    // Crus (villages classés Grand Cru — terroirs reconnus)
+    { nom:'Mailly-Champagne',          type:'cru',  lat:49.215, lng:4.068 },
+    { nom:'Verzenay',                  type:'cru',  lat:49.187, lng:4.141 },
+    { nom:'Verzy',                     type:'cru',  lat:49.166, lng:4.155 },
+    { nom:'Bouzy',                     type:'cru',  lat:49.148, lng:4.209 },
+    { nom:'Ambonnay',                  type:'cru',  lat:49.143, lng:4.228 },
+    { nom:'Aÿ-Champagne',              type:'cru',  lat:49.058, lng:3.993 },
+    { nom:'Hautvillers',               type:'cru',  lat:49.075, lng:3.938 },
+    { nom:'Cramant',                   type:'cru',  lat:48.967, lng:3.993 },
+    { nom:'Avize',                     type:'cru',  lat:48.975, lng:4.002 },
+    { nom:'Oger',                      type:'cru',  lat:48.953, lng:4.016 },
+    { nom:'Le Mesnil-sur-Oger',        type:'cru',  lat:48.933, lng:4.020 },
   ],
 
   // ─── VALLÉE DU RHÔNE ───────────────────────────────────────
   'cotes-du-rhone': [
-    // Rhône Nord
-    { nom:'Côte-Rôtie',           niveau:1, lat:45.470, lng:4.796 },
-    { nom:'Condrieu',             niveau:1, lat:45.382, lng:4.776 },
-    { nom:'Château-Grillet',      niveau:2, lat:45.368, lng:4.769 },
-    { nom:'Saint-Joseph',         niveau:1, lat:45.100, lng:4.837 },
-    { nom:'Cornas',               niveau:2, lat:44.912, lng:4.840 },
-    { nom:'Saint-Péray',          niveau:2, lat:44.896, lng:4.846 },
-    { nom:'Hermitage',            niveau:1, lat:45.075, lng:4.836 },
-    { nom:'Crozes-Hermitage',     niveau:1, lat:45.088, lng:4.897 },
-    // Rhône Sud
-    { nom:'Châteauneuf-du-Pape',  niveau:1, lat:44.057, lng:4.833 },
-    { nom:'Gigondas',             niveau:2, lat:44.172, lng:5.022 },
-    { nom:'Vacqueyras',           niveau:2, lat:44.117, lng:5.000 },
-    { nom:'Beaumes-de-Venise',    niveau:2, lat:44.123, lng:5.028 },
-    { nom:'Rasteau',              niveau:2, lat:44.193, lng:4.958 },
-    { nom:'Cairanne',             niveau:2, lat:44.226, lng:4.956 },
-    { nom:'Vinsobres',            niveau:2, lat:44.334, lng:5.025 },
-    { nom:'Tavel',                niveau:1, lat:44.009, lng:4.677 },
-    { nom:'Lirac',                niveau:2, lat:44.041, lng:4.693 },
-    { nom:'Grignan-les-Adhémar',  niveau:1, lat:44.420, lng:4.905 },
-    { nom:'Ventoux',              niveau:1, lat:44.136, lng:5.160 },
-    { nom:'Luberon',              niveau:1, lat:43.830, lng:5.380 },
-    { nom:'Costières de Nîmes',   niveau:1, lat:43.722, lng:4.428 },
+    // Zones
+    { nom:'Rhône Septentrional',       type:'zone', lat:45.200, lng:4.820 },
+    { nom:'Rhône Méridional',          type:'zone', lat:44.200, lng:4.900 },
+    // AOC Rhône Nord
+    { nom:'Côte-Rôtie',                type:'aoc',  lat:45.470, lng:4.796 },
+    { nom:'Condrieu',                  type:'aoc',  lat:45.382, lng:4.776 },
+    { nom:'Château-Grillet',           type:'aoc',  lat:45.368, lng:4.769 },
+    { nom:'Saint-Joseph',              type:'aoc',  lat:45.100, lng:4.837 },
+    { nom:'Crozes-Hermitage',          type:'aoc',  lat:45.088, lng:4.897 },
+    { nom:'Hermitage',                 type:'aoc',  lat:45.075, lng:4.836 },
+    { nom:'Cornas',                    type:'aoc',  lat:44.912, lng:4.840 },
+    { nom:'Saint-Péray',               type:'aoc',  lat:44.896, lng:4.846 },
+    // AOC Rhône Sud
+    { nom:'Châteauneuf-du-Pape',       type:'aoc',  lat:44.057, lng:4.833 },
+    { nom:'Gigondas',                  type:'aoc',  lat:44.172, lng:5.022 },
+    { nom:'Vacqueyras',                type:'aoc',  lat:44.117, lng:5.000 },
+    { nom:'Beaumes-de-Venise',         type:'aoc',  lat:44.123, lng:5.028 },
+    { nom:'Muscat de Beaumes-de-Venise',type:'aoc', lat:44.120, lng:5.030 },
+    { nom:'Rasteau',                   type:'aoc',  lat:44.193, lng:4.958 },
+    { nom:'Cairanne',                  type:'aoc',  lat:44.226, lng:4.956 },
+    { nom:'Vinsobres',                 type:'aoc',  lat:44.334, lng:5.025 },
+    { nom:'Tavel',                     type:'aoc',  lat:44.009, lng:4.677 },
+    { nom:'Lirac',                     type:'aoc',  lat:44.041, lng:4.693 },
+    { nom:'Côtes du Rhône Villages',   type:'aoc',  lat:44.300, lng:4.950 },
+    { nom:'Côtes du Rhône AOC',        type:'aoc',  lat:44.100, lng:4.750 },
+    { nom:'Grignan-les-Adhémar',       type:'aoc',  lat:44.420, lng:4.905 },
+    { nom:'Ventoux',                   type:'aoc',  lat:44.136, lng:5.160 },
+    { nom:'Luberon',                   type:'aoc',  lat:43.830, lng:5.380 },
+    { nom:'Costières de Nîmes',        type:'aoc',  lat:43.722, lng:4.428 },
   ],
 
   // ─── ALSACE ────────────────────────────────────────────────
   'alsace': [
-    { nom:'Alsace AOC',           niveau:1, lat:48.200, lng:7.420 },
-    { nom:"Crémant d'Alsace",     niveau:1, lat:48.050, lng:7.380 },
-    { nom:'Alsace Grand Cru',     niveau:1, lat:47.950, lng:7.350 },
-    // Grands crus principaux (51 au total)
-    { nom:'Rangen de Thann',      niveau:2, lat:47.806, lng:7.219 },
-    { nom:'Zinnkoepflé',          niveau:2, lat:47.886, lng:7.249 },
-    { nom:'Pfingstberg',          niveau:2, lat:47.856, lng:7.277 },
-    { nom:'Goldert',              niveau:2, lat:47.922, lng:7.285 },
-    { nom:'Hengst',               niveau:2, lat:47.947, lng:7.304 },
-    { nom:'Kessler',              niveau:2, lat:47.887, lng:7.258 },
-    { nom:'Kitterlé',             niveau:2, lat:47.885, lng:7.263 },
-    { nom:'Saering',              niveau:2, lat:47.891, lng:7.261 },
-    { nom:'Spiegel',              niveau:2, lat:47.899, lng:7.265 },
-    { nom:'Brand',                niveau:2, lat:47.985, lng:7.293 },
-    { nom:'Turckheim',            niveau:2, lat:48.050, lng:7.300 },
-    { nom:'Sommerberg',           niveau:2, lat:48.090, lng:7.340 },
-    { nom:'Schlossberg',          niveau:2, lat:48.111, lng:7.310 },
-    { nom:'Furstentum',           niveau:2, lat:48.125, lng:7.322 },
-    { nom:'Mambourg',             niveau:2, lat:48.145, lng:7.349 },
-    { nom:'Marckrain',            niveau:2, lat:48.143, lng:7.358 },
-    { nom:'Altenberg de Bergheim',niveau:2, lat:48.200, lng:7.378 },
-    { nom:'Gloeckelberg',         niveau:2, lat:48.220, lng:7.388 },
-    { nom:'Praelatenberg',        niveau:2, lat:48.254, lng:7.394 },
-    { nom:'Kastelberg',           niveau:2, lat:48.373, lng:7.421 },
-    { nom:'Wiebelsberg',          niveau:2, lat:48.377, lng:7.426 },
-    { nom:'Moenchberg',           niveau:2, lat:48.393, lng:7.439 },
-    { nom:'Muenchberg',           niveau:2, lat:48.504, lng:7.492 },
-    { nom:'Engelberg',            niveau:2, lat:48.521, lng:7.498 },
-    { nom:'Bruderthal',           niveau:2, lat:48.570, lng:7.524 },
-    { nom:'Zotzenberg',           niveau:2, lat:48.572, lng:7.551 },
-    { nom:'Steinklotz',           niveau:2, lat:48.690, lng:7.574 },
+    // AOC principales
+    { nom:'Alsace AOC',                type:'aoc',  lat:48.200, lng:7.440 },
+    { nom:"Crémant d'Alsace",          type:'aoc',  lat:48.100, lng:7.390 },
+    // Grands Crus (51 AOC distinctes — chacun est une AOC à part entière)
+    { nom:'Rangen',                    type:'cru',  lat:47.806, lng:7.219 },
+    { nom:'Zinnkoepflé',               type:'cru',  lat:47.886, lng:7.249 },
+    { nom:'Pfingstberg',               type:'cru',  lat:47.856, lng:7.277 },
+    { nom:'Goldert',                   type:'cru',  lat:47.922, lng:7.285 },
+    { nom:'Hengst',                    type:'cru',  lat:47.947, lng:7.304 },
+    { nom:'Kessler',                   type:'cru',  lat:47.887, lng:7.258 },
+    { nom:'Kitterlé',                  type:'cru',  lat:47.885, lng:7.263 },
+    { nom:'Saering',                   type:'cru',  lat:47.891, lng:7.261 },
+    { nom:'Spiegel',                   type:'cru',  lat:47.899, lng:7.265 },
+    { nom:'Brand',                     type:'cru',  lat:47.985, lng:7.293 },
+    { nom:'Sommerberg',                type:'cru',  lat:48.090, lng:7.340 },
+    { nom:'Schlossberg',               type:'cru',  lat:48.111, lng:7.310 },
+    { nom:'Furstentum',                type:'cru',  lat:48.125, lng:7.322 },
+    { nom:'Mambourg',                  type:'cru',  lat:48.145, lng:7.349 },
+    { nom:'Marckrain',                 type:'cru',  lat:48.143, lng:7.358 },
+    { nom:'Altenberg de Bergheim',     type:'cru',  lat:48.200, lng:7.378 },
+    { nom:'Praelatenberg',             type:'cru',  lat:48.254, lng:7.394 },
+    { nom:'Kastelberg',                type:'cru',  lat:48.373, lng:7.421 },
+    { nom:'Wiebelsberg',               type:'cru',  lat:48.377, lng:7.426 },
+    { nom:'Moenchberg',                type:'cru',  lat:48.393, lng:7.439 },
+    { nom:'Muenchberg',                type:'cru',  lat:48.504, lng:7.492 },
+    { nom:'Zotzenberg',                type:'cru',  lat:48.572, lng:7.551 },
+    { nom:'Steinklotz',                type:'cru',  lat:48.690, lng:7.574 },
   ],
 
   // ─── VALLÉE DE LA LOIRE ────────────────────────────────────
   'loire': [
-    // Pays Nantais
-    { nom:'Muscadet',                     niveau:1, lat:47.171, lng:-1.350 },
-    { nom:'Muscadet-Sèvre et Maine',      niveau:2, lat:47.153, lng:-1.368 },
-    { nom:'Muscadet-Côtes de Grandlieu',  niveau:2, lat:47.062, lng:-1.696 },
-    { nom:'Muscadet-Coteaux de la Loire', niveau:2, lat:47.340, lng:-1.165 },
-    { nom:'Fiefs Vendéens',               niveau:2, lat:46.618, lng:-1.432 },
-    { nom:'Gros Plant du Pays Nantais',   niveau:2, lat:47.150, lng:-1.550 },
-    // Anjou-Saumur
-    { nom:'Anjou',                niveau:1, lat:47.387, lng:-0.497 },
-    { nom:'Anjou-Villages',       niveau:2, lat:47.386, lng:-0.568 },
-    { nom:'Savennières',          niveau:2, lat:47.380, lng:-0.707 },
-    { nom:'Coteaux du Layon',     niveau:2, lat:47.265, lng:-0.630 },
-    { nom:'Bonnezeaux',           niveau:2, lat:47.249, lng:-0.558 },
-    { nom:'Quarts-de-Chaume',     niveau:2, lat:47.264, lng:-0.583 },
-    { nom:'Saumur',               niveau:1, lat:47.261, lng:-0.074 },
-    { nom:'Saumur-Champigny',     niveau:2, lat:47.212, lng:-0.049 },
-    { nom:'Coteaux de Saumur',    niveau:2, lat:47.271, lng:-0.084 },
-    // Touraine
-    { nom:'Touraine',             niveau:1, lat:47.380, lng: 0.690 },
-    { nom:'Chinon',               niveau:2, lat:47.165, lng: 0.240 },
-    { nom:'Bourgueil',            niveau:2, lat:47.282, lng: 0.166 },
-    { nom:'Saint-Nicolas-de-Bourgueil',niveau:2,lat:47.280,lng: 0.122 },
-    { nom:'Vouvray',              niveau:2, lat:47.408, lng: 0.803 },
-    { nom:'Montlouis-sur-Loire',  niveau:2, lat:47.387, lng: 0.860 },
-    { nom:'Cheverny',             niveau:2, lat:47.500, lng: 1.455 },
-    { nom:'Cour-Cheverny',        niveau:2, lat:47.510, lng: 1.460 },
-    { nom:'Valençay',             niveau:2, lat:47.161, lng: 1.565 },
-    // Centre-Loire
-    { nom:'Sancerre',             niveau:1, lat:47.327, lng: 2.839 },
-    { nom:'Pouilly-Fumé',         niveau:2, lat:47.300, lng: 2.954 },
-    { nom:'Pouilly-sur-Loire',    niveau:2, lat:47.291, lng: 2.954 },
-    { nom:'Menetou-Salon',        niveau:2, lat:47.239, lng: 2.489 },
-    { nom:'Quincy',               niveau:2, lat:47.108, lng: 2.041 },
-    { nom:'Reuilly',              niveau:2, lat:47.081, lng: 1.979 },
-    { nom:'Châteaumeillant',      niveau:2, lat:46.561, lng: 2.196 },
-    { nom:'Coteaux du Giennois',  niveau:2, lat:47.660, lng: 2.630 },
-    { nom:'Orléans',              niveau:2, lat:47.892, lng: 1.908 },
+    // Zones
+    { nom:'Pays Nantais',              type:'zone', lat:47.200, lng:-1.550 },
+    { nom:'Anjou-Saumur',              type:'zone', lat:47.320, lng:-0.450 },
+    { nom:'Touraine',                  type:'zone', lat:47.350, lng: 0.700 },
+    { nom:'Centre-Loire',              type:'zone', lat:47.350, lng: 2.850 },
+    // AOC — Pays Nantais
+    { nom:'Muscadet',                  type:'aoc',  lat:47.171, lng:-1.350 },
+    { nom:'Muscadet-Sèvre et Maine',   type:'aoc',  lat:47.153, lng:-1.368 },
+    { nom:'Muscadet-Coteaux de la Loire',type:'aoc',lat:47.340, lng:-1.165 },
+    { nom:'Muscadet-Côtes de Grandlieu',type:'aoc', lat:47.062, lng:-1.696 },
+    { nom:'Gros Plant du Pays Nantais',type:'aoc',  lat:47.150, lng:-1.550 },
+    { nom:'Fiefs Vendéens',            type:'aoc',  lat:46.618, lng:-1.432 },
+    // AOC — Anjou-Saumur
+    { nom:'Anjou',                     type:'aoc',  lat:47.387, lng:-0.497 },
+    { nom:'Anjou-Villages',            type:'aoc',  lat:47.386, lng:-0.568 },
+    { nom:'Anjou-Villages Brissac',    type:'aoc',  lat:47.350, lng:-0.470 },
+    { nom:'Savennières',               type:'aoc',  lat:47.380, lng:-0.707 },
+    { nom:'Savennières-Roche aux Moines',type:'cru',lat:47.379, lng:-0.715 },
+    { nom:'Savennières-Coulée de Serrant',type:'cru',lat:47.381,lng:-0.720 },
+    { nom:'Coteaux du Layon',          type:'aoc',  lat:47.265, lng:-0.630 },
+    { nom:'Coteaux de l\'Aubance',     type:'aoc',  lat:47.340, lng:-0.520 },
+    { nom:'Bonnezeaux',                type:'aoc',  lat:47.249, lng:-0.558 },
+    { nom:'Quarts-de-Chaume',          type:'aoc',  lat:47.264, lng:-0.583 },
+    { nom:'Saumur',                    type:'aoc',  lat:47.261, lng:-0.074 },
+    { nom:'Saumur-Champigny',          type:'aoc',  lat:47.212, lng:-0.049 },
+    { nom:'Saumur Mousseux',           type:'aoc',  lat:47.255, lng:-0.082 },
+    { nom:'Crémant de Loire',          type:'aoc',  lat:47.300, lng:-0.100 },
+    // AOC — Touraine
+    { nom:'Touraine AOC',              type:'aoc',  lat:47.380, lng: 0.690 },
+    { nom:'Chinon',                    type:'aoc',  lat:47.165, lng: 0.240 },
+    { nom:'Bourgueil',                 type:'aoc',  lat:47.282, lng: 0.166 },
+    { nom:'Saint-Nicolas-de-Bourgueil',type:'aoc',  lat:47.280, lng: 0.122 },
+    { nom:'Vouvray',                   type:'aoc',  lat:47.408, lng: 0.803 },
+    { nom:'Montlouis-sur-Loire',       type:'aoc',  lat:47.387, lng: 0.860 },
+    { nom:'Cheverny',                  type:'aoc',  lat:47.500, lng: 1.455 },
+    { nom:'Cour-Cheverny',             type:'aoc',  lat:47.510, lng: 1.460 },
+    { nom:'Valençay',                  type:'aoc',  lat:47.161, lng: 1.565 },
+    { nom:'Touraine-Amboise',          type:'aoc',  lat:47.413, lng: 1.003 },
+    { nom:'Touraine-Azay-le-Rideau',   type:'aoc',  lat:47.258, lng: 0.466 },
+    { nom:'Touraine-Mesland',          type:'aoc',  lat:47.502, lng: 1.192 },
+    // AOC — Centre-Loire
+    { nom:'Sancerre',                  type:'aoc',  lat:47.327, lng: 2.839 },
+    { nom:'Pouilly-Fumé',              type:'aoc',  lat:47.300, lng: 2.954 },
+    { nom:'Pouilly-sur-Loire',         type:'aoc',  lat:47.291, lng: 2.954 },
+    { nom:'Menetou-Salon',             type:'aoc',  lat:47.239, lng: 2.489 },
+    { nom:'Quincy',                    type:'aoc',  lat:47.108, lng: 2.041 },
+    { nom:'Reuilly',                   type:'aoc',  lat:47.081, lng: 1.979 },
+    { nom:'Châteaumeillant',           type:'aoc',  lat:46.561, lng: 2.196 },
+    { nom:'Coteaux du Giennois',       type:'aoc',  lat:47.660, lng: 2.630 },
+    { nom:'Orléans',                   type:'aoc',  lat:47.892, lng: 1.908 },
+    { nom:'Orléans-Cléry',             type:'aoc',  lat:47.820, lng: 1.767 },
   ],
 
   // ─── LANGUEDOC ─────────────────────────────────────────────
   'languedoc': [
-    { nom:'Languedoc AOC',        niveau:1, lat:43.500, lng: 3.250 },
-    { nom:'Picpoul de Pinet',     niveau:2, lat:43.437, lng: 3.549 },
-    { nom:'Faugères',             niveau:2, lat:43.520, lng: 3.272 },
-    { nom:'Saint-Chinian',        niveau:2, lat:43.464, lng: 2.952 },
-    { nom:'Minervois',            niveau:2, lat:43.358, lng: 2.720 },
-    { nom:'Minervois-La Livinière',niveau:2,lat:43.363, lng: 2.685 },
-    { nom:'Corbières',            niveau:2, lat:43.019, lng: 2.680 },
-    { nom:'Corbières-Boutenac',   niveau:2, lat:43.094, lng: 2.758 },
-    { nom:'Fitou',                niveau:2, lat:42.895, lng: 2.952 },
-    { nom:'Blanquette de Limoux', niveau:2, lat:43.052, lng: 2.165 },
-    { nom:'Crémant de Limoux',    niveau:2, lat:43.062, lng: 2.165 },
-    { nom:'Limoux',               niveau:2, lat:43.052, lng: 2.165 },
-    { nom:'Clairette du Languedoc',niveau:2,lat:43.561, lng: 3.385 },
-    { nom:'Terrasses du Larzac',  niveau:2, lat:43.665, lng: 3.345 },
-    { nom:'Pic Saint-Loup',       niveau:2, lat:43.746, lng: 3.759 },
-    { nom:'La Clape',             niveau:2, lat:43.172, lng: 3.128 },
-    { nom:'Grès de Montpellier',  niveau:2, lat:43.590, lng: 3.780 },
-    { nom:'Pézenas',              niveau:2, lat:43.461, lng: 3.427 },
-    { nom:'Montpeyroux',          niveau:2, lat:43.687, lng: 3.456 },
-    { nom:'Saint-Saturnin',       niveau:2, lat:43.693, lng: 3.483 },
-    { nom:'Saint-Georges-d\'Orques',niveau:2,lat:43.573,lng: 3.778 },
-    { nom:'Cabrières',            niveau:2, lat:43.573, lng: 3.382 },
-    { nom:'Quatourze',            niveau:2, lat:43.198, lng: 2.942 },
+    // Zone générique
+    { nom:'Languedoc AOC',             type:'aoc',  lat:43.500, lng: 3.250 },
+    // AOC spécifiques
+    { nom:'Picpoul de Pinet',          type:'aoc',  lat:43.437, lng: 3.549 },
+    { nom:'Faugères',                  type:'aoc',  lat:43.520, lng: 3.272 },
+    { nom:'Saint-Chinian',             type:'aoc',  lat:43.464, lng: 2.952 },
+    { nom:'Minervois',                 type:'aoc',  lat:43.358, lng: 2.720 },
+    { nom:'Minervois-La Livinière',    type:'aoc',  lat:43.363, lng: 2.685 },
+    { nom:'Corbières',                 type:'aoc',  lat:43.019, lng: 2.680 },
+    { nom:'Corbières-Boutenac',        type:'aoc',  lat:43.094, lng: 2.758 },
+    { nom:'Fitou',                     type:'aoc',  lat:42.895, lng: 2.952 },
+    { nom:'Blanquette de Limoux',      type:'aoc',  lat:43.052, lng: 2.165 },
+    { nom:'Crémant de Limoux',         type:'aoc',  lat:43.062, lng: 2.165 },
+    { nom:'Limoux',                    type:'aoc',  lat:43.052, lng: 2.168 },
+    { nom:'Clairette du Languedoc',    type:'aoc',  lat:43.561, lng: 3.385 },
+    { nom:'Clairette de Bellegarde',   type:'aoc',  lat:43.762, lng: 4.532 },
+    // Dénominations géographiques du Languedoc AOC
+    { nom:'Terrasses du Larzac',       type:'cru',  lat:43.665, lng: 3.345 },
+    { nom:'Pic Saint-Loup',            type:'cru',  lat:43.746, lng: 3.759 },
+    { nom:'La Clape',                  type:'cru',  lat:43.172, lng: 3.128 },
+    { nom:'Grès de Montpellier',       type:'cru',  lat:43.590, lng: 3.780 },
+    { nom:'Pézenas',                   type:'cru',  lat:43.461, lng: 3.427 },
+    { nom:'Montpeyroux',               type:'cru',  lat:43.687, lng: 3.456 },
+    { nom:'Saint-Saturnin',            type:'cru',  lat:43.693, lng: 3.483 },
+    { nom:'Saint-Georges-d\'Orques',   type:'cru',  lat:43.573, lng: 3.778 },
+    { nom:'Cabrières',                 type:'cru',  lat:43.573, lng: 3.382 },
+    { nom:'Quatourze',                 type:'cru',  lat:43.198, lng: 2.942 },
   ],
 
   // ─── ROUSSILLON ────────────────────────────────────────────
   'roussillon': [
-    { nom:'Côtes du Roussillon',          niveau:1, lat:42.690, lng: 2.780 },
-    { nom:'Côtes du Roussillon Villages', niveau:1, lat:42.760, lng: 2.760 },
-    { nom:'Lesquerde',            niveau:2, lat:42.780, lng: 2.673 },
-    { nom:'Tautavel',             niveau:2, lat:42.820, lng: 2.769 },
-    { nom:'Caramany',             niveau:2, lat:42.751, lng: 2.624 },
-    { nom:'Latour-de-France',     niveau:2, lat:42.758, lng: 2.706 },
-    { nom:'Maury',                niveau:2, lat:42.810, lng: 2.648 },
-    { nom:'Maury Sec',            niveau:2, lat:42.813, lng: 2.650 },
-    { nom:'Collioure',            niveau:2, lat:42.524, lng: 3.083 },
-    { nom:'Banyuls',              niveau:2, lat:42.489, lng: 3.127 },
-    { nom:'Banyuls Grand Cru',    niveau:2, lat:42.489, lng: 3.127 },
-    { nom:'Rivesaltes',           niveau:1, lat:42.771, lng: 2.878 },
-    { nom:'Muscat de Rivesaltes', niveau:2, lat:42.775, lng: 2.880 },
+    // AOC
+    { nom:'Côtes du Roussillon',       type:'aoc',  lat:42.690, lng: 2.780 },
+    { nom:'Côtes du Roussillon Villages',type:'aoc',lat:42.760, lng: 2.760 },
+    { nom:'Maury',                     type:'aoc',  lat:42.810, lng: 2.648 },
+    { nom:'Maury Sec',                 type:'aoc',  lat:42.813, lng: 2.650 },
+    { nom:'Collioure',                 type:'aoc',  lat:42.524, lng: 3.083 },
+    { nom:'Banyuls',                   type:'aoc',  lat:42.489, lng: 3.127 },
+    { nom:'Banyuls Grand Cru',         type:'aoc',  lat:42.487, lng: 3.130 },
+    { nom:'Rivesaltes',                type:'aoc',  lat:42.771, lng: 2.878 },
+    { nom:'Muscat de Rivesaltes',      type:'aoc',  lat:42.775, lng: 2.880 },
+    // Dénominations Villages
+    { nom:'Lesquerde',                 type:'cru',  lat:42.780, lng: 2.673 },
+    { nom:'Tautavel',                  type:'cru',  lat:42.820, lng: 2.769 },
+    { nom:'Caramany',                  type:'cru',  lat:42.751, lng: 2.624 },
+    { nom:'Latour-de-France',          type:'cru',  lat:42.758, lng: 2.706 },
   ],
 
   // ─── PROVENCE ──────────────────────────────────────────────
   'provence': [
-    { nom:'Côtes de Provence',    niveau:1, lat:43.450, lng: 6.150 },
-    { nom:'Côtes de Provence Sainte-Victoire',niveau:2,lat:43.530,lng:5.620 },
-    { nom:'Côtes de Provence Pierrefeu',niveau:2,lat:43.250,lng:6.145 },
-    { nom:'Côtes de Provence La Londe',niveau:2,lat:43.143,lng:6.239 },
-    { nom:'Côtes de Provence Fréjus',niveau:2,lat:43.437,lng:6.733 },
-    { nom:'Coteaux d\'Aix-en-Provence',niveau:1,lat:43.527,lng:5.441 },
-    { nom:'Les Baux-de-Provence', niveau:2, lat:43.742, lng: 4.797 },
-    { nom:'Bandol',               niveau:2, lat:43.130, lng: 5.755 },
-    { nom:'Cassis',               niveau:2, lat:43.214, lng: 5.548 },
-    { nom:'Bellet',               niveau:2, lat:43.747, lng: 7.189 },
-    { nom:'Palette',              niveau:2, lat:43.520, lng: 5.474 },
-    { nom:'Pierrevert',           niveau:2, lat:43.807, lng: 5.897 },
-    { nom:'Coteaux Varois en Provence',niveau:1,lat:43.440,lng:5.990 },
+    // AOC
+    { nom:'Côtes de Provence',         type:'aoc',  lat:43.450, lng: 6.150 },
+    { nom:'Coteaux d\'Aix-en-Provence',type:'aoc',  lat:43.527, lng: 5.441 },
+    { nom:'Coteaux Varois en Provence',type:'aoc',  lat:43.440, lng: 5.990 },
+    { nom:'Bandol',                    type:'aoc',  lat:43.130, lng: 5.755 },
+    { nom:'Cassis',                    type:'aoc',  lat:43.214, lng: 5.548 },
+    { nom:'Bellet',                    type:'aoc',  lat:43.747, lng: 7.189 },
+    { nom:'Palette',                   type:'aoc',  lat:43.520, lng: 5.474 },
+    { nom:'Pierrevert',                type:'aoc',  lat:43.807, lng: 5.897 },
+    { nom:'Les Baux-de-Provence',      type:'aoc',  lat:43.742, lng: 4.797 },
+    // Dénominations Côtes de Provence
+    { nom:'Côtes de Provence Sainte-Victoire',type:'cru',lat:43.530,lng:5.620 },
+    { nom:'Côtes de Provence Fréjus',  type:'cru',  lat:43.437, lng: 6.733 },
+    { nom:'Côtes de Provence La Londe',type:'cru',  lat:43.143, lng: 6.239 },
+    { nom:'Côtes de Provence Pierrefeu',type:'cru', lat:43.250, lng: 6.145 },
   ],
 
   // ─── SUD-OUEST ─────────────────────────────────────────────
   'sud-ouest': [
-    { nom:'Bergerac',             niveau:1, lat:44.855, lng: 0.487 },
-    { nom:'Pécharmant',           niveau:2, lat:44.876, lng: 0.555 },
-    { nom:'Monbazillac',          niveau:2, lat:44.773, lng: 0.521 },
-    { nom:'Rosette',              niveau:2, lat:44.872, lng: 0.471 },
-    { nom:'Saussignac',           niveau:2, lat:44.793, lng: 0.361 },
-    { nom:'Montravel',            niveau:2, lat:44.841, lng: 0.204 },
-    { nom:'Côtes de Bergerac',    niveau:2, lat:44.830, lng: 0.420 },
-    { nom:'Cahors',               niveau:1, lat:44.449, lng: 1.441 },
-    { nom:'Madiran',              niveau:1, lat:43.569, lng:-0.086 },
-    { nom:'Pacherenc du Vic-Bilh',niveau:2, lat:43.574, lng:-0.086 },
-    { nom:'Jurançon',             niveau:1, lat:43.315, lng:-0.292 },
-    { nom:'Jurançon Sec',         niveau:2, lat:43.312, lng:-0.297 },
-    { nom:'Irouléguy',            niveau:2, lat:43.234, lng:-1.281 },
-    { nom:'Gaillac',              niveau:1, lat:43.901, lng: 1.893 },
-    { nom:'Gaillac Premières Côtes',niveau:2,lat:43.870, lng: 1.850 },
-    { nom:'Marcillac',            niveau:2, lat:44.457, lng: 2.448 },
-    { nom:'Entraygues-Le Fel',    niveau:2, lat:44.638, lng: 2.568 },
-    { nom:'Estaing',              niveau:2, lat:44.578, lng: 2.679 },
-    { nom:'Tursan',               niveau:2, lat:43.718, lng:-0.527 },
-    { nom:'Saint-Sardos',         niveau:2, lat:44.001, lng: 0.851 },
-    { nom:'Côtes du Marmandais',  niveau:2, lat:44.505, lng: 0.160 },
-    { nom:'Buzet',                niveau:2, lat:44.262, lng: 0.302 },
-    { nom:'Côtes du Brulhois',    niveau:2, lat:44.110, lng: 0.635 },
-    { nom:'Fronton',              niveau:2, lat:43.861, lng: 1.386 },
-    { nom:'Brulhois',             niveau:2, lat:44.106, lng: 0.616 },
+    // AOC
+    { nom:'Bergerac',                  type:'aoc',  lat:44.855, lng: 0.487 },
+    { nom:'Côtes de Bergerac',         type:'aoc',  lat:44.830, lng: 0.420 },
+    { nom:'Pécharmant',                type:'aoc',  lat:44.876, lng: 0.555 },
+    { nom:'Monbazillac',               type:'aoc',  lat:44.773, lng: 0.521 },
+    { nom:'Saussignac',                type:'aoc',  lat:44.793, lng: 0.361 },
+    { nom:'Rosette',                   type:'aoc',  lat:44.872, lng: 0.471 },
+    { nom:'Montravel',                 type:'aoc',  lat:44.841, lng: 0.204 },
+    { nom:'Haut-Montravel',            type:'aoc',  lat:44.845, lng: 0.196 },
+    { nom:'Côtes de Montravel',        type:'aoc',  lat:44.840, lng: 0.200 },
+    { nom:'Cahors',                    type:'aoc',  lat:44.449, lng: 1.441 },
+    { nom:'Madiran',                   type:'aoc',  lat:43.569, lng:-0.086 },
+    { nom:'Pacherenc du Vic-Bilh',     type:'aoc',  lat:43.574, lng:-0.090 },
+    { nom:'Jurançon',                  type:'aoc',  lat:43.315, lng:-0.292 },
+    { nom:'Jurançon Sec',              type:'aoc',  lat:43.312, lng:-0.297 },
+    { nom:'Irouléguy',                 type:'aoc',  lat:43.234, lng:-1.281 },
+    { nom:'Gaillac',                   type:'aoc',  lat:43.901, lng: 1.893 },
+    { nom:'Gaillac Premières Côtes',   type:'aoc',  lat:43.870, lng: 1.850 },
+    { nom:'Marcillac',                 type:'aoc',  lat:44.457, lng: 2.448 },
+    { nom:'Entraygues-Le Fel',         type:'aoc',  lat:44.638, lng: 2.568 },
+    { nom:'Estaing',                   type:'aoc',  lat:44.578, lng: 2.679 },
+    { nom:'Tursan',                    type:'aoc',  lat:43.718, lng:-0.527 },
+    { nom:'Buzet',                     type:'aoc',  lat:44.262, lng: 0.302 },
+    { nom:'Côtes du Marmandais',       type:'aoc',  lat:44.505, lng: 0.160 },
+    { nom:'Fronton',                   type:'aoc',  lat:43.861, lng: 1.386 },
+    { nom:'Saint-Sardos',              type:'aoc',  lat:44.001, lng: 0.851 },
   ],
 
   // ─── BEAUJOLAIS ────────────────────────────────────────────
   'beaujolais': [
-    { nom:'Beaujolais',           niveau:1, lat:46.068, lng: 4.678 },
-    { nom:'Beaujolais-Villages',  niveau:1, lat:46.148, lng: 4.633 },
-    { nom:'Saint-Amour',          niveau:2, lat:46.306, lng: 4.700 },
-    { nom:'Juliénas',             niveau:2, lat:46.254, lng: 4.698 },
-    { nom:'Chénas',               niveau:2, lat:46.196, lng: 4.707 },
-    { nom:'Moulin-à-Vent',        niveau:2, lat:46.155, lng: 4.716 },
-    { nom:'Fleurie',              niveau:2, lat:46.192, lng: 4.698 },
-    { nom:'Chiroubles',           niveau:2, lat:46.167, lng: 4.669 },
-    { nom:'Morgon',               niveau:2, lat:46.116, lng: 4.685 },
-    { nom:'Régnié',               niveau:2, lat:46.131, lng: 4.659 },
-    { nom:'Côte de Brouilly',     niveau:2, lat:46.100, lng: 4.654 },
-    { nom:'Brouilly',             niveau:2, lat:46.088, lng: 4.661 },
+    // AOC génériques
+    { nom:'Beaujolais',                type:'aoc',  lat:46.068, lng: 4.678 },
+    { nom:'Beaujolais-Villages',       type:'aoc',  lat:46.148, lng: 4.633 },
+    // Crus du Beaujolais (10 AOC distinctes)
+    { nom:'Saint-Amour',               type:'cru',  lat:46.306, lng: 4.700 },
+    { nom:'Juliénas',                  type:'cru',  lat:46.254, lng: 4.698 },
+    { nom:'Chénas',                    type:'cru',  lat:46.196, lng: 4.707 },
+    { nom:'Moulin-à-Vent',             type:'cru',  lat:46.155, lng: 4.716 },
+    { nom:'Fleurie',                   type:'cru',  lat:46.192, lng: 4.698 },
+    { nom:'Chiroubles',                type:'cru',  lat:46.167, lng: 4.669 },
+    { nom:'Morgon',                    type:'cru',  lat:46.116, lng: 4.685 },
+    { nom:'Régnié',                    type:'cru',  lat:46.131, lng: 4.659 },
+    { nom:'Côte de Brouilly',          type:'cru',  lat:46.100, lng: 4.654 },
+    { nom:'Brouilly',                  type:'cru',  lat:46.088, lng: 4.661 },
   ],
 
   // ─── JURA ──────────────────────────────────────────────────
   'jura': [
-    { nom:'Arbois',               niveau:1, lat:46.903, lng: 5.775 },
-    { nom:'Arbois Pupillin',      niveau:2, lat:46.888, lng: 5.785 },
-    { nom:'Château-Chalon',       niveau:2, lat:46.762, lng: 5.629 },
-    { nom:"L'Étoile",             niveau:2, lat:46.724, lng: 5.582 },
-    { nom:'Côtes du Jura',        niveau:1, lat:46.800, lng: 5.700 },
-    { nom:'Crémant du Jura',      niveau:2, lat:46.820, lng: 5.720 },
-    { nom:'Macvin du Jura',       niveau:2, lat:46.870, lng: 5.752 },
+    // AOC
+    { nom:'Arbois',                    type:'aoc',  lat:46.903, lng: 5.775 },
+    { nom:'Arbois Pupillin',           type:'aoc',  lat:46.888, lng: 5.785 },
+    { nom:'Côtes du Jura',             type:'aoc',  lat:46.800, lng: 5.700 },
+    { nom:'Crémant du Jura',           type:'aoc',  lat:46.820, lng: 5.720 },
+    { nom:'Macvin du Jura',            type:'aoc',  lat:46.870, lng: 5.752 },
+    // AOC à part entière
+    { nom:'Château-Chalon',            type:'aoc',  lat:46.762, lng: 5.629 },
+    { nom:"L'Étoile",                  type:'aoc',  lat:46.724, lng: 5.582 },
   ],
 
   // ─── SAVOIE ────────────────────────────────────────────────
   'savoie': [
-    { nom:'Vin de Savoie',        niveau:1, lat:45.688, lng: 5.934 },
-    { nom:'Roussette de Savoie',  niveau:1, lat:45.743, lng: 5.882 },
-    { nom:'Seyssel',              niveau:2, lat:45.949, lng: 5.836 },
-    { nom:'Crépy',                niveau:2, lat:46.310, lng: 6.332 },
-    { nom:'Chignin',              niveau:2, lat:45.544, lng: 5.980 },
-    { nom:'Chignin-Bergeron',     niveau:2, lat:45.540, lng: 5.982 },
-    { nom:'Apremont',             niveau:2, lat:45.526, lng: 5.988 },
-    { nom:'Abymes',               niveau:2, lat:45.512, lng: 6.002 },
-    { nom:'Ripaille',             niveau:2, lat:46.363, lng: 6.418 },
-    { nom:'Roussette du Bugey',   niveau:2, lat:45.870, lng: 5.410 },
-    { nom:'Cerdon',               niveau:2, lat:46.063, lng: 5.479 },
-    { nom:'Bugey',                niveau:1, lat:45.880, lng: 5.450 },
+    // AOC
+    { nom:'Vin de Savoie',             type:'aoc',  lat:45.688, lng: 5.934 },
+    { nom:'Roussette de Savoie',       type:'aoc',  lat:45.743, lng: 5.882 },
+    { nom:'Seyssel',                   type:'aoc',  lat:45.949, lng: 5.836 },
+    { nom:'Crépy',                     type:'aoc',  lat:46.310, lng: 6.332 },
+    { nom:'Bugey',                     type:'aoc',  lat:45.880, lng: 5.450 },
+    { nom:'Roussette du Bugey',        type:'aoc',  lat:45.870, lng: 5.410 },
+    { nom:'Cerdon',                    type:'aoc',  lat:46.063, lng: 5.479 },
+    // Crus (dénominations Vin de Savoie)
+    { nom:'Apremont',                  type:'cru',  lat:45.526, lng: 5.988 },
+    { nom:'Abymes',                    type:'cru',  lat:45.512, lng: 6.002 },
+    { nom:'Chignin',                   type:'cru',  lat:45.544, lng: 5.980 },
+    { nom:'Chignin-Bergeron',          type:'cru',  lat:45.540, lng: 5.982 },
+    { nom:'Ripaille',                  type:'cru',  lat:46.363, lng: 6.418 },
+    { nom:'Marignan',                  type:'cru',  lat:46.355, lng: 6.390 },
   ],
 
   // ─── CORSE ─────────────────────────────────────────────────
   'corse': [
-    { nom:'Vin de Corse',         niveau:1, lat:42.050, lng: 9.100 },
-    { nom:'Patrimonio',           niveau:2, lat:42.700, lng: 9.369 },
-    { nom:'Ajaccio',              niveau:2, lat:41.950, lng: 8.758 },
-    { nom:'Muscat du Cap Corse',  niveau:2, lat:42.980, lng: 9.420 },
-    { nom:'Corse Calvi',          niveau:2, lat:42.570, lng: 8.760 },
-    { nom:'Corse Sartène',        niveau:2, lat:41.623, lng: 8.974 },
-    { nom:'Corse Figari',         niveau:2, lat:41.504, lng: 9.148 },
-    { nom:'Corse Porto-Vecchio',  niveau:2, lat:41.594, lng: 9.279 },
-    { nom:'Corse Coteaux du Cap Corse',niveau:2,lat:43.007,lng:9.420 },
+    // AOC
+    { nom:'Vin de Corse',              type:'aoc',  lat:42.050, lng: 9.100 },
+    { nom:'Patrimonio',                type:'aoc',  lat:42.700, lng: 9.369 },
+    { nom:'Ajaccio',                   type:'aoc',  lat:41.950, lng: 8.758 },
+    { nom:'Muscat du Cap Corse',       type:'aoc',  lat:42.980, lng: 9.420 },
+    // Dénominations Vin de Corse
+    { nom:'Corse Calvi',               type:'cru',  lat:42.570, lng: 8.760 },
+    { nom:'Corse Sartène',             type:'cru',  lat:41.623, lng: 8.974 },
+    { nom:'Corse Figari',              type:'cru',  lat:41.504, lng: 9.148 },
+    { nom:'Corse Porto-Vecchio',       type:'cru',  lat:41.594, lng: 9.279 },
+    { nom:'Corse Coteaux du Cap Corse',type:'cru',  lat:43.007, lng: 9.420 },
   ],
 };
 
@@ -5504,11 +5597,10 @@ function showAppellations(regionKey, niveauMax) {
 
   leafletMap._appelRegion = regionKey;
   const group = L.layerGroup();
-  const niveau = niveauMax || 2;
 
-  apps.filter(a => a.niveau <= niveau).forEach(app => {
+  apps.forEach(app => {
     if (app.lat == null || app.lng == null) return;
-    addAppelLabel(group, app.lat, app.lng, app.nom, app.niveau === 2);
+    addAppelLabel(group, app.lat, app.lng, app.nom, app.type || 'aoc');
   });
 
   group.addTo(leafletMap);
@@ -5517,8 +5609,11 @@ function showAppellations(regionKey, niveauMax) {
   const hint = document.getElementById('carte-zoom-hint');
   if (hint) {
     const region = WINE_REGION_POLYGONS[regionKey];
-    const n = apps.filter(a => a.niveau <= niveau).length;
-    hint.innerHTML = `🏛️ <b style="color:#e8c870">${region?.label||regionKey}</b> — ${n} appellation${n>1?'s':''}`;
+    const nAoc = apps.filter(a => a.type === 'aoc').length;
+    const nCru = apps.filter(a => a.type === 'cru').length;
+    hint.innerHTML = `🏛️ <b style="color:#e8c870">${region?.label||regionKey}</b>`
+      + ` — <span style="color:#c08050">${nAoc} AOC</span>`
+      + (nCru ? ` · <span style="color:#9b60d0">${nCru} cru${nCru>1?'s':''}</span>` : '');
     hint.style.color = 'rgba(220,200,120,0.9)';
   }
 }
@@ -5614,8 +5709,9 @@ function selectCarteRegion(key, label) {
   const wines = wineData.filter(w => getRegionKey(w) === key);
   const region = WINE_REGION_POLYGONS[key];
   const allApps = APPELLATIONS[key] || [];
-  const nbApp = region?.appellations ? region.appellations.length : allApps.filter(a=>a.niveau===1).length;
-  const nbTerroirs = allApps.filter(a=>a.niveau===2).length;
+  const nbAoc = allApps.filter(a=>a.type==='aoc').length;
+  const nbCru  = allApps.filter(a=>a.type==='cru').length;
+  const nbApp  = region?.appellations ? region.appellations.length : nbAoc;
 
   document.getElementById('carte-region-title').textContent = `${label} — ${wines.length} bouteille${wines.length!==1?'s':''}`;
 
@@ -5630,7 +5726,8 @@ function selectCarteRegion(key, label) {
   if (hint) {
     hint.innerHTML = `🏛️ <b style="color:#e8c870">${label}</b>`
       + (region?.cepages ? ` — <span style="color:#a09080;font-style:italic">🍇 ${region.cepages}</span>` : '')
-      + (nbApp ? ` — <span style="color:#b0a090">${nbApp} appellation${nbApp>1?'s':''}${nbTerroirs?' · '+nbTerroirs+' terroir'+(nbTerroirs>1?'s':''):''}</span>` : '');
+      + (nbAoc ? ` — <span style="color:#c08050">${nbAoc} AOC</span>` : '')
+      + (nbCru  ? ` · <span style="color:#9b60d0">${nbCru} cru${nbCru>1?'s':''}</span>` : '');
     hint.style.color = 'rgba(220,200,120,0.9)';
   }
 
