@@ -1492,7 +1492,21 @@ function openSlotModal(cave, floor, slot) {
             <div class="info-cell"><div class="lbl">Type</div><div class="val"><span class="type-badge badge-${wine.type}">${tLabel}</span></div></div>
             <div class="info-cell"><div class="lbl">Format</div><div class="val"><span class="format-badge">${fLabel}</span></div></div>
             <div class="info-cell"><div class="lbl">Millésime</div><div class="val">${wine.annee||'—'}</div></div>
-            <div class="info-cell"><div class="lbl">Prix</div><div class="val">${wine.prix?wine.prix+'€':'—'}</div></div>
+            <div class="info-cell"><div class="lbl">Prix achat</div><div class="val">${wine.prix?wine.prix+'€':'—'}</div></div>
+            <div class="info-cell">
+              <div class="lbl">Prix marché
+                ${wine.prix_marche_manuel ? '<span style="font-size:0.65rem;color:var(--gold)">✏ manuel</span>' : (wine.prix_marche ? '<span style="font-size:0.65rem;color:var(--text2)">~ estimé</span>' : '')}
+              </div>
+              <div class="val" style="display:flex;align-items:center;gap:8px">
+                <span id="prix-marche-display">${wine.prix_marche_manuel ? wine.prix_marche_manuel+'€' : (wine.prix_marche ? '~'+wine.prix_marche+'€' : '—')}</span>
+                <button onclick="ouvrirSaisiePrixMarche('${wine.id}')" style="padding:2px 7px;font-size:0.7rem;background:transparent;border:1px solid var(--border);color:var(--text2);cursor:pointer;border-radius:2px" title="Saisir un prix manuel">✏</button>
+              </div>
+              <div id="saisie-prix-marche" style="display:none;margin-top:6px;display:none">
+                <input type="number" id="input-prix-marche" placeholder="Prix €" style="width:80px;padding:4px 8px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:2px;font-size:0.9rem">
+                <button onclick="sauvegarderPrixMarcheManuel('${wine.id}')" style="padding:4px 9px;font-size:0.8rem;background:var(--wine);border:none;color:var(--cream);cursor:pointer;border-radius:2px;margin-left:4px">OK</button>
+                <button onclick="effacerPrixMarcheManuel('${wine.id}')" style="padding:4px 9px;font-size:0.8rem;background:transparent;border:1px solid var(--border);color:var(--text2);cursor:pointer;border-radius:2px;margin-left:2px" title="Effacer et utiliser estimation">✕</button>
+              </div>
+            </div>
             <div class="info-cell"><div class="lbl">Domaine</div><div class="val">${wine.domaine||'—'}</div></div>
             <div class="info-cell"><div class="lbl">Région</div><div class="val">${wine.region||'—'}</div></div>
             <div class="info-cell"><div class="lbl">Note</div><div class="val rating-stars" style="font-size:1rem">${stars}</div></div>
@@ -1903,6 +1917,45 @@ function renderList() {
 // =====================================================================
 // STATS
 // =====================================================================
+
+function ouvrirSaisiePrixMarche(wineId) {
+  const div = document.getElementById('saisie-prix-marche');
+  if(div) { div.style.display = div.style.display === 'none' ? 'block' : 'none'; }
+  const wine = wineData.find(w => String(w.id) === String(wineId));
+  const input = document.getElementById('input-prix-marche');
+  if(input && wine) input.value = wine.prix_marche_manuel || wine.prix_marche || '';
+}
+
+function sauvegarderPrixMarcheManuel(wineId) {
+  const input = document.getElementById('input-prix-marche');
+  if(!input) return;
+  const val = parseFloat(input.value);
+  if(!val || val <= 0) { showNotif('Prix invalide', true); return; }
+  const wIdx = wineData.findIndex(w => String(w.id) === String(wineId));
+  if(wIdx === -1) return;
+  wineData[wIdx].prix_marche_manuel = val;
+  wineData[wIdx].prix_marche = val; // Le manuel écrase l'estimé
+  saveData();
+  // Mettre à jour l'affichage
+  const display = document.getElementById('prix-marche-display');
+  if(display) display.textContent = val + '€';
+  const div = document.getElementById('saisie-prix-marche');
+  if(div) div.style.display = 'none';
+  showNotif('Prix marché sauvegardé ✓');
+}
+
+function effacerPrixMarcheManuel(wineId) {
+  const wIdx = wineData.findIndex(w => String(w.id) === String(wineId));
+  if(wIdx === -1) return;
+  delete wineData[wIdx].prix_marche_manuel;
+  saveData();
+  const display = document.getElementById('prix-marche-display');
+  if(display) display.textContent = wineData[wIdx].prix_marche ? '~' + wineData[wIdx].prix_marche + '€' : '—';
+  const div = document.getElementById('saisie-prix-marche');
+  if(div) div.style.display = 'none';
+  showNotif('Prix manuel effacé — estimation Groq active');
+}
+
 async function estimerValeurCave() {
   const box    = document.getElementById('cave-valeur-marche');
   const detail = document.getElementById('cave-valeur-detail');
@@ -2023,6 +2076,18 @@ Réponds UNIQUEMENT avec ce format JSON strict (aucun texte autour) :
         </span>
       </div>` : ''}`;
 
+    // Sauvegarder l'estimation dans wineData (prix_marche = milieu fourchette)
+    const prixMarcheEstime = Math.round((est.fourchette_min + est.fourchette_max) / 2);
+    const wIdx = wineData.findIndex(w => String(w.id) === String(wineId));
+    if(wIdx !== -1 && !wineData[wIdx].prix_marche_manuel) {
+      // Ne pas écraser si l'utilisateur a saisi un prix manuel
+      wineData[wIdx].prix_marche = prixMarcheEstime;
+      wineData[wIdx].prix_marche_min = est.fourchette_min;
+      wineData[wIdx].prix_marche_max = est.fourchette_max;
+      wineData[wIdx].prix_marche_tendance = est.tendance;
+      wineData[wIdx].prix_marche_date = new Date().toISOString().split('T')[0];
+      saveData();
+    }
     btn.textContent = '💰 Ré-estimer';
     btn.disabled = false;
 
@@ -2036,6 +2101,8 @@ Réponds UNIQUEMENT avec ce format JSON strict (aucun texte autour) :
 function renderStats() {
   const total   = wineData.length;
   const val     = wineData.reduce((s,w)=>s+(parseFloat(w.prix)||0),0);
+  const valMarche = wineData.reduce((s,w)=>s+(parseFloat(w.prix_marche_manuel||w.prix_marche)||0),0);
+  const nbEstimes = wineData.filter(w => w.prix_marche || w.prix_marche_manuel).length;
   const avgPrix = total ? Math.round(val/total) : 0;
   const types   = {}; wineData.forEach(w=>{ const t=w.type||'autre'; types[t]=(types[t]||0)+1; });
   const decades = {}; wineData.forEach(w=>{ if(w.annee){ const d=Math.floor(w.annee/10)*10; decades[d]=(decades[d]||0)+1; }});
@@ -2054,8 +2121,8 @@ function renderStats() {
     <div class="stat-card"><div class="s-val">${avgPrix} €</div><div class="s-lbl">Prix moyen / bouteille</div></div>
     <div class="stat-card"><div class="s-val">${occ1+occ2}/${cap1+cap2}</div><div class="s-lbl">Taux remplissage global</div></div>
     <div class="stat-card" style="grid-column:1/-1;cursor:pointer;border-color:rgba(201,168,76,0.3)" onclick="estimerValeurCave()">
-      <div class="s-val" id="cave-valeur-marche" style="color:var(--gold)">—</div>
-      <div class="s-lbl">💰 Valeur marché estimée <span style="font-size:0.7rem;opacity:0.7">(cliquer pour estimer)</span></div>
+      <div class="s-val" id="cave-valeur-marche" style="color:var(--gold)">${valMarche > 0 ? valMarche.toLocaleString('fr-FR') + '€' : '—'}</div>
+      <div class="s-lbl">💰 Valeur marché ${nbEstimes > 0 ? '(' + nbEstimes + '/' + total + ' vins estimés)' : ''} <span style="font-size:0.7rem;opacity:0.7">· cliquer pour tout estimer</span></div>
       <div id="cave-valeur-detail" style="font-size:0.75rem;color:var(--text2);margin-top:6px"></div>
     </div>`;
 
