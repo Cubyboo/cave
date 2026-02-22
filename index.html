@@ -4,7 +4,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍷</text></svg>">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🍷  Cave à Vin MMM</title>
+<title>Cave à Vin MMM</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
   /* ============================================================
@@ -4889,17 +4889,34 @@ function renderCarte() {
   });
 
   // Créer un marqueur par région
+  // Positions personnalisées pour certaines régions
+  const MARKER_OVERRIDE = {
+    'bourgogne':      { lat: 47.150, lng: 4.720 }, // à gauche de la Côte de Nuits
+    'beaujolais':     { lat: 46.100, lng: 4.580 },
+    'cotes-du-rhone': { lat: 44.600, lng: 4.780 },
+    'provence':       { lat: 43.480, lng: 5.900 },
+    'languedoc':      { lat: 43.450, lng: 3.100 },
+    'roussillon':     { lat: 42.680, lng: 2.780 },
+    'sud-ouest':      { lat: 44.100, lng: 0.600 },
+    'loire':          { lat: 47.380, lng: 0.200 },
+  };
+
   Object.entries(WINE_REGION_POLYGONS).forEach(([key, region]) => {
-    // Calculer le centroïde de la région
+    // Position : override si défini, sinon centroïde calculé
     let lat, lng;
-    try {
-      const geom = region.geometry || { type:'Polygon', coordinates:[region.coords] };
-      const coords = geom.type === 'MultiPolygon' ? geom.coordinates[0][0] : geom.coordinates[0];
-      const sumLng = coords.reduce((s,c) => s+c[0], 0);
-      const sumLat = coords.reduce((s,c) => s+c[1], 0);
-      lng = sumLng / coords.length;
-      lat = sumLat / coords.length;
-    } catch(e) { return; }
+    if (MARKER_OVERRIDE[key]) {
+      lat = MARKER_OVERRIDE[key].lat;
+      lng = MARKER_OVERRIDE[key].lng;
+    } else {
+      try {
+        const geom = region.geometry || { type:'Polygon', coordinates:[region.coords] };
+        const coords = geom.type === 'MultiPolygon' ? geom.coordinates[0][0] : geom.coordinates[0];
+        const sumLng = coords.reduce((s,c) => s+c[0], 0);
+        const sumLat = coords.reduce((s,c) => s+c[1], 0);
+        lng = sumLng / coords.length;
+        lat = sumLat / coords.length;
+      } catch(e) { return; }
+    }
 
     const wines = regionData[key] || [];
     const hasWines = wines.length > 0;
@@ -4938,17 +4955,24 @@ function renderCarte() {
     // Popup au clic
     marker.on('click', () => { selectCarteRegion(key, region.label); });
 
-    // Tooltip au survol
-    const apps = (region.appellations || []).slice(0,5).join(' · ');
+    // Tooltip enrichi : cépages + toutes appellations + terroirs + vins
+    const allApps = APPELLATIONS[key] || [];
+    const nbApp = region.appellations ? region.appellations.length : allApps.filter(a=>a.niveau===1).length;
+    const nbTerroirs = allApps.filter(a=>a.niveau===2).length;
+    const appList = (region.appellations || []).join(' · ') || allApps.map(a=>a.nom).slice(0,12).join(' · ');
     const wineInfo = hasWines
-      ? `<div style="color:#e8c870;font-weight:600;margin-top:4px">🍷 ${wines.length} bouteille${wines.length>1?'s':''}</div>`
-      : `<div style="color:#6a5a50;font-style:italic;margin-top:4px">Aucun vin stocké</div>`;
-    
+      ? `<div style="color:#e8c870;font-weight:600;margin-top:6px;font-size:0.8rem">🍷 ${wines.length} bouteille${wines.length>1?'s':''} en cave</div>`
+      : `<div style="color:#6a5a50;font-style:italic;margin-top:4px;font-size:0.75rem">Aucun vin stocké</div>`;
+
     marker.bindTooltip(`
-      <div style="font-family:'Playfair Display',serif;color:#c9a84c;font-size:0.9rem;margin-bottom:4px">${region.label}</div>
-      ${region.cepages ? `<div style="color:#a09080;font-size:0.72rem;margin-bottom:3px">🍇 <em>${region.cepages}</em></div>` : ''}
-      ${apps ? `<div style="color:#e0d4c4;font-size:0.72rem">${apps}</div>` : ''}
+      <div style="font-family:'Playfair Display',serif;color:#c9a84c;font-size:1rem;margin-bottom:5px;border-bottom:1px solid rgba(201,168,76,0.3);padding-bottom:4px">${region.label}</div>
+      ${region.cepages ? `<div style="color:#a09080;font-size:0.73rem;margin-bottom:5px">🍇 <em>${region.cepages}</em></div>` : ''}
+      <div style="color:#b0a090;font-size:0.68rem;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.8px">
+        ${nbApp} appellation${nbApp>1?'s':''} ${nbTerroirs>0?'· '+nbTerroirs+' terroir'+(nbTerroirs>1?'s':''):''}
+      </div>
+      ${appList ? `<div style="color:#e0d4c4;font-size:0.71rem;line-height:1.6;max-width:260px">${appList}</div>` : ''}
       ${wineInfo}
+      <div style="color:#6a5a50;font-size:0.65rem;margin-top:5px;font-style:italic">Cliquez pour zoomer</div>
     `, {
       direction: 'top',
       className: 'leaflet-wine-tooltip',
@@ -4960,7 +4984,7 @@ function renderCarte() {
   });
 
   renderCarteLegend();
-  renderAppellationsLayer();
+  // Les appellations n'apparaissent qu'au clic sur une région
 }
 
 // ── Calcule le centroïde d'un polygone GeoJSON (coordonnées [lng,lat]) ──
@@ -5085,7 +5109,17 @@ function carteZoomOut() {
   if(!leafletMap) return;
   leafletMap.zoomOut();
 }
-function carteReset() { resetToEurope(); }
+function carteReset() {
+  resetToEurope();
+  carteSelectedRegion = null;
+  // Effacer les appellations affichées
+  if (leafletMap?._appelLayer) {
+    leafletMap.removeLayer(leafletMap._appelLayer);
+    leafletMap._appelLayer = null;
+  }
+  updateZoomHint(null);
+  refreshCarteMarkers();
+}
 
 const PAYS_ZOOM = {
   'France':    { center:[46.5,  2.3],  zoom:6 },
@@ -5574,23 +5608,34 @@ function renderCarteLegend() {
     </div>`).join('');
 }
 
+
 function selectCarteRegion(key, label) {
   carteSelectedRegion = key;
   const wines = wineData.filter(w => getRegionKey(w) === key);
+  const region = WINE_REGION_POLYGONS[key];
+  const allApps = APPELLATIONS[key] || [];
+  const nbApp = region?.appellations ? region.appellations.length : allApps.filter(a=>a.niveau===1).length;
+  const nbTerroirs = allApps.filter(a=>a.niveau===2).length;
+
   document.getElementById('carte-region-title').textContent = `${label} — ${wines.length} bouteille${wines.length!==1?'s':''}`;
 
   // Zoom précis sur la bbox de la région
   zoomRegion(key);
 
-  // Afficher les appellations de cette région (niveau 1 + 2)
+  // Effacer les appellations précédentes puis afficher celles de cette région
   showAppellations(key, 2);
 
-  // Mettre à jour le hint
-  if(leafletMap) updateZoomHint(WINE_REGION_POLYGONS[key]?.label || label);
+  // Mettre à jour le hint avec infos région
+  const hint = document.getElementById('carte-zoom-hint');
+  if (hint) {
+    hint.innerHTML = `🏛️ <b style="color:#e8c870">${label}</b>`
+      + (region?.cepages ? ` — <span style="color:#a09080;font-style:italic">🍇 ${region.cepages}</span>` : '')
+      + (nbApp ? ` — <span style="color:#b0a090">${nbApp} appellation${nbApp>1?'s':''}${nbTerroirs?' · '+nbTerroirs+' terroir'+(nbTerroirs>1?'s':''):''}</span>` : '');
+    hint.style.color = 'rgba(220,200,120,0.9)';
+  }
 
   if(!wines.length) {
     document.getElementById('carte-region-list').innerHTML = '<div style="color:var(--text2);font-style:italic">Aucun vin de cette région</div>';
-    // Refresh markers highlight
     refreshCarteMarkers(); return;
   }
 
