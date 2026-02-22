@@ -2137,18 +2137,21 @@ function clearImage() {
 // =====================================================================
 let degustationData = (() => {
   const raw = JSON.parse(localStorage.getItem('degustationData') || '[]');
-  // Nettoyer : exclure tout objet qui ressemble à un vin de cave
-  // Les vins de cave ont les champs cave/floor/slot et n'ont pas de date de dégustation
+  // Nettoyage strict : une vraie dégustation a un id dg_/h_, ou un source valide, ET une date
   const clean = raw.filter(d => {
-    if('cave' in d || 'floor' in d || 'slot' in d) return false; // vin de cave structurel
-    if(!d.id) return false; // entrée invalide
-    // Doit avoir au moins un champ de dégustation (date, commentaire, occasion, dateAjout, source)
-    const hasDegFields = d.date || d.commentaire || d.occasion || d.dateAjout || d.source || d.racheter;
-    if(!hasDegFields) return false;
+    if(!d.id || !d.nom) return false;
+    // Rejeter structurellement les vins de cave
+    if('cave' in d || 'floor' in d || 'slot' in d) return false;
+    // Accepter uniquement si source valide OU id typé dégustation
+    const validSource = d.source === 'cave' || d.source === 'hors_cave'
+      || String(d.id).startsWith('h_') || String(d.id).startsWith('dg_');
+    if(!validSource) return false;
+    // Doit avoir une date de dégustation ou d'ajout
+    if(!d.date && !d.dateAjout) return false;
     return true;
   });
   if(clean.length !== raw.length) {
-    console.log('degustationData nettoyé :', raw.length - clean.length, 'entrées cave supprimées');
+    console.warn('degustationData : purge de', raw.length - clean.length, 'entrées parasites');
     localStorage.setItem('degustationData', JSON.stringify(clean));
   }
   return clean;
@@ -2157,10 +2160,12 @@ let degustationData = (() => {
 function saveDegustationData() {
   localStorage.setItem('degustationData', JSON.stringify(degustationData));
   syncHistoriqueFromDeg();
-  // Sync vers Sheets : envoi du tableau complet pour écriture/remplacement
+  // Sync vers Sheets : TOUT (cave + hors_cave) dans le sheet Degustation
+  // On envoie uniquement les entrées qui ont un champ source valide
+  const toSync = degustationData.filter(d => d.id && d.nom && (d.source === 'cave' || d.source === 'hors_cave'));
   fetch(SCRIPT_URL, {
     method: 'POST',
-    body: JSON.stringify({ action: 'saveDegustation', data: degustationData })
+    body: JSON.stringify({ action: 'saveDegustation', data: toSync })
   }).catch(e => console.warn('Sync degustation échouée', e));
 }
 
@@ -2389,11 +2394,25 @@ function loadDegustationFromSheets() {
       console.warn('loadDegustationFromSheets: données cave reçues, ignorées');
       return;
     }
-    // Fusionner avec données locales en préservant les images du imageStore
+    // Filtrer strictement : garder uniquement les vraies dégustations
+    // Une vraie dégustation a obligatoirement source='cave' ou 'hors_cave'
+    // ET au moins un champ de dégustation (date ou dateAjout)
+    const validEntries = data.filter(d => {
+      if(!d.id || !d.nom) return false;
+      const validSource = d.source === 'cave' || d.source === 'hors_cave'
+        || String(d.id).startsWith('h_') || String(d.id).startsWith('dg_');
+      const hasDegDate = d.date || d.dateAjout;
+      return validSource && hasDegDate;
+    });
+
+    if(validEntries.length === 0 && data.length > 0) {
+      console.warn('loadDegustationFromSheets: aucune entrée valide parmi', data.length, '— sheet probablement pollué, ignoré');
+      return;
+    }
+
     const localById = {};
     degustationData.forEach(d => { if(d.id) localById[d.id] = d; });
-    degustationData = data.map(d => {
-      // Attribuer source selon l'ID si absent (migration anciens enregistrements)
+    degustationData = validEntries.map(d => {
       const source = d.source || (String(d.id).startsWith('h_') ? 'cave' : 'hors_cave');
       const imgKey = source === 'cave' ? ('hist_' + d.id) : ('deg_' + d.id);
       const img = imgGet(imgKey) || d.image || (localById[d.id]?.image) || '';
