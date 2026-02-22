@@ -4847,93 +4847,87 @@ function renderCarte() {
         }).addTo(leafletMap);
       });
 
-    // ── Délimitations AOC : WMS image tuilée (visible dès zoom 10) ──
-    // + WFS vecteur pour les polygones cliquables (chargés à la demande)
+    // ── COUCHE 1 : Délimitations parcellaires AOC via WMTS IGN/INAO ──
+    // Tuiles PNG pré-calculées, aucun CORS, visible dès zoom 10
     leafletMap._inaoVisible = true;
-    leafletMap._inaoGeoLayer = null;   // couche GeoJSON WFS
-    leafletMap._inaoCache = {};        // cache par bbox
 
-    // WMS tuilé : toujours visible (aucun CORS sur les images)
-    const inaoWMS = L.tileLayer.wms('https://data.geopf.fr/wms-v/ows', {
-      layers: 'Aire-Parcellaire',
-      format: 'image/png',
-      transparent: true,
-      version: '1.3.0',
-      opacity: 0.65,
-      maxZoom: 19,
-      tileSize: 256
-    });
-    inaoWMS.addTo(leafletMap);
-    leafletMap._inaoLayer = inaoWMS;
-
-    // Charger les polygones WFS vecteur à chaque déplacement (zoom >= 10)
-    function loadInaoWFS() {
-      if(!leafletMap._inaoVisible) return;
-      const z = leafletMap.getZoom();
-      if(z < 10) {
-        // Trop dézoomé : supprimer les polygones vecteur
-        if(leafletMap._inaoGeoLayer) {
-          leafletMap.removeLayer(leafletMap._inaoGeoLayer);
-          leafletMap._inaoGeoLayer = null;
-        }
-        return;
+    const inaoTiles = L.tileLayer(
+      'https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0' +
+      '&LAYER=Aire-Parcellaire&STYLE=normal&TILEMATRIXSET=PM' +
+      '&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image%2Fpng',
+      {
+        maxZoom: 19,
+        minZoom: 10,        // la couche n'existe qu'à partir du zoom 10
+        opacity: 0.85,
+        attribution: '© IGN/INAO'
       }
-      const b = leafletMap.getBounds();
-      const bbox = [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()]
-                    .map(v => v.toFixed(4)).join(',');
-      if(leafletMap._inaoCache[bbox]) return; // déjà chargé
-      leafletMap._inaoCache[bbox] = true;
+    );
+    inaoTiles.addTo(leafletMap);
+    leafletMap._inaoLayer = inaoTiles;
 
-      const wfsUrl = `https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature` +
-        `&TYPENAMES=Aire-Parcellaire&OUTPUTFORMAT=application/json` +
-        `&CRS=EPSG:4326&BBOX=${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()},EPSG:4326` +
-        `&COUNT=200`;
+    // ── COUCHE 2 : Grandes régions viticoles (GeoJSON) – toujours visibles ──
+    // Dessine des polygones colorés pour chaque région dans WINE_REGION_POLYGONS
+    const regionGeoFeatures = [];
+    Object.entries(WINE_REGION_POLYGONS).forEach(([key, region]) => {
+      if(!region.geometry && !region.coords) return;
+      const geom = region.geometry || { type:'Polygon', coordinates:[region.coords] };
+      regionGeoFeatures.push({
+        type: 'Feature',
+        properties: { key, label: region.label, pays: region.pays || '' },
+        geometry: geom
+      });
+    });
 
-      fetch(wfsUrl)
-        .then(r => r.ok ? r.json() : null)
-        .catch(() => null)
-        .then(data => {
-          if(!data || !data.features || !leafletMap) return;
-          if(!leafletMap._inaoGeoLayer) {
-            leafletMap._inaoGeoLayer = L.geoJSON(null, {
-              style: f => ({
-                color: '#e8c870',
-                weight: 1.5,
-                fillColor: '#c9a84c',
-                fillOpacity: 0.08,
-                opacity: 0.7
-              }),
-              onEachFeature: (feature, layer) => {
-                const p = feature.properties || {};
-                const nom = p.libelle || p.nom_appellation || p.appellation || p.nom || 'AOC';
-                layer.bindTooltip(`<span style="font-family:'Playfair Display',serif;color:#c9a84c">${nom}</span>`, {
-                  sticky: true, className: 'leaflet-wine-tooltip'
-                });
-              }
-            }).addTo(leafletMap);
-          }
-          leafletMap._inaoGeoLayer.addData(data);
-        });
-    }
+    const regionLayer = L.geoJSON({ type:'FeatureCollection', features: regionGeoFeatures }, {
+      style: f => {
+        const wines = (wineData || []).filter(w => getRegionKey(w) === f.properties.key);
+        const hasWines = wines.length > 0;
+        // Couleur selon type dominant
+        const typeCount = {};
+        wines.forEach(w => { typeCount[w.type] = (typeCount[w.type]||0)+1; });
+        const dom = Object.entries(typeCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
+        const fillColor = dom ? (TYPE_COLORS_CARTE[dom] || '#9e2a3f') : '#c9a84c';
+        return {
+          color: hasWines ? '#f0d080' : '#c9a84c',
+          weight: hasWines ? 2 : 1,
+          fillColor,
+          fillOpacity: hasWines ? 0.18 : 0.04,
+          opacity: hasWines ? 0.85 : 0.45,
+          dashArray: hasWines ? null : '4,4'
+        };
+      },
+      onEachFeature: (feature, layer) => {
+        const { key, label } = feature.properties;
+        const wines = (wineData || []).filter(w => getRegionKey(w) === key);
+        layer.bindTooltip(
+          `<div style="font-family:'Playfair Display',serif;color:#c9a84c;font-size:0.88rem">${label}</div>` +
+          (wines.length ? `<div style="color:#e8c870;font-size:0.75rem">🍷 ${wines.length} bouteille${wines.length>1?'s':''}</div>` : ''),
+          { sticky: true, className: 'leaflet-wine-tooltip' }
+        );
+        layer.on('click', () => selectCarteRegion(key, label));
+      }
+    });
+    regionLayer.addTo(leafletMap);
+    leafletMap._regionLayer = regionLayer;
 
-    leafletMap.on('moveend zoomend', () => {
-      loadInaoWFS();
-      // Met à jour le hint selon le zoom courant
+    // ── Indicateur de zoom ──
+    function updateZoomHint() {
       const hint = document.getElementById('carte-zoom-hint');
-      if(hint && leafletMap._inaoVisible) {
-        const z = leafletMap.getZoom();
-        if(z >= 10) {
-          hint.textContent = '🏛️ Délimitations AOC parcellaires INAO actives';
-          hint.style.color = 'rgba(200,200,120,0.8)';
-        } else {
-          hint.textContent = '🔍 Zoomez sur la France (zoom 10+) pour voir les délimitations AOC parcellaires';
-          hint.style.color = 'rgba(255,255,255,0.6)';
-        }
-      } else if(hint && !leafletMap._inaoVisible) {
-        hint.textContent = '🏛️ Couche AOC masquée — cliquez sur le bouton pour réactiver';
-        hint.style.color = 'rgba(150,150,150,0.6)';
+      if(!hint) return;
+      const z = leafletMap.getZoom();
+      if(!leafletMap._inaoVisible) {
+        hint.textContent = 'Couche AOC désactivée';
+        hint.style.color = 'rgba(150,150,150,0.5)';
+      } else if(z >= 10) {
+        hint.innerHTML = '🏛️ <b style="color:#e8c870">Délimitations parcellaires INAO actives</b> — survolez une parcelle';
+        hint.style.color = 'rgba(220,200,120,0.9)';
+      } else {
+        hint.textContent = `🔍 Zoomez (niveau ${z}/10 requis) pour voir les parcelles AOC`;
+        hint.style.color = 'rgba(200,200,200,0.65)';
       }
-    });
+    }
+    leafletMap.on('zoomend moveend', updateZoomHint);
+    updateZoomHint();
 
     // Fix taille après affichage
     setTimeout(() => { if(leafletMap) leafletMap.invalidateSize(); }, 200);
@@ -5038,23 +5032,30 @@ function toggleInaoLayer() {
   leafletMap._inaoVisible = !leafletMap._inaoVisible;
   const on = leafletMap._inaoVisible;
 
-  // WMS tiles
+  // Tuiles WMTS parcellaires
   if(leafletMap._inaoLayer) {
     if(on) leafletMap.addLayer(leafletMap._inaoLayer);
     else   leafletMap.removeLayer(leafletMap._inaoLayer);
   }
-  // WFS vector
-  if(leafletMap._inaoGeoLayer) {
-    if(on) leafletMap.addLayer(leafletMap._inaoGeoLayer);
-    else   leafletMap.removeLayer(leafletMap._inaoGeoLayer);
+
+  // Polygones régions viticoles
+  if(leafletMap._regionLayer) {
+    if(on) leafletMap.addLayer(leafletMap._regionLayer);
+    else   leafletMap.removeLayer(leafletMap._regionLayer);
   }
-  // Reset cache so WFS reloads when turned back on
-  if(on) leafletMap._inaoCache = {};
 
   if(btn) {
-    btn.style.background   = on ? '#1a2e1a'     : 'var(--bg3)';
-    btn.style.borderColor  = on ? '#4a8a4a'     : '#3a2830';
-    btn.style.color        = on ? '#7aba7a'     : 'var(--text2)';
+    btn.style.background   = on ? '#1a2e1a'  : 'var(--bg3)';
+    btn.style.borderColor  = on ? '#4a8a4a'  : '#3a2830';
+    btn.style.color        = on ? '#7aba7a'  : 'var(--text2)';
+  }
+
+  // Met à jour le hint
+  const hint = document.getElementById('carte-zoom-hint');
+  if(hint) {
+    hint.textContent = on
+      ? (leafletMap.getZoom() >= 10 ? '🏛️ Délimitations INAO actives' : '🔍 Zoomez (zoom 10+) pour les parcelles AOC')
+      : 'Couche AOC désactivée';
   }
 }
 
@@ -5182,8 +5183,29 @@ function refreshCarteMarkers() {
 }
 
 function updateCartePoints() {
-  // Avec Leaflet, on refresh juste les marqueurs
+  // Refresh marqueurs
   refreshCarteMarkers();
+  // Refresh aussi les polygones de régions (couleurs/opacité selon données)
+  if(leafletMap && leafletMap._regionLayer) {
+    leafletMap._regionLayer.eachLayer(layer => {
+      const key = layer.feature && layer.feature.properties && layer.feature.properties.key;
+      if(!key) return;
+      const wines = (wineData || []).filter(w => getRegionKey(w) === key);
+      const hasWines = wines.length > 0;
+      const typeCount = {};
+      wines.forEach(w => { typeCount[w.type] = (typeCount[w.type]||0)+1; });
+      const dom = Object.entries(typeCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || null;
+      const fillColor = dom ? (TYPE_COLORS_CARTE[dom] || '#9e2a3f') : '#c9a84c';
+      layer.setStyle({
+        color: hasWines ? '#f0d080' : '#c9a84c',
+        weight: hasWines ? 2 : 1,
+        fillColor,
+        fillOpacity: hasWines ? 0.18 : 0.04,
+        opacity: hasWines ? 0.85 : 0.45,
+        dashArray: hasWines ? null : '4,4'
+      });
+    });
+  }
 }
 
 </script>
