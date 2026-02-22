@@ -2169,7 +2169,16 @@ function clearImage() {
 // =====================================================================
 // DÉGUSTATIONS HORS CAVE
 // =====================================================================
-let degustationData = JSON.parse(localStorage.getItem('degustationData') || '[]');
+let degustationData = (() => {
+  const raw = JSON.parse(localStorage.getItem('degustationData') || '[]');
+  // Nettoyer : exclure tout objet qui ressemble à un vin de cave (champs cave/floor/slot)
+  const clean = raw.filter(d => !('cave' in d) && !('floor' in d) && !('slot' in d));
+  if(clean.length !== raw.length) {
+    // Des vins de cave s'étaient glissés dedans — on sauvegarde la version nettoyée
+    localStorage.setItem('degustationData', JSON.stringify(clean));
+  }
+  return clean;
+})();
 
 function saveDegustationData() {
   localStorage.setItem('degustationData', JSON.stringify(degustationData));
