@@ -2468,20 +2468,25 @@ function loadDegustationFromSheets() {
   window[cbName] = function(data) {
     clearTimeout(timeout);
     delete window[cbName];
-    if(Array.isArray(data) && data.length > 0) {
-      // Fusionner avec données locales : priorité aux données Sheets (plus récentes)
-      const localById = {};
-      degustationData.forEach(d => { if(d.id) localById[d.id] = d; });
-      // Reconstruire en préservant les images du imageStore
-      degustationData = data.map(d => {
-        const img = imgGet('deg_' + d.id) || d.image || (localById[d.id]?.image) || '';
-        if(img && d.id) imgSave('deg_' + d.id, img);
-        return { ...d, image: img };
-      });
-      localStorage.setItem('degustationData', JSON.stringify(degustationData));
-      renderHistorique();
-      renderDegustations();
+    if(!Array.isArray(data) || data.length === 0) return;
+    // Vérifier que ce sont bien des dégustations (pas des vins de cave)
+    // Les dégus ont un champ 'dateAjout' ou 'racheter', les vins ont 'cave'/'floor'/'slot'
+    const isDegustation = data[0] && !('cave' in data[0]) && !('floor' in data[0]) && !('slot' in data[0]);
+    if(!isDegustation) {
+      console.warn('loadDegustationFromSheets: données reçues ne sont pas des dégustations, ignorées');
+      return;
     }
+    // Fusionner avec données locales en préservant les images du imageStore
+    const localById = {};
+    degustationData.forEach(d => { if(d.id) localById[d.id] = d; });
+    degustationData = data.map(d => {
+      const img = imgGet('deg_' + d.id) || d.image || (localById[d.id]?.image) || '';
+      if(img && d.id) imgSave('deg_' + d.id, img);
+      return { ...d, image: img };
+    });
+    localStorage.setItem('degustationData', JSON.stringify(degustationData));
+    renderHistorique();
+    renderDegustations();
   };
   const script = document.createElement('script');
   script.src = SCRIPT_URL + '?sheet=Degustation&callback=' + cbName + '&t=' + Date.now();
