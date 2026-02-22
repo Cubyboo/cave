@@ -1208,8 +1208,9 @@ function updateHeader() {
   document.getElementById('hdr-total').textContent = wineData.length;
   document.getElementById('hdr-c1').textContent = c1;
   document.getElementById('hdr-c2').textContent = c2;
-  const val = wineData.reduce((s,w)=>s+(parseFloat(w.prix)||0),0);
-  document.getElementById('hdr-val').textContent = val.toFixed(0)+' €';
+  // Prix saisi en priorité, sinon estimation Groq
+  const val = wineData.reduce((s,w)=>s+(parseFloat(w.prix)||parseFloat(w._prixEstime)||0),0);
+  document.getElementById('hdr-val').textContent = Math.round(val).toLocaleString('fr-FR')+' €';
 }
 
 // =====================================================================
