@@ -2175,9 +2175,18 @@ function clearImage() {
 // =====================================================================
 let degustationData = (() => {
   const raw = JSON.parse(localStorage.getItem('degustationData') || '[]');
-  // Nettoyer : exclure tout objet qui ressemble à un vin de cave (champs cave/floor/slot)
-  const clean = raw.filter(d => !('cave' in d) && !('floor' in d) && !('slot' in d));
+  // Nettoyer : exclure tout objet qui ressemble à un vin de cave
+  // Les vins de cave ont les champs cave/floor/slot et n'ont pas de date de dégustation
+  const clean = raw.filter(d => {
+    if('cave' in d || 'floor' in d || 'slot' in d) return false; // vin de cave structurel
+    if(!d.id) return false; // entrée invalide
+    // Doit avoir au moins un champ de dégustation (date, commentaire, occasion, dateAjout, source)
+    const hasDegFields = d.date || d.commentaire || d.occasion || d.dateAjout || d.source || d.racheter;
+    if(!hasDegFields) return false;
+    return true;
+  });
   if(clean.length !== raw.length) {
+    console.log('degustationData nettoyé :', raw.length - clean.length, 'entrées cave supprimées');
     localStorage.setItem('degustationData', JSON.stringify(clean));
   }
   return clean;
@@ -2368,6 +2377,9 @@ function renderDegustations() {
   const sort    = document.getElementById('deg-sort')?.value || 'date_desc';
 
   let data = degustationData.filter(d => {
+    // N'afficher que les vins hors cave (pas les vins retirés de la cave)
+    const isHorsCave = d.source === 'hors_cave' || (!d.source && d.id && !String(d.id).startsWith('h_'));
+    if(!isHorsCave) return false;
     const text = [d.nom,d.domaine,d.appellation,d.region,d.occasion,d.commentaire].join(' ').toLowerCase();
     return (!q || text.includes(q)) && (!typeF || d.type === typeF);
   });
