@@ -5022,31 +5022,21 @@ async function fetchInaoFeatures(bbox) {
   } catch(e) { return null; }
 }
 
-// ── Couche permanente : labels placés sur les vrais centroïdes WFS INAO ──
-async function renderAppellationsLayer() {
+// ── Couche permanente : labels sur centroïdes embarqués ──
+function renderAppellationsLayer() {
   if (!leafletMap) return;
   if (leafletMap._allAppelLayer) { leafletMap.removeLayer(leafletMap._allAppelLayer); }
   const group = L.layerGroup();
-  leafletMap._allAppelLayer = group;
-  group.addTo(leafletMap);
 
-  const frenchRegions = ['bourgogne','bordeaux','champagne','alsace','cotes-du-rhone',
-    'loire','languedoc','roussillon','provence','jura','savoie','sud-ouest','corse','beaujolais'];
-
-  for (const key of frenchRegions) {
-    const bbox = REGION_BBOX[key];
-    if (!bbox) continue;
-    const data = await fetchInaoFeatures(bbox);
-    if (!data || !data.features) continue;
-    const seen = new Set();
-    data.features.forEach(f => {
-      const nom = f.properties?.appellation || f.properties?.libelle || f.properties?.nom_aoc || f.properties?.name;
-      if (!nom || seen.has(nom)) return;
-      seen.add(nom);
-      const c = geoCentroid(f.geometry);
-      if (c) addAppelLabel(group, c[0], c[1], nom, false);
+  Object.values(APPELLATIONS).forEach(apps => {
+    apps.forEach(app => {
+      if (app.lat == null || app.lng == null) return;
+      addAppelLabel(group, app.lat, app.lng, app.nom, app.niveau === 2);
     });
-  }
+  });
+
+  group.addTo(leafletMap);
+  leafletMap._allAppelLayer = group;
 }
 
 function resetToEurope() {
@@ -5108,378 +5098,366 @@ const PAYS_ZOOM = {
   'Hongrie':   { center:[47.5, 19.5],  zoom:7 },
 };
 
-// Bbox précises pour chaque région viticole → zoom automatique + chargement terroirs
 // ═══════════════════════════════════════════════════════════════
-// APPELLATIONS EMBARQUÉES — polygones + noms par région
-// Niveau 1 : grandes appellations (Côte de Beaune, Sauternes…)
-// Niveau 2 (optionnel) : terroirs parcellaires (Chambolle-Musigny…)
+// APPELLATIONS — centroïdes précis embarqués (lat, lng)
+// Source : coordonnées géographiques réelles des AOC françaises
+// niveau 1 = grande appellation   niveau 2 = terroir/commune
 // ═══════════════════════════════════════════════════════════════
 const APPELLATIONS = {
 
   // ─── BOURGOGNE ─────────────────────────────────────────────
   'bourgogne': [
-    // Niveau 1 — grandes zones
-    { nom:'Chablis & Grand Auxerrois', niveau:1,
-      bbox:[[47.68,3.45],[47.92,3.95]],
-      poly:[[47.78,3.52],[47.85,3.62],[47.90,3.82],[47.88,3.92],[47.78,3.90],[47.70,3.78],[47.68,3.62],[47.72,3.52],[47.78,3.52]] },
-    { nom:'Côte de Nuits', niveau:1,
-      bbox:[[47.08,4.93],[47.40,5.10]],
-      poly:[[47.38,4.95],[47.38,5.02],[47.22,5.08],[47.10,5.05],[47.08,4.97],[47.18,4.94],[47.38,4.95]] },
-    { nom:'Côte de Beaune', niveau:1,
-      bbox:[[46.88,4.75],[47.10,4.98]],
-      poly:[[47.08,4.78],[47.08,4.92],[46.98,4.96],[46.88,4.92],[46.88,4.80],[46.95,4.76],[47.08,4.78]] },
-    { nom:'Côte Chalonnaise', niveau:1,
-      bbox:[[46.55,4.58],[46.88,4.82]],
-      poly:[[46.85,4.62],[46.85,4.78],[46.72,4.82],[46.58,4.76],[46.55,4.62],[46.68,4.59],[46.85,4.62]] },
-    { nom:'Mâconnais', niveau:1,
-      bbox:[[46.12,4.52],[46.60,4.92]],
-      poly:[[46.55,4.55],[46.58,4.82],[46.45,4.90],[46.28,4.88],[46.15,4.78],[46.12,4.60],[46.25,4.53],[46.55,4.55]] },
-    // Niveau 2 — terroirs parcellaires Côte de Nuits
-    { nom:'Gevrey-Chambertin', niveau:2,
-      bbox:[[47.20,4.93],[47.28,5.02]],
-      poly:[[47.26,4.94],[47.27,5.00],[47.22,5.01],[47.20,4.96],[47.22,4.94],[47.26,4.94]] },
-    { nom:'Morey-Saint-Denis', niveau:2,
-      bbox:[[47.17,4.94],[47.21,5.01]],
-      poly:[[47.20,4.95],[47.20,5.00],[47.17,5.00],[47.17,4.96],[47.20,4.95]] },
-    { nom:'Chambolle-Musigny', niveau:2,
-      bbox:[[47.13,4.95],[47.18,5.02]],
-      poly:[[47.17,4.96],[47.17,5.01],[47.14,5.01],[47.13,4.97],[47.15,4.95],[47.17,4.96]] },
-    { nom:'Vougeot', niveau:2,
-      bbox:[[47.10,4.95],[47.14,5.02]],
-      poly:[[47.13,4.96],[47.13,5.01],[47.10,5.01],[47.10,4.97],[47.13,4.96]] },
-    { nom:'Vosne-Romanée', niveau:2,
-      bbox:[[47.06,4.95],[47.12,5.02]],
-      poly:[[47.11,4.96],[47.11,5.01],[47.07,5.01],[47.06,4.97],[47.08,4.95],[47.11,4.96]] },
-    { nom:'Nuits-Saint-Georges', niveau:2,
-      bbox:[[47.00,4.93],[47.07,5.02]],
-      poly:[[47.06,4.94],[47.06,5.01],[47.01,5.01],[47.00,4.97],[47.02,4.94],[47.06,4.94]] },
-    // Niveau 2 — terroirs parcellaires Côte de Beaune
-    { nom:'Aloxe-Corton', niveau:2,
-      bbox:[[47.05,4.78],[47.10,4.88]],
-      poly:[[47.09,4.79],[47.09,4.86],[47.06,4.87],[47.05,4.82],[47.06,4.79],[47.09,4.79]] },
-    { nom:'Beaune', niveau:2,
-      bbox:[[46.99,4.80],[47.05,4.92]],
-      poly:[[47.04,4.82],[47.04,4.90],[47.00,4.91],[46.99,4.84],[47.01,4.81],[47.04,4.82]] },
-    { nom:'Pommard', niveau:2,
-      bbox:[[46.95,4.78],[47.00,4.88]],
-      poly:[[46.99,4.79],[46.99,4.87],[46.96,4.87],[46.95,4.81],[46.97,4.79],[46.99,4.79]] },
-    { nom:'Volnay', niveau:2,
-      bbox:[[46.92,4.77],[46.96,4.87]],
-      poly:[[46.95,4.78],[46.95,4.86],[46.93,4.86],[46.92,4.80],[46.93,4.78],[46.95,4.78]] },
-    { nom:'Meursault', niveau:2,
-      bbox:[[46.87,4.76],[46.93,4.88]],
-      poly:[[46.92,4.77],[46.92,4.87],[46.88,4.87],[46.87,4.79],[46.89,4.77],[46.92,4.77]] },
-    { nom:'Puligny-Montrachet', niveau:2,
-      bbox:[[46.82,4.76],[46.88,4.86]],
-      poly:[[46.87,4.77],[46.87,4.85],[46.83,4.85],[46.82,4.79],[46.84,4.77],[46.87,4.77]] },
-    { nom:'Chassagne-Montrachet', niveau:2,
-      bbox:[[46.77,4.76],[46.83,4.86]],
-      poly:[[46.82,4.77],[46.82,4.85],[46.78,4.85],[46.77,4.79],[46.79,4.77],[46.82,4.77]] },
-    // Niveau 2 — Mâconnais
-    { nom:'Pouilly-Fuissé', niveau:2,
-      bbox:[[46.27,4.72],[46.35,4.82]],
-      poly:[[46.33,4.73],[46.34,4.80],[46.29,4.81],[46.27,4.76],[46.29,4.73],[46.33,4.73]] },
-    { nom:'Saint-Véran', niveau:2,
-      bbox:[[46.22,4.68],[46.28,4.78]],
-      poly:[[46.27,4.69],[46.27,4.77],[46.23,4.77],[46.22,4.72],[46.24,4.69],[46.27,4.69]] },
-    // Chablis terroirs
-    { nom:'Chablis Grand Cru', niveau:2,
-      bbox:[[47.79,3.78],[47.84,3.88]],
-      poly:[[47.83,3.79],[47.83,3.87],[47.80,3.87],[47.79,3.81],[47.81,3.79],[47.83,3.79]] },
+    // Grandes zones
+    { nom:'Chablis',              niveau:1, lat:47.814, lng:3.796 },
+    { nom:'Chablis Grand Cru',    niveau:2, lat:47.820, lng:3.823 },
+    { nom:'Chablis 1er Cru',      niveau:2, lat:47.812, lng:3.800 },
+    { nom:'Petit Chablis',        niveau:2, lat:47.830, lng:3.760 },
+    { nom:'Irancy',               niveau:2, lat:47.758, lng:3.660 },
+    { nom:'Saint-Bris',           niveau:2, lat:47.742, lng:3.614 },
+    { nom:'Côte de Nuits-Villages',niveau:1,lat:47.175, lng:4.963 },
+    { nom:'Gevrey-Chambertin',    niveau:2, lat:47.228, lng:4.971 },
+    { nom:'Chambolle-Musigny',    niveau:2, lat:47.168, lng:4.964 },
+    { nom:'Morey-Saint-Denis',    niveau:2, lat:47.188, lng:4.964 },
+    { nom:'Vougeot',              niveau:2, lat:47.162, lng:4.963 },
+    { nom:'Vosne-Romanée',        niveau:2, lat:47.149, lng:4.960 },
+    { nom:'Nuits-Saint-Georges',  niveau:2, lat:47.113, lng:4.953 },
+    { nom:'Fixin',                niveau:2, lat:47.262, lng:4.980 },
+    { nom:'Marsannay',            niveau:2, lat:47.280, lng:4.996 },
+    { nom:'Côte de Beaune-Villages',niveau:1,lat:47.020,lng:4.840 },
+    { nom:'Aloxe-Corton',         niveau:2, lat:47.064, lng:4.847 },
+    { nom:'Pernand-Vergelesses',  niveau:2, lat:47.072, lng:4.835 },
+    { nom:'Savigny-lès-Beaune',   niveau:2, lat:47.055, lng:4.823 },
+    { nom:'Beaune',               niveau:2, lat:47.023, lng:4.840 },
+    { nom:'Chorey-lès-Beaune',    niveau:2, lat:47.042, lng:4.862 },
+    { nom:'Pommard',              niveau:2, lat:46.990, lng:4.797 },
+    { nom:'Volnay',               niveau:2, lat:46.975, lng:4.792 },
+    { nom:'Monthélie',            niveau:2, lat:46.968, lng:4.783 },
+    { nom:'Auxey-Duresses',       niveau:2, lat:46.962, lng:4.771 },
+    { nom:'Saint-Romain',         niveau:2, lat:46.952, lng:4.754 },
+    { nom:'Meursault',            niveau:2, lat:46.974, lng:4.769 },
+    { nom:'Puligny-Montrachet',   niveau:2, lat:46.951, lng:4.762 },
+    { nom:'Chassagne-Montrachet', niveau:2, lat:46.940, lng:4.758 },
+    { nom:'Santenay',             niveau:2, lat:46.912, lng:4.720 },
+    { nom:'Maranges',             niveau:2, lat:46.896, lng:4.698 },
+    { nom:'Côte Chalonnaise',     niveau:1, lat:46.720, lng:4.700 },
+    { nom:'Rully',                niveau:2, lat:46.868, lng:4.742 },
+    { nom:'Mercurey',             niveau:2, lat:46.839, lng:4.726 },
+    { nom:'Givry',                niveau:2, lat:46.783, lng:4.748 },
+    { nom:'Montagny',             niveau:2, lat:46.672, lng:4.742 },
+    { nom:'Bouzeron',             niveau:2, lat:46.884, lng:4.745 },
+    { nom:'Mâconnais',            niveau:1, lat:46.380, lng:4.730 },
+    { nom:'Pouilly-Fuissé',       niveau:2, lat:46.288, lng:4.759 },
+    { nom:'Pouilly-Vinzelles',    niveau:2, lat:46.278, lng:4.770 },
+    { nom:'Pouilly-Loché',        niveau:2, lat:46.282, lng:4.773 },
+    { nom:'Saint-Véran',          niveau:2, lat:46.264, lng:4.750 },
+    { nom:'Viré-Clessé',          niveau:2, lat:46.428, lng:4.760 },
+    { nom:'Mâcon-Villages',       niveau:2, lat:46.348, lng:4.840 },
   ],
 
   // ─── BORDEAUX ──────────────────────────────────────────────
   'bordeaux': [
-    { nom:'Médoc', niveau:1,
-      bbox:[[45.05,-1.22],[45.72,-0.72]],
-      poly:[[-1.20,45.08],[-0.75,45.10],[-0.72,45.65],[-1.05,45.70],[-1.22,45.42],[-1.20,45.08]].map(c=>[c[1],c[0]]) },
-    { nom:'Saint-Estèphe', niveau:2,
-      bbox:[[45.28,-0.82],[45.42,-0.72]],
-      poly:[[45.40,-0.80],[45.40,-0.73],[45.30,-0.73],[45.28,-0.78],[45.32,-0.81],[45.40,-0.80]] },
-    { nom:'Pauillac', niveau:2,
-      bbox:[[45.18,-0.82],[45.30,-0.72]],
-      poly:[[45.29,-0.80],[45.29,-0.73],[45.19,-0.73],[45.18,-0.79],[45.22,-0.81],[45.29,-0.80]] },
-    { nom:'Saint-Julien', niveau:2,
-      bbox:[[45.10,-0.82],[45.19,-0.72]],
-      poly:[[45.18,-0.80],[45.18,-0.73],[45.11,-0.73],[45.10,-0.79],[45.13,-0.81],[45.18,-0.80]] },
-    { nom:'Margaux', niveau:2,
-      bbox:[[44.98,-0.82],[45.10,-0.68]],
-      poly:[[45.08,-0.80],[45.08,-0.70],[44.99,-0.70],[44.98,-0.78],[45.02,-0.81],[45.08,-0.80]] },
-    { nom:'Pessac-Léognan', niveau:1,
-      bbox:[[44.68,-0.72],[44.90,-0.48]],
-      poly:[[44.88,-0.70],[44.88,-0.50],[44.70,-0.50],[44.68,-0.68],[44.75,-0.71],[44.88,-0.70]] },
-    { nom:'Graves', niveau:1,
-      bbox:[[44.35,-0.68],[44.70,-0.12]],
-      poly:[[44.68,-0.65],[44.68,-0.15],[44.38,-0.15],[44.35,-0.58],[44.45,-0.67],[44.68,-0.65]] },
-    { nom:'Sauternes & Barsac', niveau:1,
-      bbox:[[44.42,-0.48],[44.58,-0.20]],
-      poly:[[44.56,-0.46],[44.56,-0.22],[44.44,-0.22],[44.42,-0.40],[44.48,-0.47],[44.56,-0.46]] },
-    { nom:'Saint-Émilion', niveau:1,
-      bbox:[[44.82,-0.22],[44.92,-0.08]],
-      poly:[[44.91,-0.20],[44.91,-0.10],[44.83,-0.10],[44.82,-0.18],[44.86,-0.21],[44.91,-0.20]] },
-    { nom:'Pomerol', niveau:2,
-      bbox:[[44.90,-0.20],[44.97,-0.12]],
-      poly:[[44.96,-0.18],[44.96,-0.13],[44.91,-0.13],[44.90,-0.17],[44.93,-0.19],[44.96,-0.18]] },
-    { nom:'Fronsac', niveau:2,
-      bbox:[[44.95,-0.30],[45.02,-0.20]],
-      poly:[[45.01,-0.28],[45.01,-0.21],[44.96,-0.21],[44.95,-0.26],[44.98,-0.29],[45.01,-0.28]] },
-    { nom:'Entre-deux-Mers', niveau:1,
-      bbox:[[44.55,-0.38],[44.90, 0.10]],
-      poly:[[44.88,-0.35],[44.88,0.08],[44.58,0.08],[44.55,-0.30],[44.65,-0.37],[44.88,-0.35]] },
-    { nom:'Blaye & Bourg', niveau:1,
-      bbox:[[45.02,-0.70],[45.40,-0.40]],
-      poly:[[45.38,-0.68],[45.38,-0.42],[45.05,-0.42],[45.02,-0.62],[45.10,-0.69],[45.38,-0.68]] },
+    { nom:'Médoc',                niveau:1, lat:45.350, lng:-0.920 },
+    { nom:'Haut-Médoc',           niveau:1, lat:45.120, lng:-0.780 },
+    { nom:'Saint-Estèphe',        niveau:2, lat:45.363, lng:-0.765 },
+    { nom:'Pauillac',             niveau:2, lat:45.197, lng:-0.746 },
+    { nom:'Saint-Julien',         niveau:2, lat:45.157, lng:-0.760 },
+    { nom:'Listrac-Médoc',        niveau:2, lat:45.073, lng:-0.821 },
+    { nom:'Moulis-en-Médoc',      niveau:2, lat:45.053, lng:-0.798 },
+    { nom:'Margaux',              niveau:2, lat:45.040, lng:-0.740 },
+    { nom:'Pessac-Léognan',       niveau:1, lat:44.760, lng:-0.586 },
+    { nom:'Graves',               niveau:1, lat:44.540, lng:-0.420 },
+    { nom:'Sauternes',            niveau:2, lat:44.548, lng:-0.340 },
+    { nom:'Barsac',               niveau:2, lat:44.574, lng:-0.330 },
+    { nom:'Cérons',               niveau:2, lat:44.620, lng:-0.321 },
+    { nom:'Saint-Émilion',        niveau:1, lat:44.893, lng:-0.150 },
+    { nom:'Saint-Émilion Grand Cru',niveau:2,lat:44.896,lng:-0.153 },
+    { nom:'Pomerol',              niveau:2, lat:44.924, lng:-0.188 },
+    { nom:'Lalande-de-Pomerol',   niveau:2, lat:44.942, lng:-0.188 },
+    { nom:'Fronsac',              niveau:2, lat:44.974, lng:-0.249 },
+    { nom:'Canon-Fronsac',        niveau:2, lat:44.966, lng:-0.256 },
+    { nom:'Entre-deux-Mers',      niveau:1, lat:44.710, lng:-0.200 },
+    { nom:'Blaye',                niveau:1, lat:45.127, lng:-0.654 },
+    { nom:'Bourg',                niveau:2, lat:45.047, lng:-0.562 },
+    { nom:'Côtes de Bordeaux',    niveau:1, lat:44.850, lng:-0.300 },
+    { nom:'Castillon',            niveau:2, lat:44.859, lng:-0.063 },
+    { nom:'Francs',               niveau:2, lat:44.877, lng:-0.021 },
+    { nom:'Sainte-Foy-Bordeaux',  niveau:2, lat:44.834, lng: 0.219 },
   ],
 
   // ─── CHAMPAGNE ─────────────────────────────────────────────
   'champagne': [
-    { nom:'Montagne de Reims', niveau:1,
-      bbox:[[49.08,3.72],[49.32,4.28]],
-      poly:[[49.30,3.75],[49.30,4.25],[49.10,4.25],[49.08,3.80],[49.15,3.73],[49.30,3.75]] },
-    { nom:'Vallée de la Marne', niveau:1,
-      bbox:[[48.95,3.35],[49.18,4.05]],
-      poly:[[49.15,3.38],[49.15,4.02],[48.97,4.02],[48.95,3.42],[49.02,3.36],[49.15,3.38]] },
-    { nom:'Côte des Blancs', niveau:1,
-      bbox:[[48.75,3.90],[49.10,4.15]],
-      poly:[[49.08,3.92],[49.08,4.12],[48.77,4.12],[48.75,3.95],[48.82,3.91],[49.08,3.92]] },
-    { nom:'Côte des Bar', niveau:1,
-      bbox:[[47.95,4.12],[48.38,4.82]],
-      poly:[[48.35,4.15],[48.35,4.80],[47.98,4.80],[47.95,4.20],[48.05,4.13],[48.35,4.15]] },
-    { nom:'Côte de Sézanne', niveau:1,
-      bbox:[[48.58,3.55],[48.78,3.92]],
-      poly:[[48.76,3.58],[48.76,3.90],[48.60,3.90],[48.58,3.62],[48.64,3.56],[48.76,3.58]] },
+    { nom:'Montagne de Reims',    niveau:1, lat:49.175, lng:4.005 },
+    { nom:'Mailly-Champagne',     niveau:2, lat:49.215, lng:4.068 },
+    { nom:'Verzenay',             niveau:2, lat:49.187, lng:4.141 },
+    { nom:'Verzy',                niveau:2, lat:49.166, lng:4.155 },
+    { nom:'Bouzy',                niveau:2, lat:49.148, lng:4.209 },
+    { nom:'Ambonnay',             niveau:2, lat:49.143, lng:4.228 },
+    { nom:'Vallée de la Marne',   niveau:1, lat:49.048, lng:3.700 },
+    { nom:'Aÿ-Champagne',         niveau:2, lat:49.058, lng:3.993 },
+    { nom:'Épernay',              niveau:2, lat:49.043, lng:3.957 },
+    { nom:'Hautvillers',          niveau:2, lat:49.075, lng:3.938 },
+    { nom:'Côte des Blancs',      niveau:1, lat:48.905, lng:3.995 },
+    { nom:'Cramant',              niveau:2, lat:48.967, lng:3.993 },
+    { nom:'Avize',                niveau:2, lat:48.975, lng:4.002 },
+    { nom:'Oger',                 niveau:2, lat:48.953, lng:4.016 },
+    { nom:'Le Mesnil-sur-Oger',   niveau:2, lat:48.933, lng:4.020 },
+    { nom:'Côte de Sézanne',      niveau:1, lat:48.660, lng:3.740 },
+    { nom:'Côte des Bar',         niveau:1, lat:48.140, lng:4.490 },
+    { nom:'Les Riceys',           niveau:2, lat:47.999, lng:4.371 },
   ],
 
-  // ─── RHÔNE ─────────────────────────────────────────────────
+  // ─── VALLÉE DU RHÔNE ───────────────────────────────────────
   'cotes-du-rhone': [
-    { nom:'Côte-Rôtie', niveau:1,
-      bbox:[[45.42,4.73],[45.52,4.85]],
-      poly:[[45.50,4.75],[45.50,4.83],[45.43,4.83],[45.42,4.77],[45.45,4.74],[45.50,4.75]] },
-    { nom:'Condrieu', niveau:1,
-      bbox:[[45.35,4.73],[45.43,4.85]],
-      poly:[[45.42,4.75],[45.42,4.83],[45.36,4.83],[45.35,4.77],[45.38,4.74],[45.42,4.75]] },
-    { nom:'Hermitage & Crozes', niveau:1,
-      bbox:[[45.04,4.82],[45.20,5.00]],
-      poly:[[45.18,4.84],[45.18,4.98],[45.06,4.98],[45.04,4.87],[45.08,4.83],[45.18,4.84]] },
-    { nom:'Cornas & Saint-Joseph', niveau:1,
-      bbox:[[44.85,4.78],[45.15,4.92]],
-      poly:[[45.12,4.80],[45.12,4.90],[44.88,4.90],[44.85,4.82],[44.92,4.79],[45.12,4.80]] },
-    { nom:'Châteauneuf-du-Pape', niveau:1,
-      bbox:[[44.02,4.75],[44.15,4.95]],
-      poly:[[44.13,4.77],[44.13,4.93],[44.04,4.93],[44.02,4.80],[44.06,4.76],[44.13,4.77]] },
-    { nom:'Gigondas', niveau:2,
-      bbox:[[44.12,5.00],[44.22,5.12]],
-      poly:[[44.21,5.02],[44.21,5.10],[44.13,5.10],[44.12,5.04],[44.15,5.01],[44.21,5.02]] },
-    { nom:'Vacqueyras', niveau:2,
-      bbox:[[44.05,5.00],[44.14,5.10]],
-      poly:[[44.13,5.02],[44.13,5.08],[44.06,5.08],[44.05,5.03],[44.08,5.01],[44.13,5.02]] },
-    { nom:'Tavel & Lirac', niveau:1,
-      bbox:[[43.95,4.62],[44.05,4.82]],
-      poly:[[44.04,4.64],[44.04,4.80],[43.96,4.80],[43.95,4.66],[43.99,4.63],[44.04,4.64]] },
-    { nom:'Côtes du Ventoux', niveau:1,
-      bbox:[[44.00,4.98],[44.20,5.38]],
-      poly:[[44.18,5.00],[44.18,5.35],[44.02,5.35],[44.00,5.05],[44.06,5.00],[44.18,5.00]] },
+    // Rhône Nord
+    { nom:'Côte-Rôtie',           niveau:1, lat:45.470, lng:4.796 },
+    { nom:'Condrieu',             niveau:1, lat:45.382, lng:4.776 },
+    { nom:'Château-Grillet',      niveau:2, lat:45.368, lng:4.769 },
+    { nom:'Saint-Joseph',         niveau:1, lat:45.100, lng:4.837 },
+    { nom:'Cornas',               niveau:2, lat:44.912, lng:4.840 },
+    { nom:'Saint-Péray',          niveau:2, lat:44.896, lng:4.846 },
+    { nom:'Hermitage',            niveau:1, lat:45.075, lng:4.836 },
+    { nom:'Crozes-Hermitage',     niveau:1, lat:45.088, lng:4.897 },
+    // Rhône Sud
+    { nom:'Châteauneuf-du-Pape',  niveau:1, lat:44.057, lng:4.833 },
+    { nom:'Gigondas',             niveau:2, lat:44.172, lng:5.022 },
+    { nom:'Vacqueyras',           niveau:2, lat:44.117, lng:5.000 },
+    { nom:'Beaumes-de-Venise',    niveau:2, lat:44.123, lng:5.028 },
+    { nom:'Rasteau',              niveau:2, lat:44.193, lng:4.958 },
+    { nom:'Cairanne',             niveau:2, lat:44.226, lng:4.956 },
+    { nom:'Vinsobres',            niveau:2, lat:44.334, lng:5.025 },
+    { nom:'Tavel',                niveau:1, lat:44.009, lng:4.677 },
+    { nom:'Lirac',                niveau:2, lat:44.041, lng:4.693 },
+    { nom:'Grignan-les-Adhémar',  niveau:1, lat:44.420, lng:4.905 },
+    { nom:'Ventoux',              niveau:1, lat:44.136, lng:5.160 },
+    { nom:'Luberon',              niveau:1, lat:43.830, lng:5.380 },
+    { nom:'Costières de Nîmes',   niveau:1, lat:43.722, lng:4.428 },
   ],
 
   // ─── ALSACE ────────────────────────────────────────────────
   'alsace': [
-    { nom:'Alsace Bas-Rhin', niveau:1,
-      bbox:[[47.90,7.30],[48.97,7.72]],
-      poly:[[48.95,7.33],[48.95,7.70],[47.92,7.70],[47.90,7.38],[48.00,7.32],[48.95,7.33]] },
-    { nom:'Alsace Haut-Rhin', niveau:1,
-      bbox:[[47.45,7.15],[47.92,7.62]],
-      poly:[[47.90,7.18],[47.90,7.60],[47.48,7.60],[47.45,7.22],[47.55,7.16],[47.90,7.18]] },
-    { nom:'Alsace Grand Cru Rangen', niveau:2,
-      bbox:[[47.60,7.22],[47.70,7.35]],
-      poly:[[47.68,7.24],[47.68,7.33],[47.62,7.33],[47.60,7.26],[47.63,7.23],[47.68,7.24]] },
-    { nom:"Crémant d'Alsace", niveau:1,
-      bbox:[[47.45,7.10],[48.97,7.80]],
-      poly:[[48.92,7.15],[48.92,7.75],[47.48,7.75],[47.45,7.18],[47.58,7.12],[48.92,7.15]] },
+    { nom:'Alsace AOC',           niveau:1, lat:48.200, lng:7.420 },
+    { nom:"Crémant d'Alsace",     niveau:1, lat:48.050, lng:7.380 },
+    { nom:'Alsace Grand Cru',     niveau:1, lat:47.950, lng:7.350 },
+    // Grands crus principaux (51 au total)
+    { nom:'Rangen de Thann',      niveau:2, lat:47.806, lng:7.219 },
+    { nom:'Zinnkoepflé',          niveau:2, lat:47.886, lng:7.249 },
+    { nom:'Pfingstberg',          niveau:2, lat:47.856, lng:7.277 },
+    { nom:'Goldert',              niveau:2, lat:47.922, lng:7.285 },
+    { nom:'Hengst',               niveau:2, lat:47.947, lng:7.304 },
+    { nom:'Kessler',              niveau:2, lat:47.887, lng:7.258 },
+    { nom:'Kitterlé',             niveau:2, lat:47.885, lng:7.263 },
+    { nom:'Saering',              niveau:2, lat:47.891, lng:7.261 },
+    { nom:'Spiegel',              niveau:2, lat:47.899, lng:7.265 },
+    { nom:'Brand',                niveau:2, lat:47.985, lng:7.293 },
+    { nom:'Turckheim',            niveau:2, lat:48.050, lng:7.300 },
+    { nom:'Sommerberg',           niveau:2, lat:48.090, lng:7.340 },
+    { nom:'Schlossberg',          niveau:2, lat:48.111, lng:7.310 },
+    { nom:'Furstentum',           niveau:2, lat:48.125, lng:7.322 },
+    { nom:'Mambourg',             niveau:2, lat:48.145, lng:7.349 },
+    { nom:'Marckrain',            niveau:2, lat:48.143, lng:7.358 },
+    { nom:'Altenberg de Bergheim',niveau:2, lat:48.200, lng:7.378 },
+    { nom:'Gloeckelberg',         niveau:2, lat:48.220, lng:7.388 },
+    { nom:'Praelatenberg',        niveau:2, lat:48.254, lng:7.394 },
+    { nom:'Kastelberg',           niveau:2, lat:48.373, lng:7.421 },
+    { nom:'Wiebelsberg',          niveau:2, lat:48.377, lng:7.426 },
+    { nom:'Moenchberg',           niveau:2, lat:48.393, lng:7.439 },
+    { nom:'Muenchberg',           niveau:2, lat:48.504, lng:7.492 },
+    { nom:'Engelberg',            niveau:2, lat:48.521, lng:7.498 },
+    { nom:'Bruderthal',           niveau:2, lat:48.570, lng:7.524 },
+    { nom:'Zotzenberg',           niveau:2, lat:48.572, lng:7.551 },
+    { nom:'Steinklotz',           niveau:2, lat:48.690, lng:7.574 },
   ],
 
-  // ─── LOIRE ─────────────────────────────────────────────────
+  // ─── VALLÉE DE LA LOIRE ────────────────────────────────────
   'loire': [
-    { nom:'Muscadet', niveau:1,
-      bbox:[[47.00,-1.98],[47.28,-1.15]],
-      poly:[[47.25,-1.95],[47.25,-1.18],[47.02,-1.18],[47.00,-1.82],[47.08,-1.96],[47.25,-1.95]] },
-    { nom:'Anjou-Saumur', niveau:1,
-      bbox:[[47.08,-0.88],[47.45,-0.08]],
-      poly:[[47.42,-0.85],[47.42,-0.10],[47.10,-0.10],[47.08,-0.75],[47.18,-0.87],[47.42,-0.85]] },
-    { nom:'Touraine', niveau:1,
-      bbox:[[47.05,0.28],[47.52,1.48]],
-      poly:[[47.50,0.30],[47.50,1.45],[47.08,1.45],[47.05,0.38],[47.18,0.29],[47.50,0.30]] },
-    { nom:'Chinon', niveau:2,
-      bbox:[[47.05,0.18],[47.20,0.35]],
-      poly:[[47.18,0.20],[47.18,0.33],[47.07,0.33],[47.05,0.22],[47.09,0.19],[47.18,0.20]] },
-    { nom:'Bourgueil', niveau:2,
-      bbox:[[47.22,0.12],[47.38,0.28]],
-      poly:[[47.36,0.14],[47.36,0.26],[47.24,0.26],[47.22,0.18],[47.26,0.13],[47.36,0.14]] },
-    { nom:'Sancerre & Pouilly-Fumé', niveau:1,
-      bbox:[[47.28,2.75],[47.50,3.10]],
-      poly:[[47.48,2.78],[47.48,3.08],[47.30,3.08],[47.28,2.82],[47.35,2.76],[47.48,2.78]] },
-    { nom:'Vouvray', niveau:2,
-      bbox:[[47.35,0.72],[47.48,0.98]],
-      poly:[[47.46,0.74],[47.46,0.96],[47.37,0.96],[47.35,0.78],[47.39,0.73],[47.46,0.74]] },
+    // Pays Nantais
+    { nom:'Muscadet',                     niveau:1, lat:47.171, lng:-1.350 },
+    { nom:'Muscadet-Sèvre et Maine',      niveau:2, lat:47.153, lng:-1.368 },
+    { nom:'Muscadet-Côtes de Grandlieu',  niveau:2, lat:47.062, lng:-1.696 },
+    { nom:'Muscadet-Coteaux de la Loire', niveau:2, lat:47.340, lng:-1.165 },
+    { nom:'Fiefs Vendéens',               niveau:2, lat:46.618, lng:-1.432 },
+    { nom:'Gros Plant du Pays Nantais',   niveau:2, lat:47.150, lng:-1.550 },
+    // Anjou-Saumur
+    { nom:'Anjou',                niveau:1, lat:47.387, lng:-0.497 },
+    { nom:'Anjou-Villages',       niveau:2, lat:47.386, lng:-0.568 },
+    { nom:'Savennières',          niveau:2, lat:47.380, lng:-0.707 },
+    { nom:'Coteaux du Layon',     niveau:2, lat:47.265, lng:-0.630 },
+    { nom:'Bonnezeaux',           niveau:2, lat:47.249, lng:-0.558 },
+    { nom:'Quarts-de-Chaume',     niveau:2, lat:47.264, lng:-0.583 },
+    { nom:'Saumur',               niveau:1, lat:47.261, lng:-0.074 },
+    { nom:'Saumur-Champigny',     niveau:2, lat:47.212, lng:-0.049 },
+    { nom:'Coteaux de Saumur',    niveau:2, lat:47.271, lng:-0.084 },
+    // Touraine
+    { nom:'Touraine',             niveau:1, lat:47.380, lng: 0.690 },
+    { nom:'Chinon',               niveau:2, lat:47.165, lng: 0.240 },
+    { nom:'Bourgueil',            niveau:2, lat:47.282, lng: 0.166 },
+    { nom:'Saint-Nicolas-de-Bourgueil',niveau:2,lat:47.280,lng: 0.122 },
+    { nom:'Vouvray',              niveau:2, lat:47.408, lng: 0.803 },
+    { nom:'Montlouis-sur-Loire',  niveau:2, lat:47.387, lng: 0.860 },
+    { nom:'Cheverny',             niveau:2, lat:47.500, lng: 1.455 },
+    { nom:'Cour-Cheverny',        niveau:2, lat:47.510, lng: 1.460 },
+    { nom:'Valençay',             niveau:2, lat:47.161, lng: 1.565 },
+    // Centre-Loire
+    { nom:'Sancerre',             niveau:1, lat:47.327, lng: 2.839 },
+    { nom:'Pouilly-Fumé',         niveau:2, lat:47.300, lng: 2.954 },
+    { nom:'Pouilly-sur-Loire',    niveau:2, lat:47.291, lng: 2.954 },
+    { nom:'Menetou-Salon',        niveau:2, lat:47.239, lng: 2.489 },
+    { nom:'Quincy',               niveau:2, lat:47.108, lng: 2.041 },
+    { nom:'Reuilly',              niveau:2, lat:47.081, lng: 1.979 },
+    { nom:'Châteaumeillant',      niveau:2, lat:46.561, lng: 2.196 },
+    { nom:'Coteaux du Giennois',  niveau:2, lat:47.660, lng: 2.630 },
+    { nom:'Orléans',              niveau:2, lat:47.892, lng: 1.908 },
   ],
 
   // ─── LANGUEDOC ─────────────────────────────────────────────
   'languedoc': [
-    { nom:'Picpoul de Pinet', niveau:2,
-      bbox:[[43.38,3.45],[43.50,3.68]],
-      poly:[[43.48,3.47],[43.48,3.66],[43.40,3.66],[43.38,3.50],[43.42,3.46],[43.48,3.47]] },
-    { nom:'Faugères', niveau:1,
-      bbox:[[43.48,3.18],[43.58,3.42]],
-      poly:[[43.56,3.20],[43.56,3.40],[43.50,3.40],[43.48,3.24],[43.52,3.19],[43.56,3.20]] },
-    { nom:'Saint-Chinian', niveau:1,
-      bbox:[[43.38,2.82],[43.58,3.22]],
-      poly:[[43.56,2.85],[43.56,3.20],[43.40,3.20],[43.38,2.90],[43.45,2.83],[43.56,2.85]] },
-    { nom:'Minervois', niveau:1,
-      bbox:[[43.22,2.48],[43.50,2.98]],
-      poly:[[43.48,2.50],[43.48,2.96],[43.25,2.96],[43.22,2.55],[43.32,2.49],[43.48,2.50]] },
-    { nom:'Corbières', niveau:1,
-      bbox:[[42.88,2.38],[43.22,2.98]],
-      poly:[[43.20,2.40],[43.20,2.96],[42.90,2.96],[42.88,2.45],[42.98,2.39],[43.20,2.40]] },
-    { nom:'Blanquette de Limoux', niveau:1,
-      bbox:[[43.00,2.10],[43.22,2.45]],
-      poly:[[43.20,2.12],[43.20,2.43],[43.02,2.43],[43.00,2.16],[43.08,2.11],[43.20,2.12]] },
+    { nom:'Languedoc AOC',        niveau:1, lat:43.500, lng: 3.250 },
+    { nom:'Picpoul de Pinet',     niveau:2, lat:43.437, lng: 3.549 },
+    { nom:'Faugères',             niveau:2, lat:43.520, lng: 3.272 },
+    { nom:'Saint-Chinian',        niveau:2, lat:43.464, lng: 2.952 },
+    { nom:'Minervois',            niveau:2, lat:43.358, lng: 2.720 },
+    { nom:'Minervois-La Livinière',niveau:2,lat:43.363, lng: 2.685 },
+    { nom:'Corbières',            niveau:2, lat:43.019, lng: 2.680 },
+    { nom:'Corbières-Boutenac',   niveau:2, lat:43.094, lng: 2.758 },
+    { nom:'Fitou',                niveau:2, lat:42.895, lng: 2.952 },
+    { nom:'Blanquette de Limoux', niveau:2, lat:43.052, lng: 2.165 },
+    { nom:'Crémant de Limoux',    niveau:2, lat:43.062, lng: 2.165 },
+    { nom:'Limoux',               niveau:2, lat:43.052, lng: 2.165 },
+    { nom:'Clairette du Languedoc',niveau:2,lat:43.561, lng: 3.385 },
+    { nom:'Terrasses du Larzac',  niveau:2, lat:43.665, lng: 3.345 },
+    { nom:'Pic Saint-Loup',       niveau:2, lat:43.746, lng: 3.759 },
+    { nom:'La Clape',             niveau:2, lat:43.172, lng: 3.128 },
+    { nom:'Grès de Montpellier',  niveau:2, lat:43.590, lng: 3.780 },
+    { nom:'Pézenas',              niveau:2, lat:43.461, lng: 3.427 },
+    { nom:'Montpeyroux',          niveau:2, lat:43.687, lng: 3.456 },
+    { nom:'Saint-Saturnin',       niveau:2, lat:43.693, lng: 3.483 },
+    { nom:'Saint-Georges-d\'Orques',niveau:2,lat:43.573,lng: 3.778 },
+    { nom:'Cabrières',            niveau:2, lat:43.573, lng: 3.382 },
+    { nom:'Quatourze',            niveau:2, lat:43.198, lng: 2.942 },
   ],
 
   // ─── ROUSSILLON ────────────────────────────────────────────
   'roussillon': [
-    { nom:'Côtes du Roussillon Villages', niveau:1,
-      bbox:[[42.65,2.50],[42.88,3.00]],
-      poly:[[42.86,2.52],[42.86,2.98],[42.67,2.98],[42.65,2.58],[42.72,2.51],[42.86,2.52]] },
-    { nom:'Maury', niveau:2,
-      bbox:[[42.78,2.58],[42.88,2.72]],
-      poly:[[42.86,2.60],[42.86,2.70],[42.80,2.70],[42.78,2.62],[42.82,2.59],[42.86,2.60]] },
-    { nom:'Banyuls & Collioure', niveau:1,
-      bbox:[[42.40,2.98],[42.60,3.18]],
-      poly:[[42.58,3.00],[42.58,3.16],[42.42,3.16],[42.40,3.04],[42.45,3.00],[42.58,3.00]] },
+    { nom:'Côtes du Roussillon',          niveau:1, lat:42.690, lng: 2.780 },
+    { nom:'Côtes du Roussillon Villages', niveau:1, lat:42.760, lng: 2.760 },
+    { nom:'Lesquerde',            niveau:2, lat:42.780, lng: 2.673 },
+    { nom:'Tautavel',             niveau:2, lat:42.820, lng: 2.769 },
+    { nom:'Caramany',             niveau:2, lat:42.751, lng: 2.624 },
+    { nom:'Latour-de-France',     niveau:2, lat:42.758, lng: 2.706 },
+    { nom:'Maury',                niveau:2, lat:42.810, lng: 2.648 },
+    { nom:'Maury Sec',            niveau:2, lat:42.813, lng: 2.650 },
+    { nom:'Collioure',            niveau:2, lat:42.524, lng: 3.083 },
+    { nom:'Banyuls',              niveau:2, lat:42.489, lng: 3.127 },
+    { nom:'Banyuls Grand Cru',    niveau:2, lat:42.489, lng: 3.127 },
+    { nom:'Rivesaltes',           niveau:1, lat:42.771, lng: 2.878 },
+    { nom:'Muscat de Rivesaltes', niveau:2, lat:42.775, lng: 2.880 },
   ],
 
   // ─── PROVENCE ──────────────────────────────────────────────
   'provence': [
-    { nom:'Bandol', niveau:1,
-      bbox:[[43.10,5.68],[43.28,5.98]],
-      poly:[[43.26,5.70],[43.26,5.96],[43.12,5.96],[43.10,5.74],[43.16,5.69],[43.26,5.70]] },
-    { nom:'Cassis', niveau:2,
-      bbox:[[43.18,5.50],[43.28,5.70]],
-      poly:[[43.26,5.52],[43.26,5.68],[43.20,5.68],[43.18,5.55],[43.22,5.51],[43.26,5.52]] },
-    { nom:'Côtes de Provence', niveau:1,
-      bbox:[[43.12,5.90],[43.68,6.78]],
-      poly:[[43.65,5.92],[43.65,6.75],[43.15,6.75],[43.12,6.00],[43.25,5.91],[43.65,5.92]] },
-    { nom:'Les Baux-de-Provence', niveau:1,
-      bbox:[[43.60,4.58],[43.82,4.95]],
-      poly:[[43.80,4.60],[43.80,4.93],[43.62,4.93],[43.60,4.65],[43.68,4.59],[43.80,4.60]] },
-    { nom:"Côteaux d'Aix", niveau:1,
-      bbox:[[43.35,4.82],[43.70,5.60]],
-      poly:[[43.68,4.85],[43.68,5.58],[43.38,5.58],[43.35,4.90],[43.45,4.83],[43.68,4.85]] },
+    { nom:'Côtes de Provence',    niveau:1, lat:43.450, lng: 6.150 },
+    { nom:'Côtes de Provence Sainte-Victoire',niveau:2,lat:43.530,lng:5.620 },
+    { nom:'Côtes de Provence Pierrefeu',niveau:2,lat:43.250,lng:6.145 },
+    { nom:'Côtes de Provence La Londe',niveau:2,lat:43.143,lng:6.239 },
+    { nom:'Côtes de Provence Fréjus',niveau:2,lat:43.437,lng:6.733 },
+    { nom:'Coteaux d\'Aix-en-Provence',niveau:1,lat:43.527,lng:5.441 },
+    { nom:'Les Baux-de-Provence', niveau:2, lat:43.742, lng: 4.797 },
+    { nom:'Bandol',               niveau:2, lat:43.130, lng: 5.755 },
+    { nom:'Cassis',               niveau:2, lat:43.214, lng: 5.548 },
+    { nom:'Bellet',               niveau:2, lat:43.747, lng: 7.189 },
+    { nom:'Palette',              niveau:2, lat:43.520, lng: 5.474 },
+    { nom:'Pierrevert',           niveau:2, lat:43.807, lng: 5.897 },
+    { nom:'Coteaux Varois en Provence',niveau:1,lat:43.440,lng:5.990 },
   ],
 
   // ─── SUD-OUEST ─────────────────────────────────────────────
   'sud-ouest': [
-    { nom:'Cahors', niveau:1,
-      bbox:[[44.38,1.12],[44.68,1.72]],
-      poly:[[44.66,1.15],[44.66,1.70],[44.40,1.70],[44.38,1.20],[44.48,1.13],[44.66,1.15]] },
-    { nom:'Bergerac', niveau:1,
-      bbox:[[44.65,0.28],[44.92,0.78]],
-      poly:[[44.90,0.30],[44.90,0.76],[44.67,0.76],[44.65,0.36],[44.72,0.29],[44.90,0.30]] },
-    { nom:'Madiran', niveau:1,
-      bbox:[[43.48,-0.28],[43.72,0.08]],
-      poly:[[43.70,-0.26],[43.70,0.06],[43.50,0.06],[43.48,-0.20],[43.55,-0.27],[43.70,-0.26]] },
-    { nom:'Jurançon', niveau:1,
-      bbox:[[43.22,-0.48],[43.42,-0.08]],
-      poly:[[43.40,-0.46],[43.40,-0.10],[43.24,-0.10],[43.22,-0.38],[43.30,-0.47],[43.40,-0.46]] },
-    { nom:'Gaillac', niveau:1,
-      bbox:[[43.82,1.58],[44.05,2.05]],
-      poly:[[44.03,1.60],[44.03,2.03],[43.84,2.03],[43.82,1.65],[43.90,1.59],[44.03,1.60]] },
-    { nom:'Côtes de Gascogne', niveau:1,
-      bbox:[[43.55,-0.20],[43.88,0.40]],
-      poly:[[43.86,-0.18],[43.86,0.38],[43.57,0.38],[43.55,-0.12],[43.65,-0.19],[43.86,-0.18]] },
+    { nom:'Bergerac',             niveau:1, lat:44.855, lng: 0.487 },
+    { nom:'Pécharmant',           niveau:2, lat:44.876, lng: 0.555 },
+    { nom:'Monbazillac',          niveau:2, lat:44.773, lng: 0.521 },
+    { nom:'Rosette',              niveau:2, lat:44.872, lng: 0.471 },
+    { nom:'Saussignac',           niveau:2, lat:44.793, lng: 0.361 },
+    { nom:'Montravel',            niveau:2, lat:44.841, lng: 0.204 },
+    { nom:'Côtes de Bergerac',    niveau:2, lat:44.830, lng: 0.420 },
+    { nom:'Cahors',               niveau:1, lat:44.449, lng: 1.441 },
+    { nom:'Madiran',              niveau:1, lat:43.569, lng:-0.086 },
+    { nom:'Pacherenc du Vic-Bilh',niveau:2, lat:43.574, lng:-0.086 },
+    { nom:'Jurançon',             niveau:1, lat:43.315, lng:-0.292 },
+    { nom:'Jurançon Sec',         niveau:2, lat:43.312, lng:-0.297 },
+    { nom:'Irouléguy',            niveau:2, lat:43.234, lng:-1.281 },
+    { nom:'Gaillac',              niveau:1, lat:43.901, lng: 1.893 },
+    { nom:'Gaillac Premières Côtes',niveau:2,lat:43.870, lng: 1.850 },
+    { nom:'Marcillac',            niveau:2, lat:44.457, lng: 2.448 },
+    { nom:'Entraygues-Le Fel',    niveau:2, lat:44.638, lng: 2.568 },
+    { nom:'Estaing',              niveau:2, lat:44.578, lng: 2.679 },
+    { nom:'Tursan',               niveau:2, lat:43.718, lng:-0.527 },
+    { nom:'Saint-Sardos',         niveau:2, lat:44.001, lng: 0.851 },
+    { nom:'Côtes du Marmandais',  niveau:2, lat:44.505, lng: 0.160 },
+    { nom:'Buzet',                niveau:2, lat:44.262, lng: 0.302 },
+    { nom:'Côtes du Brulhois',    niveau:2, lat:44.110, lng: 0.635 },
+    { nom:'Fronton',              niveau:2, lat:43.861, lng: 1.386 },
+    { nom:'Brulhois',             niveau:2, lat:44.106, lng: 0.616 },
   ],
 
   // ─── BEAUJOLAIS ────────────────────────────────────────────
   'beaujolais': [
-    { nom:'Beaujolais Villages', niveau:1,
-      bbox:[[45.92,4.42],[46.35,4.78]],
-      poly:[[46.32,4.45],[46.32,4.75],[45.95,4.75],[45.92,4.50],[46.00,4.43],[46.32,4.45]] },
-    { nom:'Saint-Amour', niveau:2,
-      bbox:[[46.28,4.65],[46.38,4.78]],
-      poly:[[46.36,4.67],[46.36,4.76],[46.30,4.76],[46.28,4.69],[46.31,4.66],[46.36,4.67]] },
-    { nom:'Juliénas', niveau:2,
-      bbox:[[46.22,4.65],[46.30,4.78]],
-      poly:[[46.28,4.67],[46.28,4.76],[46.24,4.76],[46.22,4.69],[46.25,4.66],[46.28,4.67]] },
-    { nom:'Chénas', niveau:2,
-      bbox:[[46.16,4.65],[46.23,4.78]],
-      poly:[[46.22,4.67],[46.22,4.76],[46.18,4.76],[46.16,4.69],[46.19,4.66],[46.22,4.67]] },
-    { nom:'Moulin-à-Vent', niveau:2,
-      bbox:[[46.10,4.65],[46.18,4.78]],
-      poly:[[46.16,4.67],[46.16,4.76],[46.12,4.76],[46.10,4.69],[46.13,4.66],[46.16,4.67]] },
-    { nom:'Fleurie', niveau:2,
-      bbox:[[46.03,4.65],[46.12,4.78]],
-      poly:[[46.10,4.67],[46.10,4.76],[46.05,4.76],[46.03,4.69],[46.06,4.66],[46.10,4.67]] },
-    { nom:'Chiroubles', niveau:2,
-      bbox:[[45.96,4.65],[46.05,4.75]],
-      poly:[[46.03,4.67],[46.03,4.73],[45.98,4.73],[45.96,4.68],[45.99,4.66],[46.03,4.67]] },
-    { nom:'Morgon', niveau:2,
-      bbox:[[45.90,4.62],[45.98,4.75]],
-      poly:[[45.96,4.64],[45.96,4.73],[45.92,4.73],[45.90,4.66],[45.93,4.63],[45.96,4.64]] },
-    { nom:'Régnié', niveau:2,
-      bbox:[[45.98,4.58],[46.06,4.68]],
-      poly:[[46.04,4.60],[46.04,4.66],[46.00,4.66],[45.98,4.61],[46.01,4.59],[46.04,4.60]] },
-    { nom:'Côte de Brouilly', niveau:2,
-      bbox:[[45.87,4.58],[45.95,4.68]],
-      poly:[[45.93,4.60],[45.93,4.66],[45.89,4.66],[45.87,4.61],[45.90,4.59],[45.93,4.60]] },
-    { nom:'Brouilly', niveau:2,
-      bbox:[[45.84,4.55],[45.93,4.70]],
-      poly:[[45.91,4.57],[45.91,4.68],[45.86,4.68],[45.84,4.59],[45.87,4.56],[45.91,4.57]] },
+    { nom:'Beaujolais',           niveau:1, lat:46.068, lng: 4.678 },
+    { nom:'Beaujolais-Villages',  niveau:1, lat:46.148, lng: 4.633 },
+    { nom:'Saint-Amour',          niveau:2, lat:46.306, lng: 4.700 },
+    { nom:'Juliénas',             niveau:2, lat:46.254, lng: 4.698 },
+    { nom:'Chénas',               niveau:2, lat:46.196, lng: 4.707 },
+    { nom:'Moulin-à-Vent',        niveau:2, lat:46.155, lng: 4.716 },
+    { nom:'Fleurie',              niveau:2, lat:46.192, lng: 4.698 },
+    { nom:'Chiroubles',           niveau:2, lat:46.167, lng: 4.669 },
+    { nom:'Morgon',               niveau:2, lat:46.116, lng: 4.685 },
+    { nom:'Régnié',               niveau:2, lat:46.131, lng: 4.659 },
+    { nom:'Côte de Brouilly',     niveau:2, lat:46.100, lng: 4.654 },
+    { nom:'Brouilly',             niveau:2, lat:46.088, lng: 4.661 },
   ],
 
   // ─── JURA ──────────────────────────────────────────────────
   'jura': [
-    { nom:'Arbois', niveau:1,
-      bbox:[[46.82,5.70],[46.95,5.90]],
-      poly:[[46.93,5.72],[46.93,5.88],[46.84,5.88],[46.82,5.75],[46.86,5.71],[46.93,5.72]] },
-    { nom:'Château-Chalon', niveau:2,
-      bbox:[[46.72,5.55],[46.82,5.72]],
-      poly:[[46.80,5.57],[46.80,5.70],[46.74,5.70],[46.72,5.60],[46.75,5.56],[46.80,5.57]] },
-    { nom:"L'Étoile", niveau:2,
-      bbox:[[46.70,5.55],[46.78,5.65]],
-      poly:[[46.76,5.57],[46.76,5.63],[46.72,5.63],[46.70,5.58],[46.72,5.56],[46.76,5.57]] },
-    { nom:'Crémant du Jura', niveau:1,
-      bbox:[[46.60,5.45],[47.00,5.95]],
-      poly:[[46.98,5.48],[46.98,5.93],[46.62,5.93],[46.60,5.52],[46.72,5.46],[46.98,5.48]] },
+    { nom:'Arbois',               niveau:1, lat:46.903, lng: 5.775 },
+    { nom:'Arbois Pupillin',      niveau:2, lat:46.888, lng: 5.785 },
+    { nom:'Château-Chalon',       niveau:2, lat:46.762, lng: 5.629 },
+    { nom:"L'Étoile",             niveau:2, lat:46.724, lng: 5.582 },
+    { nom:'Côtes du Jura',        niveau:1, lat:46.800, lng: 5.700 },
+    { nom:'Crémant du Jura',      niveau:2, lat:46.820, lng: 5.720 },
+    { nom:'Macvin du Jura',       niveau:2, lat:46.870, lng: 5.752 },
   ],
 
   // ─── SAVOIE ────────────────────────────────────────────────
   'savoie': [
-    { nom:'Roussette de Savoie', niveau:1,
-      bbox:[[45.60,5.80],[45.98,6.22]],
-      poly:[[45.96,5.82],[45.96,6.20],[45.62,6.20],[45.60,5.88],[45.70,5.81],[45.96,5.82]] },
-    { nom:'Seyssel', niveau:2,
-      bbox:[[45.90,5.78],[46.00,5.92]],
-      poly:[[45.98,5.80],[45.98,5.90],[45.92,5.90],[45.90,5.82],[45.93,5.79],[45.98,5.80]] },
-    { nom:'Crépy', niveau:2,
-      bbox:[[46.28,6.28],[46.38,6.42]],
-      poly:[[46.36,6.30],[46.36,6.40],[46.30,6.40],[46.28,6.32],[46.32,6.29],[46.36,6.30]] },
+    { nom:'Vin de Savoie',        niveau:1, lat:45.688, lng: 5.934 },
+    { nom:'Roussette de Savoie',  niveau:1, lat:45.743, lng: 5.882 },
+    { nom:'Seyssel',              niveau:2, lat:45.949, lng: 5.836 },
+    { nom:'Crépy',                niveau:2, lat:46.310, lng: 6.332 },
+    { nom:'Chignin',              niveau:2, lat:45.544, lng: 5.980 },
+    { nom:'Chignin-Bergeron',     niveau:2, lat:45.540, lng: 5.982 },
+    { nom:'Apremont',             niveau:2, lat:45.526, lng: 5.988 },
+    { nom:'Abymes',               niveau:2, lat:45.512, lng: 6.002 },
+    { nom:'Ripaille',             niveau:2, lat:46.363, lng: 6.418 },
+    { nom:'Roussette du Bugey',   niveau:2, lat:45.870, lng: 5.410 },
+    { nom:'Cerdon',               niveau:2, lat:46.063, lng: 5.479 },
+    { nom:'Bugey',                niveau:1, lat:45.880, lng: 5.450 },
   ],
 
   // ─── CORSE ─────────────────────────────────────────────────
   'corse': [
-    { nom:'Patrimonio', niveau:1,
-      bbox:[[42.62,9.32],[42.78,9.52]],
-      poly:[[42.76,9.34],[42.76,9.50],[42.64,9.50],[42.62,9.38],[42.68,9.33],[42.76,9.34]] },
-    { nom:'Ajaccio', niveau:1,
-      bbox:[[41.85,8.62],[42.02,8.82]],
-      poly:[[42.00,8.64],[42.00,8.80],[41.87,8.80],[41.85,8.68],[41.90,8.63],[42.00,8.64]] },
-    { nom:'Figari & Porto-Vecchio', niveau:1,
-      bbox:[[41.38,9.18],[41.65,9.45]],
-      poly:[[41.63,9.20],[41.63,9.43],[41.40,9.43],[41.38,9.25],[41.45,9.19],[41.63,9.20]] },
+    { nom:'Vin de Corse',         niveau:1, lat:42.050, lng: 9.100 },
+    { nom:'Patrimonio',           niveau:2, lat:42.700, lng: 9.369 },
+    { nom:'Ajaccio',              niveau:2, lat:41.950, lng: 8.758 },
+    { nom:'Muscat du Cap Corse',  niveau:2, lat:42.980, lng: 9.420 },
+    { nom:'Corse Calvi',          niveau:2, lat:42.570, lng: 8.760 },
+    { nom:'Corse Sartène',        niveau:2, lat:41.623, lng: 8.974 },
+    { nom:'Corse Figari',         niveau:2, lat:41.504, lng: 9.148 },
+    { nom:'Corse Porto-Vecchio',  niveau:2, lat:41.594, lng: 9.279 },
+    { nom:'Corse Coteaux du Cap Corse',niveau:2,lat:43.007,lng:9.420 },
   ],
 };
 
 // Fonction pour afficher les appellations d'une région sur la carte — centroïdes réels WFS
-async function showAppellations(regionKey, niveauMax) {
+function showAppellations(regionKey, niveauMax) {
   if (!leafletMap) return;
   if (leafletMap._appelLayer) {
     leafletMap.removeLayer(leafletMap._appelLayer);
@@ -5487,36 +5465,26 @@ async function showAppellations(regionKey, niveauMax) {
   }
   if (!regionKey) return;
 
-  const bbox = REGION_BBOX[regionKey];
-  if (!bbox) return;
+  const apps = APPELLATIONS[regionKey];
+  if (!apps || !apps.length) return;
 
   leafletMap._appelRegion = regionKey;
   const group = L.layerGroup();
+  const niveau = niveauMax || 2;
+
+  apps.filter(a => a.niveau <= niveau).forEach(app => {
+    if (app.lat == null || app.lng == null) return;
+    addAppelLabel(group, app.lat, app.lng, app.nom, app.niveau === 2);
+  });
+
   group.addTo(leafletMap);
   leafletMap._appelLayer = group;
 
-  // Spinner discret pendant le chargement
   const hint = document.getElementById('carte-zoom-hint');
-  if (hint) hint.innerHTML = '⏳ Chargement des appellations INAO…';
-
-  const data = await fetchInaoFeatures(bbox);
-  if (!data || !data.features) {
-    if (hint) hint.innerHTML = '⚠️ Données INAO indisponibles';
-    return;
-  }
-
-  const seen = new Set();
-  data.features.forEach(f => {
-    const nom = f.properties?.appellation || f.properties?.libelle || f.properties?.nom_aoc || f.properties?.name;
-    if (!nom || seen.has(nom)) return;
-    seen.add(nom);
-    const c = geoCentroid(f.geometry);
-    if (c) addAppelLabel(group, c[0], c[1], nom, false);
-  });
-
   if (hint) {
     const region = WINE_REGION_POLYGONS[regionKey];
-    hint.innerHTML = `🏛️ <b style="color:#e8c870">${region?.label||regionKey}</b> — ${seen.size} appellation${seen.size>1?'s':''} · centroïdes INAO officiels`;
+    const n = apps.filter(a => a.niveau <= niveau).length;
+    hint.innerHTML = `🏛️ <b style="color:#e8c870">${region?.label||regionKey}</b> — ${n} appellation${n>1?'s':''}`;
     hint.style.color = 'rgba(220,200,120,0.9)';
   }
 }
