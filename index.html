@@ -999,6 +999,23 @@
 <div id="notif"></div>
 
 <script>
+function formatDateFR(dateStr) {
+  if(!dateStr) return '';
+  // Nettoyer : prendre uniquement la partie date si c'est un ISO ou Date string complet
+  const clean = String(dateStr).trim();
+  // Extraire YYYY-MM-DD depuis ISO ou Date string
+  const isoMatch = clean.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if(isoMatch) {
+    const [, y, m, d] = isoMatch;
+    return new Date(y, m-1, d).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'});
+  }
+  // Tenter parsing direct (ex: "Sun Feb 22 2026...")
+  const parsed = new Date(clean);
+  if(!isNaN(parsed)) return parsed.toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'});
+  return clean;
+}
+
+
 // =====================================================================
 // CONFIG
 // =====================================================================
@@ -2158,6 +2175,12 @@ let degustationData = (() => {
 })();
 
 function saveDegustationData() {
+  // Normaliser les dates en YYYY-MM-DD avant sauvegarde
+  degustationData = degustationData.map(d => ({
+    ...d,
+    date:      d.date      ? String(d.date).substring(0,10)      : '',
+    dateAjout: d.dateAjout ? String(d.dateAjout).substring(0,10) : ''
+  }));
   localStorage.setItem('degustationData', JSON.stringify(degustationData));
   syncHistoriqueFromDeg();
   // Sync vers Sheets : TOUT (cave + hors_cave) dans le sheet Degustation
@@ -2499,7 +2522,7 @@ function renderHistorique() {
             <div style="font-size:0.82rem;color:var(--text2);margin-top:2px">${[h.domaine,h.appellation,h.region].filter(Boolean).join(' · ')}</div>
           </div>
           <div style="text-align:right;flex-shrink:0">
-            <div style="font-size:0.75rem;color:var(--text2)">${h.date||''}</div>
+            <div style="font-size:0.75rem;color:var(--text2)">${formatDateFR(h.date||h.dateAjout)}</div>
             <div style="color:var(--gold);font-size:0.9rem;margin-top:2px">${stars}</div>
             ${editBtns}
           </div>
