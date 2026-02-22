@@ -4807,16 +4807,11 @@ function renderCarte() {
     // Zoom en bas à droite
     L.control.zoom({ position: 'bottomright' }).addTo(leafletMap);
 
-    // Tuiles relief topographique (Stadia Stamen Terrain — open, sans clé)
-    L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png', {
-      maxZoom: 18,
-      attribution: '© Stadia Maps, © Stamen Design, © OpenMapTiles © OpenStreetMap contributors'
-    }).addTo(leafletMap);
-
-    // Labels CartoCDN clairs pour superposition (noms de villes / pays)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', {
-      maxZoom: 19,
-      opacity: 0.75
+    // Tuiles relief topographique OpenTopoMap (libre, sans clé)
+    L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+      maxZoom: 17,
+      subdomains: ['a','b','c'],
+      attribution: '© OpenTopoMap (CC-BY-SA) © OpenStreetMap contributors'
     }).addTo(leafletMap);
 
     // ── Frontières des pays viticoles européens (GeoJSON naturalearth) ──
