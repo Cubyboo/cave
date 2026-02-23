@@ -625,7 +625,7 @@
     #cave-svg-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg2); }
     #caveSvg { user-select: none; -webkit-user-select: none; }
     #caveSvg circle[data-cave] { cursor: pointer; transition: opacity 0.15s; }
-    #drag-ghost { pointer-events: none; }
+
     .cave-selector { flex-wrap: wrap; gap: 8px; }
     .cave-legend { flex-wrap: wrap; gap: 6px; }
 
@@ -1229,61 +1229,6 @@
 </div>
 
 <!-- MODAL DEPLACEMENT -->
-<div class="modal-overlay" id="modalDeplacer">
-  <div class="modal" style="max-width:480px">
-    <button class="modal-close" onclick="closeModal('modalDeplacer')">✕</button>
-    <h2>📦 Déplacer la bouteille</h2>
-    <p id="deplacer-wine-name" style="color:var(--cream);font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:20px"></p>
-    <div class="form-grid">
-      <div class="form-row">
-        <label>Cave</label>
-        <select id="dep-cave" onchange="updateDepEtage()">
-          <option value="1">Cave 1</option>
-          <option value="2">Cave 2</option>
-        </select>
-      </div>
-      <div class="form-row">
-        <label>Étage</label>
-        <select id="dep-etage" onchange="updateDepSlot()"></select>
-      </div>
-      <div class="form-row form-full">
-        <label>Emplacement</label>
-        <select id="dep-slot"></select>
-      </div>
-    </div>
-    <div class="modal-actions" style="margin-top:20px">
-      <button class="btn-wine" onclick="confirmerDeplacement()">📦 Confirmer le déplacement</button>
-      <button class="btn-outline" onclick="closeModal('modalDeplacer')">Annuler</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL DUPLICATION -->
-<div class="modal-overlay" id="modalDupliquer">
-  <div class="modal" style="max-width:540px;max-height:90vh;overflow-y:auto">
-    <button class="modal-close" onclick="closeModal('modalDupliquer')">✕</button>
-    <h2>⧉ Dupliquer la bouteille</h2>
-    <p id="dup-wine-name" style="color:var(--cream);font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:4px"></p>
-    <p style="color:var(--text2);font-size:0.85rem;margin-bottom:20px">Chaque copie recevra un emplacement et un identifiant unique.</p>
-    <div class="form-row form-full" style="margin-bottom:18px">
-      <label>Nombre de copies</label>
-      <select id="dup-count" onchange="renderDupSlots()">
-        <option value="1">1 copie</option>
-        <option value="2">2 copies</option>
-        <option value="3">3 copies</option>
-        <option value="4">4 copies</option>
-        <option value="5">5 copies</option>
-      </select>
-    </div>
-    <div id="dup-slots-container"></div>
-    <div id="dup-warning" style="display:none;margin-top:12px;padding:10px 14px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:3px;color:var(--text2);font-size:0.85rem"></div>
-    <div class="modal-actions" style="margin-top:20px">
-      <button class="btn-wine" onclick="confirmerDuplication()">⧉ Confirmer la duplication</button>
-      <button class="btn-outline" onclick="closeModal('modalDupliquer')">Annuler</button>
-    </div>
-  </div>
-</div>
-
 <!-- MODAL HISTORIQUE (retirer un vin) -->
 <div class="modal-overlay" id="modalHistorique">
   <div class="modal" style="max-width:480px">
@@ -1708,130 +1653,6 @@ function loadFromSheets() {
 
 function getWineAtSlot(cave, floor, slot) { return wineData.find(w => w.cave===parseInt(cave) && w.floor===parseInt(floor) && w.slot===parseInt(slot)); }
 
-// ── Drag & Drop — singletons module-level ────────────────────────────────────
-// _drag, _onDragMove, _onDragUp sont déclarés ICI UNE SEULE FOIS.
-// Ils ne doivent PAS être redéclarés à l'intérieur de renderCave2D, car cette
-// fonction est appelée après chaque déplacement et recréerait de nouvelles
-// références, rendant removeEventListener inopérant → accumulation de handlers
-// → plusieurs saveData() en parallèle → doublons / suppressions dans le Sheet.
-let _drag = null;
-
-function _onDragMove(e) {
-  if(!_drag) return;
-  _drag.ghost.style.left = e.clientX + 'px';
-  _drag.ghost.style.top  = e.clientY + 'px';
-
-  // Highlight de la cible sous la souris
-  const svg = document.getElementById('caveSvg');
-  if(!svg) return;
-  svg.querySelectorAll('circle[data-cave]').forEach(el => {
-    const isSrc = parseInt(el.dataset.cave) === _drag.cave &&
-                  parseInt(el.dataset.floor) === _drag.floor &&
-                  parseInt(el.dataset.slot)  === _drag.slot;
-    if(!isSrc) {
-      const rect = el.getBoundingClientRect();
-      const cx = rect.left + rect.width/2;
-      const cy = rect.top  + rect.height/2;
-      const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
-      const r = rect.width / 2;
-      if(dist < r + 8) {
-        el.setAttribute('stroke', '#c9a84c');
-        el.setAttribute('stroke-width', '3');
-        el.style.filter = 'url(#softglow)';
-        el.dataset.hovered = '1';
-      } else if(el.dataset.hovered) {
-        const w = getWineAtSlot(parseInt(el.dataset.cave), parseInt(el.dataset.floor), parseInt(el.dataset.slot));
-        const c = w ? (WINE_COLORS[w.type] || WINE_COLORS.empty) : WINE_COLORS.empty;
-        el.setAttribute('stroke', c.stroke);
-        el.setAttribute('stroke-width', w ? '1.8' : '0.6');
-        delete el.dataset.hovered;
-      }
-    }
-  });
-}
-
-function _onDragUp(e) {
-  if(!_drag) return;
-
-  const svg = document.getElementById('caveSvg');
-  let target = null;
-
-  if(svg) {
-    svg.querySelectorAll('circle[data-cave]').forEach(el => {
-      const isSrc = parseInt(el.dataset.cave) === _drag.cave &&
-                    parseInt(el.dataset.floor) === _drag.floor &&
-                    parseInt(el.dataset.slot)  === _drag.slot;
-      if(!isSrc) {
-        const rect = el.getBoundingClientRect();
-        const cx = rect.left + rect.width/2;
-        const cy = rect.top  + rect.height/2;
-        const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
-        if(dist < rect.width/2 + 8) {
-          target = {
-            cave:  parseInt(el.dataset.cave),
-            floor: parseInt(el.dataset.floor),
-            slot:  parseInt(el.dataset.slot)
-          };
-        }
-      }
-    });
-  }
-
-  // Effectuer le déplacement
-  if(target) {
-    const srcWine = getWineAtSlot(_drag.cave, _drag.floor, _drag.slot);
-    const dstWine = getWineAtSlot(target.cave, target.floor, target.slot);
-
-    if(srcWine) {
-      srcWine.cave  = target.cave;
-      srcWine.floor = target.floor;
-      srcWine.slot  = target.slot;
-
-      if(dstWine) {
-        dstWine.cave  = _drag.cave;
-        dstWine.floor = _drag.floor;
-        dstWine.slot  = _drag.slot;
-        if(dstWine.id) {
-          const _img = imgGet('wine_' + String(dstWine.id)) || dstWine.image || '';
-          if(_img) imgSave('wine_' + String(dstWine.id), _img);
-        }
-      }
-
-      if(srcWine.id) {
-        const _img = imgGet('wine_' + String(srcWine.id)) || srcWine.image || '';
-        if(_img) imgSave('wine_' + String(srcWine.id), _img);
-      }
-
-      saveData();
-
-      const flash = document.createElement('div');
-      flash.style.cssText = `
-        position:fixed; left:${e.clientX-40}px; top:${e.clientY-20}px;
-        background:rgba(201,168,76,0.9); color:#0e0a0b;
-        border-radius:6px; padding:4px 10px; font-size:11px; font-weight:bold;
-        pointer-events:none; z-index:9999; opacity:1;
-        transition:opacity 0.5s;
-      `;
-      flash.textContent = dstWine ? '⇄ Échangé' : '✓ Déplacé';
-      document.body.appendChild(flash);
-      setTimeout(() => { flash.style.opacity = '0'; setTimeout(() => flash.remove(), 500); }, 800);
-    }
-  }
-
-  // Nettoyage
-  _drag.ghost.remove();
-  _drag.srcEl.removeAttribute('opacity');
-  _drag.srcEl.style.cursor = '';
-  _drag = null;
-
-  renderCave2D();
-}
-
-// Enregistrer les handlers UNE SEULE FOIS sur document
-document.addEventListener('mousemove', _onDragMove);
-document.addEventListener('mouseup',   _onDragUp);
-// ─────────────────────────────────────────────────────────────────────────────
-
 function updateHeader() {
   const c1 = wineData.filter(w=>w.cave==1).length;
   const c2 = wineData.filter(w=>w.cave==2).length;
@@ -2133,11 +1954,6 @@ function renderCave2D() {
       <stop offset="100%" stop-color="rgba(200,160,80,0.05)"/>
     </linearGradient>
 
-    <!-- Highlight drag cible -->
-    <filter id="dropTarget" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="3" result="blur"/>
-      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
   </defs>
 
   <!-- ═══ FOND : INOX NOIR CHAUD ══════════════════════════════════ -->
@@ -2397,60 +2213,9 @@ function renderCave2D() {
 
   svg.innerHTML = html;
 
-  // ── DRAG & DROP ──────────────────────────────────────────────
-  // NOTE : _drag, _onDragMove, _onDragUp sont des singletons déclarés UNE SEULE FOIS
-  // hors de renderCave2D (voir ci-dessous) pour éviter l'accumulation de listeners
-  // sur document à chaque re-rendu. Ici on réattache uniquement les mousedown
-  // (nécessaire car svg.innerHTML est recréé à chaque appel).
-  svg.querySelectorAll('circle[data-cave]').forEach(el => {
-    // Rendre draggable uniquement les emplacements occupés
-    el.addEventListener('mousedown', (e) => {
-      const cave  = parseInt(el.dataset.cave);
-      const floor = parseInt(el.dataset.floor);
-      const slot  = parseInt(el.dataset.slot);
-      const wine  = getWineAtSlot(cave, floor, slot);
-      if(!wine) return; // vide → pas de drag
-      e.preventDefault();
-      e.stopPropagation();
-
-      // Créer un fantôme visuel qui suit la souris
-      const ghost = document.createElement('div');
-      ghost.id = 'drag-ghost';
-      ghost.innerHTML = `<div style="
-        background:${WINE_COLORS[wine.type]?.fill||'#4a2030'};
-        border:2px solid ${WINE_COLORS[wine.type]?.stroke||'#c04060'};
-        border-radius:50%; width:32px; height:32px;
-        box-shadow:0 4px 16px rgba(0,0,0,0.7);
-        display:flex; align-items:center; justify-content:center;
-        font-size:9px; color:rgba(255,255,255,0.9); font-weight:bold;
-        pointer-events:none; user-select:none;
-      ">${wine.annee||'?'}</div>
-      <div style="
-        position:absolute; top:36px; left:50%; transform:translateX(-50%);
-        background:rgba(14,10,11,0.92); border:1px solid rgba(201,168,76,0.4);
-        border-radius:4px; padding:3px 7px; white-space:nowrap;
-        font-size:10px; color:var(--gold3); pointer-events:none;
-      ">${(wine.nom||'').substring(0,20)}</div>`;
-      ghost.style.cssText = `
-        position:fixed; pointer-events:none; z-index:9999;
-        transform:translate(-50%,-50%);
-        left:${e.clientX}px; top:${e.clientY}px;
-      `;
-      document.body.appendChild(ghost);
-
-      // Atténuer la bouteille source
-      el.setAttribute('opacity', '0.35');
-      el.style.cursor = 'grabbing';
-
-      _drag = { cave, floor, slot, wine, ghost, srcEl: el };
-      document.getElementById('tooltip').style.display = 'none';
-    });
-  });
-
   // ── Tooltip au survol ────────────────────────────────────────
   svg.querySelectorAll('circle[data-cave]').forEach(el => {
     el.addEventListener('mouseenter', (e) => {
-      if(_drag) return; // pas de tooltip pendant drag
       const cave  = parseInt(el.dataset.cave);
       const floor = parseInt(el.dataset.floor);
       const slot  = parseInt(el.dataset.slot);
@@ -2543,8 +2308,6 @@ function openSlotModal(cave, floor, slot) {
           <div id="price-estimate-box" style="display:none;margin-bottom:14px;padding:12px 16px;background:var(--bg3);border:1px solid rgba(201,168,76,0.3);border-radius:4px"></div>
           <div class="modal-actions">
             <button class="btn-outline" data-edit-id="${wine.id}" onclick="openEditModal(this.dataset.editId)">✏ Modifier</button>
-            <button class="btn-outline" data-mv-id="${wine.id}"   onclick="openDeplacerModal(this.dataset.mvId)">📦 Déplacer</button>
-            <button class="btn-outline" data-dup-id="${wine.id}"  onclick="openDupliquerModal(this.dataset.dupId)">⧉ Dupliquer</button>
             <button class="btn-outline" data-wine-id="${wine.id}" onclick="estimerPrixMarche(this.dataset.wineId)" id="btn-estimer">💰 Estimer</button>
             <button class="btn-danger"  data-rm-id="${wine.id}"   onclick="removeWine(this.dataset.rmId)">🗑 Retirer</button>
             <button class="btn-wine"    onclick="closeModal('modalSlot')">Fermer</button>
@@ -2679,158 +2442,6 @@ function confirmRetirer(saveToHisto) {
 }
 
 // =====================================================================
-// DUPLICATION DE BOUTEILLE
-// =====================================================================
-let dupliquerWineId = null;
-
-function openDupliquerModal(id) {
-  const wine = wineData.find(w => String(w.id) === String(id));
-  if(!wine) return;
-  dupliquerWineId = id;
-  document.getElementById('dup-wine-name').textContent = (wine.nom||'') + (wine.annee ? ' · ' + wine.annee : '');
-  document.getElementById('dup-warning').style.display = 'none';
-  document.getElementById('dup-count').value = 1;
-  renderDupSlots();
-  document.getElementById('modalDupliquer').classList.add('open');
-}
-
-function renderDupSlots() {
-  const count = parseInt(document.getElementById('dup-count').value) || 1;
-  const wine = wineData.find(w => String(w.id) === String(dupliquerWineId));
-  const container = document.getElementById('dup-slots-container');
-  if(!container) return;
-
-  let html = '';
-  for(let i = 0; i < count; i++) {
-    html += `
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px">
-        <div style="font-size:0.72rem;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">Copie ${i+1}</div>
-        <div class="form-grid">
-          <div class="form-row">
-            <label>Cave</label>
-            <select id="dup-cave-${i}" onchange="updateDupEtageN(${i})">
-              <option value="1"${wine && wine.cave==1?' selected':''}>Cave 1</option>
-              <option value="2"${wine && wine.cave==2?' selected':''}>Cave 2</option>
-            </select>
-          </div>
-          <div class="form-row">
-            <label>Étage</label>
-            <select id="dup-etage-${i}" onchange="updateDupSlotN(${i})"></select>
-          </div>
-          <div class="form-row form-full">
-            <label>Emplacement</label>
-            <select id="dup-slot-${i}"></select>
-          </div>
-        </div>
-      </div>`;
-  }
-  container.innerHTML = html;
-
-  // Initialiser les selects de chaque copie
-  for(let i = 0; i < count; i++) {
-    updateDupEtageN(i);
-  }
-}
-
-function updateDupEtageN(idx) {
-  const cave = parseInt(document.getElementById('dup-cave-' + idx).value) || 1;
-  const sel = document.getElementById('dup-etage-' + idx);
-  if(!sel) return;
-  sel.innerHTML = '';
-  CAVE_CONFIG[cave].floors.forEach(f => {
-    const opt = document.createElement('option');
-    opt.value = f.id;
-    opt.textContent = f.label + (f.isMagnum ? ' · Magnums' : '');
-    sel.appendChild(opt);
-  });
-  updateDupSlotN(idx);
-}
-
-function updateDupSlotN(idx) {
-  const cave  = parseInt(document.getElementById('dup-cave-' + idx).value) || 1;
-  const floor = parseInt(document.getElementById('dup-etage-' + idx).value) || 1;
-  const floorData = CAVE_CONFIG[cave].floors.find(f => f.id === floor);
-  const sel = document.getElementById('dup-slot-' + idx);
-  if(!sel || !floorData) return;
-  sel.innerHTML = '';
-
-  // Récupérer les slots déjà choisis par les autres copies
-  const count = parseInt(document.getElementById('dup-count').value) || 1;
-  const alreadyChosen = [];
-  for(let i = 0; i < count; i++) {
-    if(i === idx) continue;
-    const c = parseInt(document.getElementById('dup-cave-' + i)?.value);
-    const f = parseInt(document.getElementById('dup-etage-' + i)?.value);
-    const s = parseInt(document.getElementById('dup-slot-' + i)?.value);
-    if(c === cave && f === floor && s) alreadyChosen.push(s);
-  }
-
-  let freeCount = 0;
-  for(let i = 1; i <= floorData.slots; i++) {
-    if(getWineAtSlot(cave, floor, i)) continue;
-    if(alreadyChosen.includes(i)) continue;
-    freeCount++;
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = 'Empl. ' + i + ' — libre';
-    sel.appendChild(opt);
-  }
-  if(freeCount === 0) {
-    const opt = document.createElement('option');
-    opt.value = '';
-    opt.textContent = '— Aucun emplacement libre —';
-    sel.appendChild(opt);
-  }
-}
-
-// Garder pour compatibilité (non utilisées mais peuvent être appelées ailleurs)
-function updateDupEtage() { updateDupEtageN(0); }
-function updateDupSlot()  { updateDupSlotN(0); }
-function updateDupWarning() {}
-
-function confirmerDuplication() {
-  const wine = wineData.find(w => String(w.id) === String(dupliquerWineId));
-  if(!wine) return;
-  const count = parseInt(document.getElementById('dup-count').value) || 1;
-  const imageUrl = imgGet('wine_' + wine.id) || wine.image || '';
-  let created = 0;
-  const errors = [];
-
-  for(let i = 0; i < count; i++) {
-    const cave  = parseInt(document.getElementById('dup-cave-' + i)?.value);
-    const floor = parseInt(document.getElementById('dup-etage-' + i)?.value);
-    const slot  = parseInt(document.getElementById('dup-slot-' + i)?.value);
-
-    if(!cave || !floor || !slot) { errors.push('Copie ' + (i+1) + ' : emplacement invalide'); continue; }
-    if(getWineAtSlot(cave, floor, slot)) { errors.push('Copie ' + (i+1) + ' : emplacement déjà occupé'); continue; }
-
-    // ID unique pour chaque copie
-    const newId = Date.now().toString() + '_dup' + i + '_' + Math.random().toString(36).slice(2,6);
-    const copy = {
-      ...wine,
-      id:        newId,
-      cave,
-      floor,
-      slot,
-      _prixEstime: wine._prixEstime || '',
-      dateAjout: new Date().toISOString().split('T')[0]
-    };
-    wineData.push(copy);
-    if(imageUrl) imgSave('wine_' + newId, imageUrl);
-    created++;
-  }
-
-  if(created > 0) {
-    saveData();
-    closeModal('modalDupliquer');
-    closeModal('modalSlot');
-    renderCave2D();
-    renderList();
-    showNotif(created + ' copie' + (created > 1 ? 's' : '') + ' de "' + wine.nom + '" ajoutée' + (created > 1 ? 's' : '') + ' ✓');
-  }
-  if(errors.length > 0) showNotif(errors.join(' · '), true);
-}
-
 // =====================================================================
 // FORM
 // =====================================================================
@@ -4663,114 +4274,6 @@ function renderApogee(filtre) {
   }).join("");
 }
 
-
-// =====================================================================
-// DEPLACEMENT DE BOUTEILLES
-// =====================================================================
-let deplacerWineId = null;
-
-function openDeplacerModal(id) {
-  deplacerWineId = id;
-  const wine = wineData.find(w => String(w.id) === String(id));
-  if(!wine) return;
-  closeModal('modalSlot');
-  document.getElementById('deplacer-wine-name').textContent = (wine.nom||'') + (wine.annee ? ' ' + wine.annee : '');
-  // Pré-sélectionner la cave actuelle
-  document.getElementById('dep-cave').value = wine.cave || 1;
-  updateDepEtage(wine.floor);
-  document.getElementById('modalDeplacer').classList.add('open');
-}
-
-function updateDepEtage(selectedFloor) {
-  const cave    = parseInt(document.getElementById('dep-cave').value) || 1;
-  const sel     = document.getElementById('dep-etage');
-  sel.innerHTML = '';
-  CAVE_CONFIG[cave].floors.forEach(f => {
-    const opt = document.createElement('option');
-    opt.value = f.id;
-    opt.textContent = f.label + (f.isMagnum ? ' · Magnums' : '');
-    sel.appendChild(opt);
-  });
-  if(selectedFloor) sel.value = selectedFloor;
-  updateDepSlot();
-}
-
-function updateDepSlot() {
-  const cave    = parseInt(document.getElementById('dep-cave').value) || 1;
-  const floor   = parseInt(document.getElementById('dep-etage').value) || 1;
-  const floorData = CAVE_CONFIG[cave].floors.find(f => f.id === floor);
-  const sel     = document.getElementById('dep-slot');
-  sel.innerHTML = '';
-  if(!floorData) return;
-  const wine = wineData.find(w => String(w.id) === String(deplacerWineId));
-  for(let i = 1; i <= floorData.slots; i++) {
-    const occupant = getWineAtSlot(cave, floor, i);
-    // Exclure l'emplacement actuel du vin
-    if(occupant && String(occupant.id) === String(deplacerWineId)) continue;
-    const opt = document.createElement('option');
-    opt.value = i;
-    if(occupant) {
-      opt.textContent = 'Empl. ' + i + ' — ' + (occupant.nom||'?') + (occupant.annee?' '+occupant.annee:'') + ' (échange)';
-      opt.style.color = '#c9a84c';
-    } else {
-      opt.textContent = 'Empl. ' + i + ' — Libre';
-    }
-    sel.appendChild(opt);
-  }
-  if(!sel.options.length) {
-    const opt = document.createElement('option');
-    opt.textContent = 'Aucun emplacement disponible';
-    opt.disabled = true;
-    sel.appendChild(opt);
-  }
-}
-
-function confirmerDeplacement() {
-  const wine = wineData.find(w => String(w.id) === String(deplacerWineId));
-  if(!wine) return;
-  const newCave  = parseInt(document.getElementById('dep-cave').value);
-  const newFloor = parseInt(document.getElementById('dep-etage').value);
-  const newSlot  = parseInt(document.getElementById('dep-slot').value);
-  if(!newSlot) { showNotif('Choisissez un emplacement', true); return; }
-
-  // Sauvegarder les positions avant déplacement pour le log
-  const oldPos = `Cave ${wine.cave} Ét.${wine.floor} #${wine.slot}`;
-
-  // Vérifier si emplacement occupé → échange
-  const occupant = getWineAtSlot(newCave, newFloor, newSlot);
-  if(occupant && String(occupant.id) !== String(wine.id)) {
-    // Échange : mettre l'occupant à l'ancienne place du vin déplacé
-    const oldCave = wine.cave, oldFloor = wine.floor, oldSlot = wine.slot;
-    occupant.cave  = oldCave;
-    occupant.floor = oldFloor;
-    occupant.slot  = oldSlot;
-    // Réassurer que les images sont bien indexées par ID (pas par slot) après l'échange
-    if(occupant.id) {
-      const imgOcc = imgGet('wine_' + String(occupant.id)) || occupant.image || '';
-      if(imgOcc) imgSave('wine_' + String(occupant.id), imgOcc);
-    }
-    showNotif('Échange effectué : ' + (occupant.nom||'vin') + ' ↔ ' + (wine.nom||'vin') + ' ✓');
-  } else {
-    showNotif('Bouteille déplacée : ' + (wine.nom||'vin') + ' ' + oldPos + ' → Cave ' + newCave + ' Ét.' + newFloor + ' #' + newSlot + ' ✓');
-  }
-
-  // Déplacer le vin
-  wine.cave  = newCave;
-  wine.floor = newFloor;
-  wine.slot  = newSlot;
-
-  // Réassurer que l'image du vin déplacé est bien indexée par son ID
-  if(wine.id) {
-    const imgWine = imgGet('wine_' + String(wine.id)) || wine.image || '';
-    if(imgWine) imgSave('wine_' + String(wine.id), imgWine);
-  }
-
-  saveData();
-  closeModal('modalDeplacer');
-  renderCave2D();
-  renderList();
-  deplacerWineId = null;
-}
 
 
 // =====================================================================
