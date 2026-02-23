@@ -1714,7 +1714,7 @@ function updateHeader() {
   document.getElementById('hdr-total').textContent = wineData.length;
   document.getElementById('hdr-c1').textContent = c1;
   document.getElementById('hdr-c2').textContent = c2;
-  // Prix saisi en priorité, sinon estimation IA
+  // Prix saisi en priorité, sinon estimation Groq
   const val = wineData.reduce((s,w)=>s+(parseFloat(w.prix)||parseFloat(w._prixEstime)||0),0);
   document.getElementById('hdr-val').textContent = Math.round(val).toLocaleString('fr-FR')+' €';
   // ── Alerte "À boire bientôt / Apogée dépassée" ──────────────────────
@@ -2440,10 +2440,11 @@ function renderCave2D() {
     renderCave2D();
   }
 
-  // ── Tooltip au survol ────────────────────────────────────────
+  // ── Tooltip au survol (desktop uniquement) ──────────────────
   svg.querySelectorAll('circle[data-cave]').forEach(el => {
     el.addEventListener('mouseenter', (e) => {
-      if(_drag) return; // pas de tooltip pendant drag
+      if(_drag) return;
+      if(isMobile()) return; // tooltip uniquement sur desktop
       const cave  = parseInt(el.dataset.cave);
       const floor = parseInt(el.dataset.floor);
       const slot  = parseInt(el.dataset.slot);
@@ -2462,7 +2463,7 @@ function renderCave2D() {
         const imgWrap = document.getElementById('tt-img-wrap');
         const imgEl   = document.getElementById('tt-img');
         const _mbImg = imgGet('wine_' + wine.id) || wine.image || '';
-  if(_mbImg) { imgEl.src = _mbImg; imgWrap.style.display = 'block'; }
+        if(_mbImg) { imgEl.src = _mbImg; imgWrap.style.display = 'block'; }
         else { imgWrap.style.display = 'none'; }
       } else {
         document.getElementById('tt-img-wrap').style.display = 'none';
@@ -2475,6 +2476,7 @@ function renderCave2D() {
       tt.style.top  = (e.clientY - 12) + 'px';
     });
     el.addEventListener('mousemove', (e) => {
+      if(isMobile()) return;
       const tt = document.getElementById('tooltip');
       tt.style.left = (e.clientX + 16) + 'px';
       tt.style.top  = (e.clientY - 12) + 'px';
@@ -3081,17 +3083,10 @@ Aucun texte autour. Juste le tableau.`;
 }
 
 async function estimerValeurCave() {
-  // Forcer l'estimation de tous les vins sans prix (ignore le throttle 24h)
-  const aEstimer = wineData.filter(w => !w.prix && !w._prixEstime);
-  if(aEstimer.length === 0) { showNotif('Tous les vins ont déjà un prix ✓'); renderStats(); return; }
-  if(_isEstimating) { showNotif('Estimation déjà en cours…'); return; }
-
-  // Réinitialiser le throttle pour permettre l'estimation immédiate
-  localStorage.removeItem('_lastEstimation');
+  // Estimer tous les vins sans prix puis recalculer
   await estimerTousLesVinsAuto();
-  renderStats();
+  // La valeur totale est déjà affichée dans renderStats après saveData()
 }
-
 
 async function estimerPrixMarche(wineId) {
   const wine = wineData.find(w => String(w.id) === String(wineId));
@@ -3146,11 +3141,10 @@ Réponds UNIQUEMENT avec un nombre entier. Ex: 45`;
 
 function renderStats() {
   const total   = wineData.length;
-  // valTotale = prix saisi EN PRIORITÉ, sinon estimation IA
+  // valTotale = prix saisi EN PRIORITÉ, sinon estimation Groq
   const valTotale  = wineData.reduce((s,w)=>s+(parseFloat(w.prix)||parseFloat(w._prixEstime)||0),0);
   const nbEstimes  = wineData.filter(w => w._prixEstime && !w.prix).length;
   const nbAvecPrix = wineData.filter(w => w.prix).length;
-  const aEstimerCount = wineData.filter(w => !w.prix && !w._prixEstime).length;
   const nbAvecValeur = nbAvecPrix + nbEstimes;
   // Prix moyen basé sur tous les vins ayant une valeur (saisi ou estimé)
   const avgPrix = nbAvecValeur ? Math.round(valTotale / nbAvecValeur) : 0;
@@ -3169,7 +3163,7 @@ function renderStats() {
     <div class="stat-card"><div class="s-val">${total}</div><div class="s-lbl">Bouteilles total</div></div>
     <div class="stat-card" style="cursor:pointer;border-color:rgba(201,168,76,0.3)" onclick="estimerValeurCave()">
       <div class="s-val" style="color:var(--green2)">${Math.round(valTotale).toLocaleString('fr-FR')} €</div>
-      <div class="s-lbl">Valeur estimée cave<br><span style="font-size:0.7rem;opacity:0.7">${nbAvecPrix} prix saisis · ${nbEstimes} estimés · ${aEstimerCount > 0 ? `<u style="cursor:pointer">estimer les ${aEstimerCount} manquants</u>` : 'tous estimés ✓'}</span></div>
+      <div class="s-lbl">Valeur estimée cave<br><span style="font-size:0.7rem;opacity:0.7">${nbAvecPrix} prix saisis · ${nbEstimes} estimés Groq · cliquer pour estimer les manquants</span></div>
     </div>
     <div class="stat-card"><div class="s-val">${avgPrix} €</div><div class="s-lbl">Prix moyen / bouteille<br><span style="font-size:0.7rem;opacity:0.7">sur ${nbAvecValeur} vins avec valeur</span></div></div>
     <div class="stat-card"><div class="s-val">${occ1+occ2}/${cap1+cap2}</div><div class="s-lbl">Taux remplissage global</div></div>`;
@@ -4884,11 +4878,12 @@ function handleBottleClick(e, cave, floor, slot) {
   document.getElementById('tooltip').style.display = 'none';
 
   if(!isMobile()) {
-    // Desktop : comportement normal
+    // Desktop : ouvrir directement la fiche de renseignement
     openSlotModal(cave, floor, slot);
     return;
   }
 
+  // ── Mobile : comportement inchangé ──────────────────────────
   const now = Date.now();
   const sameTarget = (mobileBubbleCave === cave && mobileBubbleFloor === floor && mobileBubbleSlot === slot);
 
