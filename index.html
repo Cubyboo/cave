@@ -573,6 +573,7 @@
   }
   .leaflet-wine-tooltip::before { display: none !important; }
   .leaflet-control-attribution { display: none !important; }
+  .appel-label-icon { background: none !important; border: none !important; box-shadow: none !important; }
   .leaflet-control-zoom a {
     background: rgba(14,10,11,0.9) !important;
     color: #a09080 !important;
@@ -4809,7 +4810,7 @@ function renderCarte() {
     });
 
     // Zoom en bas à droite
-    L.control.zoom({ position: 'bottomright' }).addTo(leafletMap);
+    L.control.zoom({ position: 'topright' }).addTo(leafletMap);
 
     // Fond carte épuré style "poster" — CartoDB Voyager (libre, sans clé)
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
@@ -5049,10 +5050,10 @@ function geoCentroid(geometry) {
 // cru  = Grand Cru / cru classé, AOC distincte à part entière (point violet, italique)
 function addAppelLabel(group, lat, lng, nom, type) {
   const S = {
-    zone: { dot:false, r:0,   stroke:'',        fill:'',        txtColor:'#b0b8c4', bg:'rgba(14,10,11,0.72)', size:'0.60rem', weight:'800', italic:false, upper:true  },
-    aoc:  { dot:true,  r:5,   stroke:'#6b1020', fill:'#9b2030', txtColor:'#c8d0d8', bg:'rgba(14,10,11,0.82)', size:'0.65rem', weight:'700', italic:false, upper:false },
-    cru:  { dot:true,  r:3.5, stroke:'#3a0868', fill:'#6a18b0', txtColor:'#d8dde3', bg:'rgba(14,10,11,0.82)', size:'0.60rem', weight:'600', italic:true,  upper:false },
-  }[type] || { dot:true, r:4, stroke:'#444', fill:'#666', txtColor:'#c8d0d8', bg:'rgba(14,10,11,0.80)', size:'0.62rem', weight:'600', italic:false, upper:false };
+    zone: { dot:false, r:0,   stroke:'',        fill:'',        txtColor:'#4a8c5c', bg:'rgba(0,0,0,0.0)',    size:'0.60rem', weight:'800', italic:false, upper:true  },
+    aoc:  { dot:true,  r:5,   stroke:'#6b1020', fill:'#9b2030', txtColor:'#3a7a4e', bg:'rgba(0,0,0,0.0)',    size:'0.65rem', weight:'700', italic:false, upper:false },
+    cru:  { dot:true,  r:3.5, stroke:'#3a0868', fill:'#6a18b0', txtColor:'#5a9a6e', bg:'rgba(0,0,0,0.0)',    size:'0.60rem', weight:'600', italic:true,  upper:false },
+  }[type] || { dot:true, r:4, stroke:'#444', fill:'#666', txtColor:'#3a7a4e', bg:'rgba(0,0,0,0.0)', size:'0.62rem', weight:'600', italic:false, upper:false };
 
   if (S.dot) {
     const dot = L.circleMarker([lat, lng], {
@@ -5070,15 +5071,15 @@ function addAppelLabel(group, lat, lng, nom, type) {
 
   const lbl = L.marker([lat, lng], {
     icon: L.divIcon({
-      className: '',
+      className: 'appel-label-icon',
       html: `<div style="
         font-family:'Playfair Display',serif;
         font-size:${S.size};font-weight:${S.weight};
-        color:${S.txtColor};background:${S.bg};
-        padding:1px 5px;border-radius:2px;
+        color:${S.txtColor};
+        padding:1px 4px;
         white-space:nowrap;pointer-events:none;
         transform:translate(${S.dot ? '7px' : '-50%'},-50%);
-        box-shadow:0 1px 3px rgba(0,0,0,0.12);
+        text-shadow:0 1px 3px rgba(255,255,255,0.85),0 0 6px rgba(255,255,255,0.6);
         ${S.upper ? 'text-transform:uppercase;letter-spacing:0.7px;' : ''}
         ${S.italic ? 'font-style:italic;' : ''}
       ">${nom}</div>`,
@@ -5341,35 +5342,56 @@ const APPELLATIONS = {
 
   // ─── VALLÉE DU RHÔNE ───────────────────────────────────────
   'cotes-du-rhone': [
-    // Zones
-    { nom:'Rhône Septentrional',       type:'zone', lat:45.200, lng:4.820 },
-    { nom:'Rhône Méridional',          type:'zone', lat:44.200, lng:4.900 },
-    // AOC Rhône Nord
-    { nom:'Côte-Rôtie',                type:'aoc',  lat:45.470, lng:4.796 },
-    { nom:'Condrieu',                  type:'aoc',  lat:45.382, lng:4.776 },
-    { nom:'Château-Grillet',           type:'aoc',  lat:45.368, lng:4.769 },
-    { nom:'Saint-Joseph',              type:'aoc',  lat:45.100, lng:4.837 },
-    { nom:'Crozes-Hermitage',          type:'aoc',  lat:45.088, lng:4.897 },
-    { nom:'Hermitage',                 type:'aoc',  lat:45.075, lng:4.836 },
-    { nom:'Cornas',                    type:'aoc',  lat:44.912, lng:4.840 },
-    { nom:'Saint-Péray',               type:'aoc',  lat:44.896, lng:4.846 },
-    // AOC Rhône Sud
-    { nom:'Châteauneuf-du-Pape',       type:'aoc',  lat:44.057, lng:4.833 },
-    { nom:'Gigondas',                  type:'aoc',  lat:44.172, lng:5.022 },
-    { nom:'Vacqueyras',                type:'aoc',  lat:44.117, lng:5.000 },
-    { nom:'Beaumes-de-Venise',         type:'aoc',  lat:44.123, lng:5.028 },
-    { nom:'Muscat de Beaumes-de-Venise',type:'aoc', lat:44.120, lng:5.030 },
-    { nom:'Rasteau',                   type:'aoc',  lat:44.193, lng:4.958 },
-    { nom:'Cairanne',                  type:'aoc',  lat:44.226, lng:4.956 },
-    { nom:'Vinsobres',                 type:'aoc',  lat:44.334, lng:5.025 },
-    { nom:'Tavel',                     type:'aoc',  lat:44.009, lng:4.677 },
-    { nom:'Lirac',                     type:'aoc',  lat:44.041, lng:4.693 },
-    { nom:'Côtes du Rhône Villages',   type:'aoc',  lat:44.300, lng:4.950 },
-    { nom:'Côtes du Rhône AOC',        type:'aoc',  lat:44.100, lng:4.750 },
-    { nom:'Grignan-les-Adhémar',       type:'aoc',  lat:44.420, lng:4.905 },
-    { nom:'Ventoux',                   type:'aoc',  lat:44.136, lng:5.160 },
-    { nom:'Luberon',                   type:'aoc',  lat:43.830, lng:5.380 },
-    { nom:'Costières de Nîmes',        type:'aoc',  lat:43.722, lng:4.428 },
+    // ── Zones géographiques ──
+    { nom:'Rhône Septentrional',         type:'zone', lat:45.250, lng:4.820 },
+    { nom:'Rhône Méridional',            type:'zone', lat:44.050, lng:4.900 },
+
+    // ── Rhône Nord — AOC ──
+    { nom:'Côte-Rôtie',                  type:'aoc',  lat:45.470, lng:4.796 },
+    { nom:'Condrieu',                    type:'aoc',  lat:45.382, lng:4.776 },
+    { nom:'Château-Grillet',             type:'cru',  lat:45.368, lng:4.769 },
+    { nom:'Saint-Joseph',                type:'aoc',  lat:45.100, lng:4.837 },
+    { nom:'Crozes-Hermitage',            type:'aoc',  lat:45.090, lng:4.897 },
+    { nom:'Hermitage',                   type:'cru',  lat:45.075, lng:4.836 },
+    { nom:'Cornas',                      type:'aoc',  lat:44.912, lng:4.840 },
+    { nom:'Saint-Péray',                 type:'aoc',  lat:44.896, lng:4.846 },
+    { nom:'Clairette de Die',            type:'aoc',  lat:44.750, lng:5.370 },
+    { nom:'Châtillon-en-Diois',          type:'aoc',  lat:44.695, lng:5.480 },
+    { nom:'Crémant de Die',              type:'aoc',  lat:44.745, lng:5.368 },
+    { nom:'Côteaux de Die',              type:'aoc',  lat:44.752, lng:5.372 },
+
+    // ── Rhône Sud — AOC villages ──
+    { nom:'Châteauneuf-du-Pape',         type:'cru',  lat:44.057, lng:4.833 },
+    { nom:'Gigondas',                    type:'cru',  lat:44.172, lng:5.022 },
+    { nom:'Vacqueyras',                  type:'cru',  lat:44.117, lng:5.000 },
+    { nom:'Beaumes-de-Venise',           type:'aoc',  lat:44.123, lng:5.028 },
+    { nom:'Muscat de Beaumes-de-Venise', type:'aoc',  lat:44.120, lng:5.038 },
+    { nom:'Rasteau',                     type:'cru',  lat:44.193, lng:4.958 },
+    { nom:'Cairanne',                    type:'cru',  lat:44.226, lng:4.956 },
+    { nom:'Vinsobres',                   type:'cru',  lat:44.334, lng:5.025 },
+    { nom:'Roaix',                       type:'aoc',  lat:44.225, lng:4.975 },
+    { nom:'Séguret',                     type:'aoc',  lat:44.220, lng:5.005 },
+    { nom:'Sablet',                      type:'aoc',  lat:44.198, lng:5.005 },
+    { nom:'Chusclan',                    type:'aoc',  lat:44.108, lng:4.605 },
+    { nom:'Laudun',                      type:'aoc',  lat:44.093, lng:4.672 },
+    { nom:'Saint-Gervais',               type:'aoc',  lat:44.140, lng:4.623 },
+    { nom:'Visan',                       type:'aoc',  lat:44.308, lng:5.002 },
+    { nom:"Massif d'Uchaux",            type:'aoc',  lat:44.175, lng:4.748 },
+    { nom:'Plan de Dieu',                type:'aoc',  lat:44.220, lng:4.938 },
+    { nom:'Puyméras',                    type:'aoc',  lat:44.306, lng:5.058 },
+    { nom:'Rousset-les-Vignes',          type:'aoc',  lat:44.390, lng:5.058 },
+    { nom:'Saint-Pantaléon-les-Vignes',  type:'aoc',  lat:44.395, lng:5.066 },
+    { nom:'Valréas',                     type:'aoc',  lat:44.384, lng:4.992 },
+    { nom:'Tavel',                       type:'aoc',  lat:44.009, lng:4.677 },
+    { nom:'Lirac',                       type:'aoc',  lat:44.041, lng:4.693 },
+    { nom:'Grignan-les-Adhémar',         type:'aoc',  lat:44.420, lng:4.905 },
+    { nom:'Ventoux',                     type:'aoc',  lat:44.136, lng:5.160 },
+    { nom:'Luberon',                     type:'aoc',  lat:43.830, lng:5.380 },
+    { nom:'Costières de Nîmes',          type:'aoc',  lat:43.722, lng:4.428 },
+    { nom:'Côtes du Vivarais',           type:'aoc',  lat:44.510, lng:4.386 },
+    { nom:"Duché d'Uzès",               type:'aoc',  lat:43.998, lng:4.420 },
+    { nom:'Côtes du Rhône Villages',     type:'aoc',  lat:44.300, lng:4.870 },
+    { nom:'Côtes du Rhône',              type:'aoc',  lat:44.100, lng:4.700 },
   ],
 
   // ─── ALSACE ────────────────────────────────────────────────
@@ -5580,9 +5602,6 @@ const APPELLATIONS = {
     // AOC
     { nom:'Arbois',                    type:'aoc',  lat:46.903, lng: 5.775 },
     { nom:'Arbois Pupillin',           type:'aoc',  lat:46.888, lng: 5.785 },
-    { nom:'Côtes du Jura',             type:'aoc',  lat:46.800, lng: 5.700 },
-    { nom:'Crémant du Jura',           type:'aoc',  lat:46.820, lng: 5.720 },
-    { nom:'Macvin du Jura',            type:'aoc',  lat:46.870, lng: 5.752 },
     // AOC à part entière
     { nom:'Château-Chalon',            type:'aoc',  lat:46.762, lng: 5.629 },
     { nom:"L'Étoile",                  type:'aoc',  lat:46.724, lng: 5.582 },
@@ -5743,12 +5762,8 @@ function zoomRegion(key) {
 }
 
 function renderCarteLegend() {
-  const types = [...new Set(wineData.map(w=>w.type).filter(Boolean))];
-  document.getElementById('carte-legend').innerHTML = types.map(t => `
-    <div style="display:flex;align-items:center;gap:5px">
-      <span style="width:10px;height:10px;border-radius:50%;background:${TYPE_COLORS_CARTE[t]||'#888'};display:inline-block"></span>
-      <span style="text-transform:capitalize">${t}</span>
-    </div>`).join('');
+  // Légende masquée
+  document.getElementById('carte-legend').innerHTML = '';
 }
 
 
