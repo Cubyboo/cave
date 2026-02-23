@@ -310,9 +310,10 @@
   .badge-rosé         { background: rgba(200,100,120,0.18);color: #e8a0b0; border: 1px solid rgba(160,80,100,0.5); }
   .badge-effervescent { background: rgba(100,160,220,0.15);color: #90c8f0; border: 1px solid rgba(80,120,180,0.4); }
   .badge-vdn          { background: rgba(160,80,200,0.18); color: #d0a0f0; border: 1px solid rgba(120,60,160,0.4); }
-  .badge-magnum             { background: rgba(80,50,100,0.25);  color: #c0a0e8;  border: 1px solid rgba(80,50,130,0.5); }
-  .badge-liquoreux-rouge    { background: rgba(90,26,10,0.30);   color: #d06040;  border: 1px solid rgba(120,40,10,0.6); }
-  .badge-liquoreux-blanc    { background: rgba(200,96,16,0.22);  color: #f0a050;  border: 1px solid rgba(180,80,10,0.5); }
+  .badge-vdn_blanc    { background: rgba(200,160,60,0.18); color: #f0d080; border: 1px solid rgba(180,140,40,0.4); }
+  .badge-vdn_rouge    { background: rgba(120,40,20,0.22);  color: #d08060; border: 1px solid rgba(140,60,30,0.5); }
+  .badge-liquoreux    { background: rgba(200,100,20,0.18); color: #f0a050; border: 1px solid rgba(180,90,20,0.4); }
+  .badge-magnum       { background: rgba(80,50,100,0.25);  color: #c0a0e8; border: 1px solid rgba(80,50,130,0.5); }
   .format-badge { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 0.65rem; letter-spacing: 0.5px; text-transform: uppercase; background: rgba(201,168,76,0.07); color: var(--text2); border: 1px solid var(--border); }
   .rating-stars { color: var(--gold); letter-spacing: -1px; }
 
@@ -672,14 +673,17 @@
     <button class="cave-btn active" onclick="selectCave(1,this)">Cave 1 — 156 empl.</button>
     <button class="cave-btn" onclick="selectCave(2,this)">Cave 2 — 110 empl.</button>
     <div class="cave-legend">
-      <div class="legend-item"><div class="legend-big" style="background:#8a1828"></div> Rouge</div>
-      <div class="legend-item"><div class="legend-big" style="background:#a88018"></div> Blanc</div>
-      <div class="legend-item"><div class="legend-big" style="background:#b84068"></div> Rosé</div>
-      <div class="legend-item"><div class="legend-big" style="background:#204870"></div> Effervescent</div>
-      <div class="legend-item"><div class="legend-big" style="background:#703090"></div> VDN</div>
-      <div class="legend-item"><div class="legend-big" style="background:#504898"></div> Magnum</div>
-      <div class="legend-item"><div class="legend-big" style="background:#1a1014;border:1.5px solid #4a3040"></div> Vide</div>
-      <div class="legend-item"><div class="legend-small" style="background:#4a4a4a"></div> Goulot arrière</div>
+      <div class="legend-item"><div class="legend-big" style="background:#8a1828"></div> <span style="color:#e06878">Rouge</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#a88018"></div> <span style="color:#e8c870">Blanc</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#b84068"></div> <span style="color:#e8a0b0">Rosé</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#1e4870"></div> <span style="color:#90c8f0">Effervescent</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#703090"></div> <span style="color:#d0a0f0">VDN</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#8a4010"></div> <span style="color:#f0a050">VDN Blanc</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#6a2010"></div> <span style="color:#d08060">VDN Rouge</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#c06020"></div> <span style="color:#f0a850">Liquoreux</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#504898"></div> <span style="color:#c0a0e8">Magnum</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#1a1014;border:1.5px solid #4a3040"></div> <span style="color:#6a5a50">Vide</span></div>
+      <div class="legend-item"><div class="legend-small" style="background:#4a4a4a"></div> <span style="color:#6a5a50">Goulot arrière</span></div>
     </div>
   </div>
   <div class="cave-2d-wrap" id="cave2dWrap">
@@ -703,10 +707,9 @@
       <option value="rosé">Rosé</option>
       <option value="effervescent">Effervescent</option>
       <option value="vdn">VDN</option>
-      <option value="liquoreux-rouge">Liquoreux Rouge</option>
-      <option value="liquoreux-blanc">Liquoreux Blanc</option>
-      <option value="liquoreux-rouge">Liquoreux Rouge</option>
-      <option value="liquoreux-blanc">Liquoreux Blanc</option>
+      <option value="vdn_blanc">VDN Blanc</option>
+      <option value="vdn_rouge">VDN Rouge</option>
+      <option value="liquoreux">Liquoreux</option>
       <option value="magnum">Magnum</option>
     </select>
     <select id="sortBy" onchange="renderList()">
@@ -770,8 +773,9 @@
           <option value="rosé">Rosé</option>
           <option value="effervescent">Effervescent (Champagne, Crémant…)</option>
           <option value="vdn">VDN (Muscat, Banyuls, Rivesaltes…)</option>
-          <option value="liquoreux-rouge">Liquoreux Rouge (Porto Ruby, Banyuls Rimage…)</option>
-          <option value="liquoreux-blanc">Liquoreux Blanc (Sauternes, Jurançon, Monbazillac…)</option>
+          <option value="vdn_blanc">VDN Blanc (Muscat, Rivesaltes Ambré…)</option>
+          <option value="vdn_rouge">VDN Rouge (Banyuls, Maury, Rivesaltes Grenat…)</option>
+          <option value="liquoreux">Liquoreux (Sauternes, Jurançon, Monbazillac…)</option>
           <option value="magnum">Magnum</option>
         </select>
       </div>
@@ -888,6 +892,9 @@
       <option value="rosé">Rosé</option>
       <option value="effervescent">Effervescent</option>
       <option value="vdn">VDN</option>
+      <option value="vdn_blanc">VDN Blanc</option>
+      <option value="vdn_rouge">VDN Rouge</option>
+      <option value="liquoreux">Liquoreux</option>
     </select>
   </div>
   <div id="histo-empty" style="display:none;text-align:center;padding:60px 0;color:var(--text2);font-style:italic">Aucune dégustation enregistrée</div>
@@ -1043,8 +1050,9 @@
           <option value="rosé">Rosé</option>
           <option value="effervescent">Effervescent</option>
           <option value="vdn">VDN</option>
-          <option value="liquoreux-rouge">Liquoreux Rouge</option>
-          <option value="liquoreux-blanc">Liquoreux Blanc</option>
+          <option value="vdn_blanc">VDN Blanc</option>
+          <option value="vdn_rouge">VDN Rouge</option>
+          <option value="liquoreux">Liquoreux</option>
         </select>
       </div>
       <div class="form-row">
@@ -1331,7 +1339,7 @@ let wineData = JSON.parse(localStorage.getItem('caveData') || '[]');
 let currentCave = 1;
 let addingToSlot = null;
 
-const TYPE_LABELS   = { rouge:'Rouge', blanc:'Blanc', 'rosé':'Rosé', effervescent:'Effervescent', vdn:'VDN', 'liquoreux-rouge':'Liquoreux Rouge', 'liquoreux-blanc':'Liquoreux Blanc', magnum:'Magnum' };
+const TYPE_LABELS   = { rouge:'Rouge', blanc:'Blanc', 'rosé':'Rosé', effervescent:'Effervescent', vdn:'VDN', vdn_blanc:'VDN Blanc', vdn_rouge:'VDN Rouge', liquoreux:'Liquoreux', magnum:'Magnum' };
 const FORMAT_LABELS = { '75cl':'75 cl','37.5cl':'37,5 cl','62cl':'62 cl','150cl':'Magnum 150 cl','300cl':'Double Magnum','autre':'Autre' };
 const WINE_COLORS = {
   rouge:        { fill:'#8a1828', stroke:'#c04060', small:'#5a1020' },
@@ -1339,6 +1347,9 @@ const WINE_COLORS = {
   'rosé':       { fill:'#b84068', stroke:'#e080a0', small:'#803050' },
   effervescent: { fill:'#1e4870', stroke:'#5090c0', small:'#102840' },
   vdn:          { fill:'#703090', stroke:'#b060d0', small:'#481870' },
+  vdn_blanc:    { fill:'#8a6010', stroke:'#d4a830', small:'#5a3e08' },
+  vdn_rouge:    { fill:'#6a2010', stroke:'#b05030', small:'#3e1008' },
+  liquoreux:    { fill:'#c06020', stroke:'#e89040', small:'#803810' },
   magnum:       { fill:'#504898', stroke:'#9080d0', small:'#302870' },
   empty:        { fill:'#1a1014', stroke:'#4a3040', small:'#2a1a22' }
 };
@@ -2454,9 +2465,9 @@ function renderStats() {
   }
 
   // Type
-  const typeOrder = ['rouge','blanc','rosé','effervescent','vdn','liquoreux-rouge','liquoreux-blanc','magnum'];
-  const typeNames = {rouge:'Rouge',blanc:'Blanc','rosé':'Rosé',effervescent:'Effervescent',vdn:'VDN','liquoreux-rouge':'Liq. Rouge','liquoreux-blanc':'Liq. Blanc',magnum:'Magnum'};
-  const typeColors = {rouge:'background:linear-gradient(90deg,#5a1020,#9e2a3f)',blanc:'background:linear-gradient(90deg,#7a5a10,#c9a84c)','rosé':'background:linear-gradient(90deg,#8a3050,#c06080)',effervescent:'background:linear-gradient(90deg,#204060,#5090c0)',vdn:'background:linear-gradient(90deg,#502080,#9040c0)','liquoreux-rouge':'background:linear-gradient(90deg,#3a0800,#8b2500)','liquoreux-blanc':'background:linear-gradient(90deg,#7a3a00,#c86010)',magnum:'background:linear-gradient(90deg,#4a2870,#9060c0)'};
+  const typeOrder = ['rouge','blanc','rosé','effervescent','vdn','vdn_blanc','vdn_rouge','liquoreux','magnum'];
+  const typeNames = {rouge:'Rouge',blanc:'Blanc','rosé':'Rosé',effervescent:'Effervescent',vdn:'VDN',vdn_blanc:'VDN Blanc',vdn_rouge:'VDN Rouge',liquoreux:'Liquoreux',magnum:'Magnum'};
+  const typeColors = {rouge:'background:linear-gradient(90deg,#5a1020,#9e2a3f)',blanc:'background:linear-gradient(90deg,#7a5a10,#c9a84c)','rosé':'background:linear-gradient(90deg,#8a3050,#c06080)',effervescent:'background:linear-gradient(90deg,#204060,#5090c0)',vdn:'background:linear-gradient(90deg,#502080,#9040c0)',vdn_blanc:'background:linear-gradient(90deg,#5a3e08,#c9a020)',vdn_rouge:'background:linear-gradient(90deg,#3e1008,#a04020)',liquoreux:'background:linear-gradient(90deg,#803810,#d07030)',magnum:'background:linear-gradient(90deg,#4a2870,#9060c0)'};
   const maxT = Math.max(1,...Object.values(types));
   document.getElementById('chartType').innerHTML = typeOrder.map(t=>`
     <div class="bar-row">
@@ -3583,13 +3594,17 @@ const ACCORDS_AUTO = {
     plats: ["Foie gras","Chocolat noir","Fromage persille","Desserts"],
     mots: ["foie gras","chocolat","roquefort","stilton","desserts","sucre"]
   },
-  "liquoreux-rouge": {
-    plats: ["Chocolat noir","Fromage persillé","Figues rôties","Cerises confites","Desserts chocolat"],
-    mots: ["chocolat","roquefort","stilton","figues","cerises","desserts","sucre"]
+  "vdn_blanc": {
+    plats: ["Foie gras","Melon jambon","Tarte aux abricots","Crème brûlée","Fromage bleu"],
+    mots: ["foie gras","melon","abricots","creme brulee","fromage bleu","desserts","sucre"]
   },
-  "liquoreux-blanc": {
-    plats: ["Foie gras","Roquefort","Tarte Tatin","Desserts fruités","Melon","Abricot"],
-    mots: ["foie gras","roquefort","tarte","sucre","melon","abricot","peche","dessert"]
+  "vdn_rouge": {
+    plats: ["Chocolat noir 70%","Fondant chocolat","Fromage persillé","Tarte aux noix","Fruits rouges"],
+    mots: ["chocolat","fondant","roquefort","noix","fruits rouges","desserts"]
+  },
+  "liquoreux": {
+    plats: ["Foie gras d'oie","Roquefort","Tarte tatin","Crème brûlée","Abricots pochés","Desserts fruités"],
+    mots: ["foie gras","roquefort","tarte tatin","creme brulee","abricots","peches","desserts","sucre"]
   },
   "magnum": {
     plats: ["Grandes tablees","Repas de fete","Viandes rotis","Plateau de fromages"],
@@ -3681,7 +3696,7 @@ function rechercherParVin(id) {
 }
 
 function wineCardHtml(w) {
-  const tLabel = {rouge:'Rouge',blanc:'Blanc','rosé':'Rosé',effervescent:'Effervescent',vdn:'VDN','liquoreux-rouge':'Liquoreux Rouge','liquoreux-blanc':'Liquoreux Blanc',magnum:'Magnum'}[w.type] || w.type;
+  const tLabel = {rouge:'Rouge',blanc:'Blanc','rosé':'Rosé',effervescent:'Effervescent',vdn:'VDN',vdn_blanc:'VDN Blanc',vdn_rouge:'VDN Rouge',liquoreux:'Liquoreux',magnum:'Magnum'}[w.type] || w.type;
   return `<div style="display:flex;gap:12px;align-items:center;padding:10px;background:var(--bg3);border-radius:3px;margin-bottom:8px;border:1px solid var(--border)">
     ${(imgGet('wine_'+w.id)||w.image)?`<img src="${imgGet('wine_'+w.id)||w.image}" style="width:36px;height:50px;object-fit:contain;border-radius:2px;flex-shrink:0">`:'<div style="width:36px;height:50px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">🍷</div>'}
     <div style="flex:1;min-width:0">
@@ -3779,8 +3794,9 @@ const APOGEE_AUTO = {
   "rose":                  { min: 1,  max: 3  },
   "effervescent":          { min: 2,  max: 8  },
   "vdn":                   { min: 5,  max: 20 },
-  "liquoreux-rouge":       { min: 8,  max: 30 },
-  "liquoreux-blanc":       { min: 5,  max: 25 },
+  "vdn_blanc":             { min: 5,  max: 20 },
+  "vdn_rouge":             { min: 8,  max: 30 },
+  "liquoreux":             { min: 8,  max: 30 },
 };
 
 function getApogeeAuto(wine) {
@@ -4039,7 +4055,7 @@ function handleSearch(query) {
     return;
   }
 
-  const typeColors = {rouge:'#9e2a3f',blanc:'#c9a84c','rosé':'#c06080',effervescent:'#5090c0',vdn:'#9040c0',magnum:'#9060c0'};
+  const typeColors = {rouge:'#9e2a3f',blanc:'#c9a84c','rosé':'#c06080',effervescent:'#5090c0',vdn:'#9040c0',vdn_blanc:'#c9a020',vdn_rouge:'#a04020',liquoreux:'#d07030',magnum:'#9060c0'};
 
   panel.style.display = 'block';
   panel.innerHTML = `<div class="search-count">${results.length} résultat${results.length>1?'s':''} pour "${query}"</div>` +
@@ -4819,8 +4835,9 @@ const TYPE_COLORS_CARTE = {
   rosé: '#e8a0b0',
   effervescent: '#90c8f0',
   vdn: '#d0a0f0',
-  'liquoreux-rouge': '#8b2500',
-  'liquoreux-blanc': '#e8900a',
+  vdn_blanc: '#f0d080',
+  vdn_rouge: '#d08060',
+  liquoreux: '#f0a850',
   magnum: '#c0a0e8'
 };
 
