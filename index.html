@@ -615,7 +615,7 @@
 </div>
 
 <header>
-  <div class="logo"><span style="font-style:normal;font-size:1.6rem">🗺️</span> Cave à Vin<div class="logo-dot"></div></div>
+  <div class="logo"><span style="font-style:normal;font-size:1.6rem">🍷️</span> Cave à Vin MMM<div class="logo-dot"></div></div>
   <div class="stats-bar">
     <div class="stat-item"><b id="hdr-total">0</b>bouteilles</div>
     <div class="stat-item"><b id="hdr-c1">0</b>cave 1</div>
@@ -628,7 +628,7 @@
 <div class="search-results-panel" id="search-panel" style="display:none"></div>
 
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('view2d',this)"><span class="tab-icon">🗺</span><span class="tab-label">Cave</span></div>
+  <div class="tab active" onclick="switchTab('view2d',this)"><span class="tab-icon">️🗺</span><span class="tab-label">Cave</span></div>
   <div class="tab" onclick="switchTab('list',this)"><span class="tab-icon">📋</span><span class="tab-label">Liste</span></div>
   <div class="tab" onclick="switchTab('historique',this)"><span class="tab-icon">🥂</span><span class="tab-label">Dégustation</span></div>
   <div class="tab" onclick="switchTab('carte',this)"><span class="tab-icon">🌍</span><span class="tab-label">Carte</span></div>
@@ -4902,7 +4902,7 @@ function renderCarte() {
     'provence':       { lat: 43.480, lng: 5.900 },
     'languedoc':      { lat: 43.450, lng: 3.100 },
     'roussillon':     { lat: 42.680, lng: 2.780 },
-    'sud-ouest':      { lat: 44.100, lng: 0.600 },
+    'sud_ouest':      { lat: 44.100, lng: 0.600 },
     'loire':          { lat: 47.380, lng: 0.200 },
   };
 
@@ -5051,9 +5051,9 @@ function geoCentroid(geometry) {
 function addAppelLabel(group, lat, lng, nom, type) {
   const S = {
     zone: { dot:false, r:0,   stroke:'',        fill:'',        txtColor:'#4a8c5c', bg:'rgba(0,0,0,0.0)',    size:'0.60rem', weight:'800', italic:false, upper:true  },
-    aoc:  { dot:true,  r:5,   stroke:'#6b1020', fill:'#9b2030', txtColor:'#3a7a4e', bg:'rgba(0,0,0,0.0)',    size:'0.65rem', weight:'700', italic:false, upper:false },
-    cru:  { dot:true,  r:3.5, stroke:'#3a0868', fill:'#6a18b0', txtColor:'#5a9a6e', bg:'rgba(0,0,0,0.0)',    size:'0.60rem', weight:'600', italic:true,  upper:false },
-  }[type] || { dot:true, r:4, stroke:'#444', fill:'#666', txtColor:'#3a7a4e', bg:'rgba(0,0,0,0.0)', size:'0.62rem', weight:'600', italic:false, upper:false };
+    aoc:  { dot:true,  r:5,   stroke:'#5a1090', fill:'#8030c0', txtColor:'#3a7a4e', bg:'rgba(0,0,0,0.0)',    size:'0.65rem', weight:'700', italic:false, upper:false },
+    cru:  { dot:true,  r:3.5, stroke:'#3a0868', fill:'#6010a8', txtColor:'#5a9a6e', bg:'rgba(0,0,0,0.0)',    size:'0.60rem', weight:'600', italic:true,  upper:false },
+  }[type] || { dot:true, r:4, stroke:'#5a1090', fill:'#8030c0', txtColor:'#3a7a4e', bg:'rgba(0,0,0,0.0)', size:'0.62rem', weight:'600', italic:false, upper:false };
 
   if (S.dot) {
     const dot = L.circleMarker([lat, lng], {
@@ -5341,12 +5341,10 @@ const APPELLATIONS = {
   ],
 
   // ─── VALLÉE DU RHÔNE ───────────────────────────────────────
-  'cotes-du-rhone': [
-    // ── Zones géographiques ──
-    { nom:'Rhône Septentrional',         type:'zone', lat:45.250, lng:4.820 },
-    { nom:'Rhône Méridional',            type:'zone', lat:44.050, lng:4.900 },
-
-    // ── Rhône Nord — AOC ──
+  // ─── RHÔNE SEPTENTRIONAL (Nord) ────────────────────────────
+  'rhone_nord': [
+    { nom:'Rhône Septentrional',         type:'zone', lat:45.200, lng:4.820 },
+    // AOC propres au Nord
     { nom:'Côte-Rôtie',                  type:'aoc',  lat:45.470, lng:4.796 },
     { nom:'Condrieu',                    type:'aoc',  lat:45.382, lng:4.776 },
     { nom:'Château-Grillet',             type:'cru',  lat:45.368, lng:4.769 },
@@ -5355,20 +5353,35 @@ const APPELLATIONS = {
     { nom:'Hermitage',                   type:'cru',  lat:45.075, lng:4.836 },
     { nom:'Cornas',                      type:'aoc',  lat:44.912, lng:4.840 },
     { nom:'Saint-Péray',                 type:'aoc',  lat:44.896, lng:4.846 },
+    // AOC périphériques Nord (Drôme)
     { nom:'Clairette de Die',            type:'aoc',  lat:44.750, lng:5.370 },
-    { nom:'Châtillon-en-Diois',          type:'aoc',  lat:44.695, lng:5.480 },
     { nom:'Crémant de Die',              type:'aoc',  lat:44.745, lng:5.368 },
-    { nom:'Côteaux de Die',              type:'aoc',  lat:44.752, lng:5.372 },
+    { nom:'Coteaux de Die',              type:'aoc',  lat:44.752, lng:5.375 },
+    { nom:'Châtillon-en-Diois',          type:'aoc',  lat:44.695, lng:5.480 },
+    { nom:'Côtes du Vivarais',           type:'aoc',  lat:44.510, lng:4.386 },
+  ],
 
-    // ── Rhône Sud — AOC villages ──
+  // ─── RHÔNE MÉRIDIONAL (Sud) ─────────────────────────────────
+  'rhone_sud': [
+    { nom:'Rhône Méridional',            type:'zone', lat:44.100, lng:4.900 },
+    // Grands crus du Sud
     { nom:'Châteauneuf-du-Pape',         type:'cru',  lat:44.057, lng:4.833 },
     { nom:'Gigondas',                    type:'cru',  lat:44.172, lng:5.022 },
     { nom:'Vacqueyras',                  type:'cru',  lat:44.117, lng:5.000 },
-    { nom:'Beaumes-de-Venise',           type:'aoc',  lat:44.123, lng:5.028 },
-    { nom:'Muscat de Beaumes-de-Venise', type:'aoc',  lat:44.120, lng:5.038 },
     { nom:'Rasteau',                     type:'cru',  lat:44.193, lng:4.958 },
     { nom:'Cairanne',                    type:'cru',  lat:44.226, lng:4.956 },
     { nom:'Vinsobres',                   type:'cru',  lat:44.334, lng:5.025 },
+    // AOC du Sud
+    { nom:'Beaumes-de-Venise',           type:'aoc',  lat:44.123, lng:5.028 },
+    { nom:'Muscat de Beaumes-de-Venise', type:'aoc',  lat:44.118, lng:5.032 },
+    { nom:'Tavel',                       type:'aoc',  lat:44.009, lng:4.677 },
+    { nom:'Lirac',                       type:'aoc',  lat:44.041, lng:4.693 },
+    { nom:'Grignan-les-Adhémar',         type:'aoc',  lat:44.420, lng:4.905 },
+    { nom:'Ventoux',                     type:'aoc',  lat:44.136, lng:5.160 },
+    { nom:'Luberon',                     type:'aoc',  lat:43.830, lng:5.380 },
+    { nom:'Costières de Nîmes',          type:'aoc',  lat:43.722, lng:4.428 },
+    { nom:"Duché d'Uzès",               type:'aoc',  lat:43.998, lng:4.420 },
+    // Côtes du Rhône Villages avec dénomination géographique
     { nom:'Roaix',                       type:'aoc',  lat:44.225, lng:4.975 },
     { nom:'Séguret',                     type:'aoc',  lat:44.220, lng:5.005 },
     { nom:'Sablet',                      type:'aoc',  lat:44.198, lng:5.005 },
@@ -5382,14 +5395,7 @@ const APPELLATIONS = {
     { nom:'Rousset-les-Vignes',          type:'aoc',  lat:44.390, lng:5.058 },
     { nom:'Saint-Pantaléon-les-Vignes',  type:'aoc',  lat:44.395, lng:5.066 },
     { nom:'Valréas',                     type:'aoc',  lat:44.384, lng:4.992 },
-    { nom:'Tavel',                       type:'aoc',  lat:44.009, lng:4.677 },
-    { nom:'Lirac',                       type:'aoc',  lat:44.041, lng:4.693 },
-    { nom:'Grignan-les-Adhémar',         type:'aoc',  lat:44.420, lng:4.905 },
-    { nom:'Ventoux',                     type:'aoc',  lat:44.136, lng:5.160 },
-    { nom:'Luberon',                     type:'aoc',  lat:43.830, lng:5.380 },
-    { nom:'Costières de Nîmes',          type:'aoc',  lat:43.722, lng:4.428 },
-    { nom:'Côtes du Vivarais',           type:'aoc',  lat:44.510, lng:4.386 },
-    { nom:"Duché d'Uzès",               type:'aoc',  lat:43.998, lng:4.420 },
+    // AOC génériques
     { nom:'Côtes du Rhône Villages',     type:'aoc',  lat:44.300, lng:4.870 },
     { nom:'Côtes du Rhône',              type:'aoc',  lat:44.100, lng:4.700 },
   ],
@@ -5551,7 +5557,9 @@ const APPELLATIONS = {
 
   // ─── SUD-OUEST ─────────────────────────────────────────────
   'sud-ouest': [
-    // AOC
+    // ── Zone ──
+    { nom:'Sud-Ouest',                 type:'zone', lat:44.100, lng: 0.600 },
+    // ── Périgord / Bergerac ──
     { nom:'Bergerac',                  type:'aoc',  lat:44.855, lng: 0.487 },
     { nom:'Côtes de Bergerac',         type:'aoc',  lat:44.830, lng: 0.420 },
     { nom:'Pécharmant',                type:'aoc',  lat:44.876, lng: 0.555 },
@@ -5561,22 +5569,30 @@ const APPELLATIONS = {
     { nom:'Montravel',                 type:'aoc',  lat:44.841, lng: 0.204 },
     { nom:'Haut-Montravel',            type:'aoc',  lat:44.845, lng: 0.196 },
     { nom:'Côtes de Montravel',        type:'aoc',  lat:44.840, lng: 0.200 },
+    // ── Vallée du Lot ──
     { nom:'Cahors',                    type:'aoc',  lat:44.449, lng: 1.441 },
-    { nom:'Madiran',                   type:'aoc',  lat:43.569, lng:-0.086 },
-    { nom:'Pacherenc du Vic-Bilh',     type:'aoc',  lat:43.574, lng:-0.090 },
-    { nom:'Jurançon',                  type:'aoc',  lat:43.315, lng:-0.292 },
-    { nom:'Jurançon Sec',              type:'aoc',  lat:43.312, lng:-0.297 },
-    { nom:'Irouléguy',                 type:'aoc',  lat:43.234, lng:-1.281 },
-    { nom:'Gaillac',                   type:'aoc',  lat:43.901, lng: 1.893 },
-    { nom:'Gaillac Premières Côtes',   type:'aoc',  lat:43.870, lng: 1.850 },
-    { nom:'Marcillac',                 type:'aoc',  lat:44.457, lng: 2.448 },
     { nom:'Entraygues-Le Fel',         type:'aoc',  lat:44.638, lng: 2.568 },
     { nom:'Estaing',                   type:'aoc',  lat:44.578, lng: 2.679 },
-    { nom:'Tursan',                    type:'aoc',  lat:43.718, lng:-0.527 },
-    { nom:'Buzet',                     type:'aoc',  lat:44.262, lng: 0.302 },
+    { nom:'Marcillac',                 type:'aoc',  lat:44.457, lng: 2.448 },
     { nom:'Côtes du Marmandais',       type:'aoc',  lat:44.505, lng: 0.160 },
+    { nom:'Buzet',                     type:'aoc',  lat:44.262, lng: 0.302 },
+    { nom:'Côtes de Duras',            type:'aoc',  lat:44.670, lng: 0.178 },
+    // ── Garonne / Tarn ──
     { nom:'Fronton',                   type:'aoc',  lat:43.861, lng: 1.386 },
+    { nom:'Gaillac',                   type:'aoc',  lat:43.901, lng: 1.893 },
+    { nom:'Gaillac Premières Côtes',   type:'aoc',  lat:43.870, lng: 1.850 },
     { nom:'Saint-Sardos',              type:'aoc',  lat:44.001, lng: 0.851 },
+    { nom:'Brulhois',                  type:'aoc',  lat:44.065, lng: 0.752 },
+    // ── Pyrénées / Béarn ──
+    { nom:'Madiran',                   type:'aoc',  lat:43.569, lng:-0.086 },
+    { nom:'Pacherenc du Vic-Bilh',     type:'aoc',  lat:43.574, lng:-0.090 },
+    { nom:'Saint-Mont',                type:'aoc',  lat:43.630, lng:-0.165 },
+    { nom:'Tursan',                    type:'aoc',  lat:43.718, lng:-0.527 },
+    { nom:'Béarn',                     type:'aoc',  lat:43.380, lng:-0.605 },
+    { nom:'Jurançon',                  type:'aoc',  lat:43.315, lng:-0.292 },
+    { nom:'Jurançon Sec',              type:'aoc',  lat:43.312, lng:-0.297 },
+    // ── Pays Basque ──
+    { nom:'Irouléguy',                 type:'aoc',  lat:43.234, lng:-1.281 },
   ],
 
   // ─── BEAUJOLAIS ────────────────────────────────────────────
@@ -5654,8 +5670,6 @@ function showAppellations(regionKey, niveauMax) {
   // Mapping clés WINE_REGION_POLYGONS → clés APPELLATIONS
   const KEY_MAP = {
     'val_de_loire': 'loire',
-    'rhone_nord':   'cotes-du-rhone',
-    'rhone_sud':    'cotes-du-rhone',
     'sud_ouest':    'sud-ouest',
   };
   const appelKey = KEY_MAP[regionKey] || regionKey;
@@ -5691,14 +5705,15 @@ const REGION_BBOX = {
   'bordeaux':       [[44.30,-1.28], [45.78, 0.22]],
   'bourgogne':      [[45.85, 3.48], [47.82, 5.10]],
   'champagne':      [[48.40, 3.30], [49.40, 4.85]],
-  'cotes-du-rhone': [[43.90, 4.40], [45.55, 5.30]],
-  'loire':          [[46.80,-2.30], [48.10, 3.10]],
+  'rhone_nord':     [[44.80, 4.60], [45.60, 5.50]],
+  'rhone_sud':      [[43.60, 4.35], [44.55, 5.45]],
+  'val_de_loire':   [[46.80,-2.30], [48.10, 3.10]],
   'languedoc':      [[42.90, 2.40], [43.90, 4.50]],
   'roussillon':     [[42.40, 2.45], [42.90, 3.15]],
   'provence':       [[43.10, 5.00], [43.90, 6.80]],
   'jura':           [[46.50, 5.40], [47.00, 5.90]],
   'savoie':         [[45.40, 5.80], [46.00, 6.80]],
-  'sud-ouest':      [[43.20,-0.80], [44.70, 2.00]],
+  'sud_ouest':      [[43.20,-0.80], [44.70, 2.00]],
   'corse':          [[41.35, 8.55], [43.00, 9.55]],
   // Espagne
   'rioja':          [[42.20,-2.80], [42.70,-1.95]],
@@ -5845,7 +5860,7 @@ function selectCarteRegion(key, label) {
   carteSelectedRegion = key;
   const wines = wineData.filter(w => getRegionKey(w) === key);
   const region = WINE_REGION_POLYGONS[key];
-  const _appelKeyMap = {'val_de_loire':'loire','rhone_nord':'cotes-du-rhone','rhone_sud':'cotes-du-rhone','sud_ouest':'sud-ouest'};
+  const _appelKeyMap = {'val_de_loire':'loire','sud_ouest':'sud-ouest'};
   const allApps = APPELLATIONS[_appelKeyMap[key] || key] || [];
   const nbAoc = allApps.filter(a=>a.type==='aoc').length;
   const nbCru  = allApps.filter(a=>a.type==='cru').length;
