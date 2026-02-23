@@ -23,7 +23,7 @@
     --gold3:  #f5dfa0;
     --cream:  #f0e6d4;
     --text:   #e0d4c4;
-    --text2:  #a09080;
+    --text2:  #b0a090;  /* Amélioré: #a09080 → #b0a090 pour ratio WCAG AA ≥ 4.5:1 */
     --text3:  #6a5a50;
     --green:  #2d7a4e;
     --green2: #3da066;
@@ -105,7 +105,6 @@
   .search-input::placeholder { color: var(--text3); }
   .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 0.9rem; pointer-events: none; }
   .search-clear { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text2); cursor: pointer; font-size: 0.85rem; display: none; transition: color 0.2s; }
-  .search-clear:hover { color: var(--gold); }
   .search-results-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 200; display: none; }
   .search-results-panel {
     position: fixed; top: 80px; left: 40px; right: 40px;
@@ -118,7 +117,6 @@
     box-shadow: var(--shadow);
   }
   .search-result-item { display: flex; gap: 12px; align-items: center; padding: 13px 18px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
-  .search-result-item:hover { background: var(--bg3); }
   .search-result-item:last-child { border-bottom: none; }
   .search-count { font-size: 0.75rem; color: var(--text2); letter-spacing: 1px; padding: 8px 18px; border-bottom: 1px solid var(--border); text-transform: uppercase; }
 
@@ -147,8 +145,7 @@
     position: relative;
   }
   .tab:hover { color: var(--cream); }
-  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
-  /* Sur desktop : tab-icon = inline normal, tab-icon-mobile = caché */
+  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }  /* Sur desktop : tab-icon = inline normal, tab-icon-mobile = caché */
   .tab .tab-icon-mobile { display: none; }
   .tab.active::after {
     content: '';
@@ -183,7 +180,7 @@
     transition: var(--transition);
     border-radius: 20px;
   }
-  .cave-btn.active, .cave-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.08); }
+  .cave-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.08); }
 
   .cave-legend { margin-left: auto; display: flex; gap: 16px; font-size: 0.75rem; color: var(--text2); align-items: center; flex-wrap: wrap; }
   .legend-item { display: flex; align-items: center; gap: 6px; }
@@ -267,7 +264,6 @@
   }
   .modal h2 { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 1.4rem; margin-bottom: 22px; border-bottom: 1px solid var(--border); padding-bottom: 14px; }
   .modal-close { position: absolute; top: 16px; right: 18px; background: none; border: none; color: var(--text2); font-size: 1.3rem; cursor: pointer; transition: color 0.2s; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
-  .modal-close:hover { color: var(--gold); background: var(--bg3); }
 
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .form-full { grid-column: 1 / -1; }
@@ -288,11 +284,8 @@
   .form-row select option { background: var(--bg3); }
 
   .btn-wine { padding: 11px 28px; background: linear-gradient(135deg, var(--wine), var(--wine2)); border: none; color: var(--cream); font-family: 'Cormorant Garamond', serif; font-size: 1rem; letter-spacing: 1px; cursor: pointer; border-radius: 20px; transition: var(--transition); }
-  .btn-wine:hover { background: linear-gradient(135deg, var(--wine2), var(--wine3)); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(123,28,46,0.4); }
   .btn-outline { padding: 10px 20px; background: transparent; border: 1px solid var(--border2); color: var(--text2); font-family: 'Cormorant Garamond', serif; font-size: 1rem; cursor: pointer; border-radius: 20px; transition: var(--transition); }
-  .btn-outline:hover { border-color: var(--wine3); color: var(--wine3); background: rgba(196,54,79,0.06); }
   .btn-danger { padding: 10px 20px; background: transparent; border: 1px solid rgba(107,26,26,0.6); color: #cc4444; font-family: 'Cormorant Garamond', serif; font-size: 1rem; cursor: pointer; border-radius: 20px; transition: var(--transition); }
-  .btn-danger:hover { background: rgba(107,26,26,0.25); border-color: #cc4444; }
 
   /* ── Accessibilité — focus visible pour navigation clavier ─────────── */
   :focus-visible {
@@ -306,7 +299,6 @@
 
   .modal-info-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
   .info-cell { background: var(--bg3); padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); transition: var(--transition); }
-  .info-cell:hover { border-color: var(--border2); }
   .info-cell .lbl { font-size: 0.67rem; color: var(--text3); text-transform: uppercase; letter-spacing: 1.5px; }
   .info-cell .val { font-size: 1.05rem; color: var(--text); margin-top: 3px; }
   .modal-actions { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
@@ -339,8 +331,6 @@
   .wine-table { width: 100%; border-collapse: collapse; font-size: 0.93rem; }
   .wine-table th { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text3); font-weight: 400; letter-spacing: 1.5px; text-transform: uppercase; font-size: 0.7rem; white-space: nowrap; }
   .wine-table td { padding: 11px 14px; border-bottom: 1px solid rgba(46,32,40,0.5); transition: background 0.15s; }
-  .wine-table tr:hover td { background: rgba(201,168,76,0.04); cursor: pointer; }
-  .wine-table tr:hover td:first-child { border-left: 2px solid var(--wine2); padding-left: 12px; }
 
   /* Cartes vins pour mobile */
   .wine-cards { display: none; flex-direction: column; gap: 12px; }
@@ -355,7 +345,6 @@
     gap: 14px;
     align-items: flex-start;
   }
-  .wine-card:hover, .wine-card:active { border-color: var(--border2); background: var(--bg3); transform: translateX(2px); }
   .wine-card-img { width: 52px; height: 72px; object-fit: contain; border-radius: 3px; border: 1px solid var(--border); flex-shrink: 0; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; }
   .wine-card-img img { width: 100%; height: 100%; object-fit: contain; border-radius: 3px; }
   .wine-card-body { flex: 1; min-width: 0; }
@@ -381,7 +370,6 @@
     overflow: hidden;
     transition: var(--transition);
   }
-  .stat-card:hover { border-color: var(--border2); }
   .stat-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, var(--gold), var(--wine)); border-radius: var(--radius) 0 0 var(--radius); }
   .stat-card .s-val { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--gold); line-height: 1; }
   .stat-card .s-lbl { font-size: 0.73rem; color: var(--text2); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 8px; line-height: 1.5; }
@@ -439,6 +427,7 @@
     cursor: pointer; border-radius: 20px; transition: var(--transition);
   }
   .pwd-btn:hover { background: linear-gradient(135deg, var(--wine2), var(--wine3)); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(123,28,46,0.5); }
+  /* NOTE: cette règle est aussi couverte par @media (hover: hover) — redondance intentionnelle pour compatibilité */
   .pwd-error { color: var(--wine3); font-size: 0.85rem; margin-top: 12px; min-height: 18px; }
   @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
 
@@ -460,9 +449,99 @@
   .notif.error { border-left-color: var(--wine3); }
 
   /* ============================================================
+     SPINNER SYNC INITIAL
+     ============================================================ */
+  #sync-loading-overlay {
+    position: fixed; inset: 0; background: rgba(14,10,11,0.85);
+    z-index: 8000; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 20px;
+    transition: opacity 0.4s ease;
+  }
+  #sync-loading-overlay.hidden { opacity: 0; pointer-events: none; }
+  .sync-spinner {
+    width: 48px; height: 48px;
+    border: 3px solid var(--border2);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .sync-spinner-text {
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--text2); font-size: 0.9rem;
+    letter-spacing: 2px; text-transform: uppercase;
+  }
+
+  /* ============================================================
+     CLASSES UTILITAIRES — Boutons actions inline
+     Remplacent les styles inline + onmouseover/onmouseout
+     ============================================================ */
+  .btn-action-wine {
+    white-space: nowrap; padding: 9px 14px;
+    background: var(--wine); border: none; color: var(--cream);
+    font-family: 'Cormorant Garamond', serif; font-size: 0.95rem;
+    letter-spacing: 1px; cursor: pointer; border-radius: var(--radius-sm);
+    transition: background 0.2s; flex-shrink: 0;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-action-file {
+    white-space: nowrap; padding: 9px 14px;
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text2); font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem; letter-spacing: 1px; cursor: pointer;
+    border-radius: var(--radius-sm); transition: all 0.2s;
+    flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-action-country {
+    padding: 4px 10px; background: var(--bg3);
+    border: 1px solid #3a2830; color: var(--text2);
+    cursor: pointer; border-radius: var(--radius-sm);
+    font-size: 0.75rem; font-family: 'Cormorant Garamond', serif;
+    transition: all 0.2s;
+  }
+  .btn-action-edit, .btn-action-del {
+    padding: 4px 9px; background: transparent;
+    border: 1px solid var(--border); color: var(--text2);
+    font-family: 'Cormorant Garamond', serif; font-size: 0.78rem;
+    cursor: pointer; border-radius: var(--radius-sm); transition: all 0.2s;
+  }
+
+  /* ============================================================
      DÉGUSTATION / HISTORIQUE
      ============================================================ */
   #histo-list { display: flex; flex-direction: column; gap: 12px; }
+
+  /* ============================================================
+     HOVER — UNIQUEMENT SUR DISPOSITIFS AVEC POINTEUR (PAS TACTILE)
+     Évite les états hover "bloqués" sur mobile après un tap
+     ============================================================ */
+  @media (hover: hover) and (pointer: fine) {
+    .search-clear:hover { color: var(--gold); }
+    .search-result-item:hover { background: var(--bg3); }
+    .tab:hover { color: var(--cream); }
+    .cave-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.08); }
+    .modal-close:hover { color: var(--gold); background: var(--bg3); }
+    .btn-wine:hover { background: linear-gradient(135deg, var(--wine2), var(--wine3)); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(123,28,46,0.4); }
+    .btn-outline:hover { border-color: var(--wine3); color: var(--wine3); background: rgba(196,54,79,0.06); }
+    .btn-danger:hover { background: rgba(107,26,26,0.25); border-color: #cc4444; }
+    .info-cell:hover { border-color: var(--border2); }
+    .wine-table tr:hover td { background: rgba(201,168,76,0.04); cursor: pointer; }
+    .wine-table tr:hover td:first-child { border-left: 2px solid var(--wine2); padding-left: 12px; }
+    .stat-card:hover { border-color: var(--border2); }
+    .pwd-btn:hover { background: linear-gradient(135deg, var(--wine2), var(--wine3)); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(123,28,46,0.5); }
+    .leaflet-control-zoom a:hover { color: #c9a84c !important; border-color: #c9a84c !important; }
+    /* Boutons inline avec classes utilitaires */
+    .btn-action-wine:hover  { background: var(--wine2) !important; }
+    .btn-action-file:hover  { border-color: var(--gold) !important; color: var(--gold) !important; }
+    .btn-action-country:hover { border-color: var(--gold) !important; color: var(--gold) !important; }
+    .btn-action-edit:hover  { border-color: var(--gold) !important; color: var(--gold) !important; }
+    .btn-action-del:hover   { border-color: var(--wine2) !important; color: var(--wine2) !important; }
+  }
+  /* wine-card: :active conservé sur tactile pour feedback visuel */
+  .wine-card:active { border-color: var(--border2); background: var(--bg3); transform: translateX(2px); }
+  @media (hover: hover) and (pointer: fine) {
+    .wine-card:hover { border-color: var(--border2); background: var(--bg3); transform: translateX(2px); }
+  }
 
   /* ============================================================
      RESPONSIVE MOBILE
@@ -573,6 +652,9 @@
     /* Cave SVG labels masqués sur mobile */
     #wine-labels-g { display: none; }
 
+    /* Bannière apogée sur mobile */
+    #apogee-alert-banner { padding: 4px 16px !important; font-size: 0.7rem !important; }
+
     /* Carte pleine largeur sur mobile */
     #carte-wrap { height: 400px !important; }
   }
@@ -609,14 +691,21 @@
     line-height: 1.5 !important;
   }
   .leaflet-wine-tooltip::before { display: none !important; }
-  .leaflet-control-attribution { display: none !important; }
+  /* Attribution OSM conservée — obligation légale licence ODbL */
+  .leaflet-control-attribution {
+    background: rgba(14,10,11,0.75) !important;
+    color: #a09080 !important;
+    font-size: 0.6rem !important;
+    border-radius: 3px 0 0 0 !important;
+    padding: 2px 6px !important;
+  }
+  .leaflet-control-attribution a { color: #c9a84c !important; }
   .appel-label-icon { background: none !important; border: none !important; box-shadow: none !important; }
   .leaflet-control-zoom a {
     background: rgba(14,10,11,0.9) !important;
     color: #a09080 !important;
     border-color: #2e2028 !important;
   }
-  .leaflet-control-zoom a:hover { color: #c9a84c !important; border-color: #c9a84c !important; }
   #carte-leaflet { border-radius: 4px; }
 
   /* #carte-wrap height — fusionné dans le bloc @media 768px principal */
@@ -629,13 +718,44 @@
     .tab { min-width: 44px; padding: 8px 4px 12px; }
   }
 </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <!-- Leaflet CSS chargé en lazy (préchargé pour éviter le flash) -->
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"></noscript>
+  <!-- TopoJSON, D3 et Leaflet JS chargés dynamiquement au premier accès à l'onglet Carte -->
+  <script>
+  // Marqueur : librairies cartographiques chargées ?
+  let _mapLibsLoaded = false;
+  let _mapLibsPromise = null;
+  function loadMapLibs() {
+    if(_mapLibsLoaded) return Promise.resolve();
+    if(_mapLibsPromise) return _mapLibsPromise;
+    _mapLibsPromise = new Promise((resolve, reject) => {
+      function loadScript(src, cb) {
+        const s = document.createElement('script');
+        s.src = src; s.onload = cb; s.onerror = reject;
+        document.head.appendChild(s);
+      }
+      loadScript('https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js', () => {
+        loadScript('https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js', () => {
+          loadScript('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js', () => {
+            _mapLibsLoaded = true;
+            resolve();
+          });
+        });
+      });
+    });
+    return _mapLibsPromise;
+  }
+  </script>
 </head>
 <body>
 
+
+<!-- SYNC LOADING OVERLAY -->
+<div id="sync-loading-overlay" class="hidden">
+  <div class="sync-spinner"></div>
+  <div class="sync-spinner-text">Synchronisation en cours…</div>
+</div>
 
 <!-- PASSWORD SCREEN -->
 <div id="pwd-screen">
@@ -663,14 +783,14 @@
 <div class="search-results-panel" id="search-panel" style="display:none"></div>
 
 <div class="tabs" role="tablist" aria-label="Navigation principale">
-  <div class="tab active" role="tab" aria-selected="true"  aria-controls="view2d"    onclick="switchTab('view2d',this)"><span class="tab-icon">🗺</span><span class="tab-icon-mobile"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI0IiBoZWlnaHQ9IjEyNCIgdmlld0JveD0iMCAwIDEyNCAxMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMyQzMxMzYiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMTcxQTFEIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJnbGFzcyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTgpIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDUpIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0icmdiYSgyNTUsMjU1LDI1NSwwLjEyKSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDwhLS0gUm91Z2UgYm9yZGVhdXggLS0+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImJyIiBjeD0iMzUlIiBjeT0iMzUlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2M0MzY0ZiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM0YTBlMWEiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8IS0tIEJsYW5jL29yIC0tPgogICAgPHJhZGlhbEdyYWRpZW50IGlkPSJiZzIiIGN4PSIzNSUiIGN5PSIzNSUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZThjODcwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzdhNWExMCIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICAgIDwhLS0gUm9zw6kgLS0+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImJwIiBjeD0iMzUlIiBjeT0iMzUlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2UwNzA5MCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3YTIwNDAiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8IS0tIExpcXVvcmV1eC9hbWJyZSAtLT4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iYmwiIGN4PSIzNSUiIGN5PSIzNSUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZThhMDMwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzdhNGEwMCIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIHJ4PSIxNiIKICAgICAgICBmaWxsPSJ1cmwoI2JnKSIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utb3BhY2l0eT0iMC41IiBzdHJva2Utd2lkdGg9IjIiLz4KICA8dGV4dCB4PSI2MiIgeT0iMTEiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iOCIKICAgICAgICB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjN0VENkZGIiBvcGFjaXR5PSIwLjg1Ij4xNCYjMTc2OzwvdGV4dD4KICA8ZyBzdHJva2U9IiNGRkZGRkYiIHN0cm9rZS1vcGFjaXR5PSIwLjEwIiBzdHJva2Utd2lkdGg9IjEiPgogICAgPGxpbmUgeDE9IjEwIiB5MT0iMjciIHgyPSIxMTAiIHkyPSIyNyIvPgogICAgPGxpbmUgeDE9IjEwIiB5MT0iNDIiIHgyPSIxMTAiIHkyPSI0MiIvPgogICAgPGxpbmUgeDE9IjEwIiB5MT0iNTciIHgyPSIxMTAiIHkyPSI1NyIvPgogICAgPGxpbmUgeDE9IjEwIiB5MT0iNzIiIHgyPSIxMTAiIHkyPSI3MiIvPgogICAgPGxpbmUgeDE9IjEwIiB5MT0iODciIHgyPSIxMTAiIHkyPSI4NyIvPgogIDwvZz4KICA8Y2lyY2xlIGN4PSIyMiIgY3k9IjE5IiByPSI1LjUiIGZpbGw9InVybCgjYnIpIi8+CiAgPGNpcmNsZSBjeD0iNDgiIGN5PSIxOSIgcj0iNS41IiBmaWxsPSJ1cmwoI2JnMikiLz4KICA8Y2lyY2xlIGN4PSI3NCIgY3k9IjE5IiByPSI1LjUiIGZpbGw9InVybCgjYnApIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTkiIHI9IjUuNSIgZmlsbD0idXJsKCNicikiLz4KICA8Y2lyY2xlIGN4PSIyMiIgY3k9IjM0IiByPSI1LjUiIGZpbGw9InVybCgjYnApIi8+CiAgPGNpcmNsZSBjeD0iNDgiIGN5PSIzNCIgcj0iNS41IiBmaWxsPSJ1cmwoI2JsKSIvPgogIDxjaXJjbGUgY3g9Ijc0IiBjeT0iMzQiIHI9IjUuNSIgZmlsbD0idXJsKCNicikiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSIzNCIgcj0iNS41IiBmaWxsPSJ1cmwoI2JnMikiLz4KICA8Y2lyY2xlIGN4PSIyMiIgY3k9IjQ5IiByPSI1LjUiIGZpbGw9InVybCgjYmcyKSIvPgogIDxjaXJjbGUgY3g9IjQ4IiBjeT0iNDkiIHI9IjUuNSIgZmlsbD0idXJsKCNicikiLz4KICA8Y2lyY2xlIGN4PSI3NCIgY3k9IjQ5IiByPSI1LjUiIGZpbGw9InVybCgjYmwpIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iNDkiIHI9IjUuNSIgZmlsbD0idXJsKCNicCkiLz4KICA8Y2lyY2xlIGN4PSIyMiIgY3k9IjY0IiByPSI1LjUiIGZpbGw9InVybCgjYnIpIi8+CiAgPGNpcmNsZSBjeD0iNDgiIGN5PSI2NCIgcj0iNS41IiBmaWxsPSJ1cmwoI2JwKSIvPgogIDxjaXJjbGUgY3g9Ijc0IiBjeT0iNjQiIHI9IjUuNSIgZmlsbD0idXJsKCNiZzIpIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iNjQiIHI9IjUuNSIgZmlsbD0idXJsKCNibCkiLz4KICA8Y2lyY2xlIGN4PSIyMiIgY3k9Ijc5IiByPSI1LjUiIGZpbGw9InVybCgjYmwpIi8+CiAgPGNpcmNsZSBjeD0iNDgiIGN5PSI3OSIgcj0iNS41IiBmaWxsPSJ1cmwoI2JyKSIvPgogIDxjaXJjbGUgY3g9Ijc0IiBjeT0iNzkiIHI9IjUuNSIgZmlsbD0idXJsKCNicCkiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSI3OSIgcj0iNS41IiBmaWxsPSJ1cmwoI2JnMikiLz4KICA8Y2lyY2xlIGN4PSIyMiIgY3k9Ijk0IiByPSI1LjUiIGZpbGw9InVybCgjYmcyKSIvPgogIDxjaXJjbGUgY3g9IjQ4IiBjeT0iOTQiIHI9IjUuNSIgZmlsbD0idXJsKCNicCkiLz4KICA8Y2lyY2xlIGN4PSI3NCIgY3k9Ijk0IiByPSI1LjUiIGZpbGw9InVybCgjYnIpIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iOTQiIHI9IjUuNSIgZmlsbD0idXJsKCNibCkiLz4KICA8cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iMTE2IiBoZWlnaHQ9IjExNiIgcng9IjE0IgogICAgICAgIGZpbGw9InVybCgjZ2xhc3MpIiBwb2ludGVyLWV2ZW50cz0ibm9uZSIvPgogIDxyZWN0IHg9IjEwIiB5PSI0IiB3aWR0aD0iMTgiIGhlaWdodD0iMTE2IgogICAgICAgIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiIHJ4PSI5Ii8+Cjwvc3ZnPg==" style="border-radius:3px" alt="cave"/></span><span class="tab-label">Cave</span></div>
-  <div class="tab" role="tab" aria-selected="false" aria-controls="list"      onclick="switchTab('list',this)"><span class="tab-icon">📋</span><span class="tab-label">Liste</span></div>
-  <div class="tab" role="tab" aria-selected="false" aria-controls="historique" onclick="switchTab('historique',this)"><span class="tab-icon">🥂</span><span class="tab-label">Dégustation</span></div>
-  <div class="tab" role="tab" aria-selected="false" aria-controls="carte"     onclick="switchTab('carte',this)"><span class="tab-icon">🌍</span><span class="tab-label">Carte</span></div>
-  <div class="tab" role="tab" aria-selected="false" aria-controls="apogee"    onclick="switchTab('apogee',this)"><span class="tab-icon">🔔</span><span class="tab-label">Apogée</span></div>
-  <div class="tab" role="tab" aria-selected="false" aria-controls="accords"   onclick="switchTab('accords',this)"><span class="tab-icon">🍽</span><span class="tab-label">Accords</span></div>
-  <div class="tab" role="tab" aria-selected="false" aria-controls="stats"     onclick="switchTab('stats',this)"><span class="tab-icon">📊</span><span class="tab-label">Stats</span></div>
-  <div class="tab" role="tab" aria-selected="false" aria-controls="add"       onclick="switchTab('add',this)"><span class="tab-icon">➕</span><span class="tab-label">Ajouter</span></div>
+  <div class="tab active" role="tab" aria-selected="true"  aria-controls="view2d"    data-tab="view2d" id="tab-view2d" onclick="switchTab('view2d',this)"><span class="tab-icon">🗺</span><span class="tab-icon-mobile"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI0IiBoZWlnaHQ9IjEyNCIgdmlld0JveD0iMCAwIDEyNCAxMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMyQzMxMzYiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMTcxQTFEIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJnbGFzcyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTgpIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDUpIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0icmdiYSgyNTUsMjU1LDI1NSwwLjEyKSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDwhLS0gUm91Z2UgYm9yZGVhdXggLS0+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImJyIiBjeD0iMzUlIiBjeT0iMzUlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2M0MzY0ZiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM0YTBlMWEiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8IS0tIEJsYW5jL29yIC0tPgogICAgPHJhZGlhbEdyYWRpZW50IGlkPSJiZzIiIGN4PSIzNSUiIGN5PSIzNSUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZThjODcwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzdhNWExMCIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICAgIDwhLS0gUm9zw6kgLS0+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImJwIiBjeD0iMzUlIiBjeT0iMzUlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2UwNzA5MCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3YTIwNDAiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8IS0tIExpcXVvcmV1eC9hbWJyZSAtLT4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iYmwiIGN4PSIzNSUiIGN5PSIzNSUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZThhMDMwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzdhNGEwMCIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIHJ4PSIxNiIKICAgICAgICBmaWxsPSJ1cmwoI2JnKSIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utb3BhY2l0eT0iMC41IiBzdHJva2Utd2lkdGg9IjIiLz4KICA8dGV4dCB4PSI2MiIgeT0iMTEiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iOCIKICAgICAgICB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjN0VENkZGIiBvcGFjaXR5PSIwLjg1Ij4xNCYjMTc2OzwvdGV4dD4KICA8ZyBzdHJva2U9IiNGRkZGRkYiIHN0cm9rZS1vcGFjaXR5PSIwLjEwIiBzdHJva2Utd2lkdGg9IjEiPgogICAgPGxpbmUgeDE9IjEwIiB5MT0iMjciIHgyPSIxMTAiIHkyPSIyNyIvPgogICAgPGxpbmUgeDE9IjEwIiB5MT0iNDIiIHgyPSIxMTAiIHkyPSI0MiIvPgogICAgPGxpbmUgeDE9IjEwIiB5MT0iNTciIHgyPSIxMTAiIHkyPSI1NyIvPgogICAgPGxpbmUgeDE9IjEwIiB5MT0iNzIiIHgyPSIxMTAiIHkyPSI3MiIvPgogICAgPGxpbmUgeDE9IjEwIiB5MT0iODciIHgyPSIxMTAiIHkyPSI4NyIvPgogIDwvZz4KICA8Y2lyY2xlIGN4PSIyMiIgY3k9IjE5IiByPSI1LjUiIGZpbGw9InVybCgjYnIpIi8+CiAgPGNpcmNsZSBjeD0iNDgiIGN5PSIxOSIgcj0iNS41IiBmaWxsPSJ1cmwoI2JnMikiLz4KICA8Y2lyY2xlIGN4PSI3NCIgY3k9IjE5IiByPSI1LjUiIGZpbGw9InVybCgjYnApIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTkiIHI9IjUuNSIgZmlsbD0idXJsKCNicikiLz4KICA8Y2lyY2xlIGN4PSIyMiIgY3k9IjM0IiByPSI1LjUiIGZpbGw9InVybCgjYnApIi8+CiAgPGNpcmNsZSBjeD0iNDgiIGN5PSIzNCIgcj0iNS41IiBmaWxsPSJ1cmwoI2JsKSIvPgogIDxjaXJjbGUgY3g9Ijc0IiBjeT0iMzQiIHI9IjUuNSIgZmlsbD0idXJsKCNicikiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSIzNCIgcj0iNS41IiBmaWxsPSJ1cmwoI2JnMikiLz4KICA8Y2lyY2xlIGN4PSIyMiIgY3k9IjQ5IiByPSI1LjUiIGZpbGw9InVybCgjYmcyKSIvPgogIDxjaXJjbGUgY3g9IjQ4IiBjeT0iNDkiIHI9IjUuNSIgZmlsbD0idXJsKCNicikiLz4KICA8Y2lyY2xlIGN4PSI3NCIgY3k9IjQ5IiByPSI1LjUiIGZpbGw9InVybCgjYmwpIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iNDkiIHI9IjUuNSIgZmlsbD0idXJsKCNicCkiLz4KICA8Y2lyY2xlIGN4PSIyMiIgY3k9IjY0IiByPSI1LjUiIGZpbGw9InVybCgjYnIpIi8+CiAgPGNpcmNsZSBjeD0iNDgiIGN5PSI2NCIgcj0iNS41IiBmaWxsPSJ1cmwoI2JwKSIvPgogIDxjaXJjbGUgY3g9Ijc0IiBjeT0iNjQiIHI9IjUuNSIgZmlsbD0idXJsKCNiZzIpIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iNjQiIHI9IjUuNSIgZmlsbD0idXJsKCNibCkiLz4KICA8Y2lyY2xlIGN4PSIyMiIgY3k9Ijc5IiByPSI1LjUiIGZpbGw9InVybCgjYmwpIi8+CiAgPGNpcmNsZSBjeD0iNDgiIGN5PSI3OSIgcj0iNS41IiBmaWxsPSJ1cmwoI2JyKSIvPgogIDxjaXJjbGUgY3g9Ijc0IiBjeT0iNzkiIHI9IjUuNSIgZmlsbD0idXJsKCNicCkiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSI3OSIgcj0iNS41IiBmaWxsPSJ1cmwoI2JnMikiLz4KICA8Y2lyY2xlIGN4PSIyMiIgY3k9Ijk0IiByPSI1LjUiIGZpbGw9InVybCgjYmcyKSIvPgogIDxjaXJjbGUgY3g9IjQ4IiBjeT0iOTQiIHI9IjUuNSIgZmlsbD0idXJsKCNicCkiLz4KICA8Y2lyY2xlIGN4PSI3NCIgY3k9Ijk0IiByPSI1LjUiIGZpbGw9InVybCgjYnIpIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iOTQiIHI9IjUuNSIgZmlsbD0idXJsKCNibCkiLz4KICA8cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iMTE2IiBoZWlnaHQ9IjExNiIgcng9IjE0IgogICAgICAgIGZpbGw9InVybCgjZ2xhc3MpIiBwb2ludGVyLWV2ZW50cz0ibm9uZSIvPgogIDxyZWN0IHg9IjEwIiB5PSI0IiB3aWR0aD0iMTgiIGhlaWdodD0iMTE2IgogICAgICAgIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiIHJ4PSI5Ii8+Cjwvc3ZnPg==" style="border-radius:3px" alt="cave"/></span><span class="tab-label">Cave</span></div>
+  <div class="tab" role="tab" aria-selected="false" aria-controls="list"      data-tab="list" id="tab-list" onclick="switchTab('list',this)"><span class="tab-icon">📋</span><span class="tab-label">Liste</span></div>
+  <div class="tab" role="tab" aria-selected="false" aria-controls="historique" data-tab="historique" id="tab-historique" onclick="switchTab('historique',this)"><span class="tab-icon">🥂</span><span class="tab-label">Dégustation</span></div>
+  <div class="tab" role="tab" aria-selected="false" aria-controls="carte"     data-tab="carte" id="tab-carte" onclick="switchTab('carte',this)"><span class="tab-icon">🌍</span><span class="tab-label">Carte</span></div>
+  <div class="tab" role="tab" aria-selected="false" aria-controls="apogee"    data-tab="apogee" id="tab-apogee" onclick="switchTab('apogee',this)"><span class="tab-icon">🔔</span><span class="tab-label">Apogée</span></div>
+  <div class="tab" role="tab" aria-selected="false" aria-controls="accords"   data-tab="accords" id="tab-accords" onclick="switchTab('accords',this)"><span class="tab-icon">🍽</span><span class="tab-label">Accords</span></div>
+  <div class="tab" role="tab" aria-selected="false" aria-controls="stats"     data-tab="stats" id="tab-stats" onclick="switchTab('stats',this)"><span class="tab-icon">📊</span><span class="tab-label">Stats</span></div>
+  <div class="tab" role="tab" aria-selected="false" aria-controls="add"       data-tab="add" id="tab-add" onclick="switchTab('add',this)"><span class="tab-icon">➕</span><span class="tab-label">Ajouter</span></div>
   <div style="flex:1" class="mobile-hidden"></div>
   <div class="search-wrap" style="margin:0 12px;align-self:center">
     <span class="search-icon">🔍</span>
@@ -682,7 +802,7 @@
 </div>
 
 <!-- ===== 2D CAVE VIEW ===== -->
-<div id="view2d" class="content active">
+<div id="view2d" class="content active" role="tabpanel" aria-labelledby="tab-view2d" tabindex="0">
   <div class="cave-selector">
     <button class="cave-btn active" onclick="selectCave(1,this)">Cave 1 — 156 empl.</button>
     <button class="cave-btn" onclick="selectCave(2,this)">Cave 2 — 110 empl.</button>
@@ -705,7 +825,7 @@
 </div>
 
 <!-- ===== LIST VIEW ===== -->
-<div id="list" class="content">
+<div id="list" class="content" role="tabpanel" aria-labelledby="tab-list" tabindex="0">
   <div class="filter-bar">
     <input type="text" id="searchInput" placeholder="Rechercher un vin..." oninput="renderList()">
     <select id="filterCave" onchange="renderList()">
@@ -737,7 +857,7 @@
 </div>
 
 <!-- ===== STATS VIEW ===== -->
-<div id="stats" class="content">
+<div id="stats" class="content" role="tabpanel" aria-labelledby="tab-stats" tabindex="0">
   <div class="stats-grid" id="statsGrid"></div>
   <div class="charts-row">
     <div class="chart-card"><h3>Répartition par type</h3><div class="bar-chart" id="chartType"></div></div>
@@ -756,7 +876,7 @@
 </div>
 
 <!-- ===== ADD VIEW ===== -->
-<div id="add" class="content">
+<div id="add" class="content" role="tabpanel" aria-labelledby="tab-add" tabindex="0">
   <div class="add-wine-form">
     <h2>Ajouter un vin</h2>
     <div class="form-grid">
@@ -801,7 +921,7 @@
       </div>
       <div class="form-row">
         <label>Millésime *</label>
-        <input type="number" id="f-annee" placeholder="2018" min="1900" max="2030">
+        <input type="number" inputmode="numeric" id="f-annee" placeholder="2018" min="1900" max="2030">
       </div>
       <div class="form-row">
         <label>Cave *</label>
@@ -820,7 +940,7 @@
       </div>
       <div class="form-row">
         <label>Prix (€)</label>
-        <input type="number" id="f-prix" placeholder="0" min="0">
+        <input type="number" inputmode="decimal" id="f-prix" placeholder="0" min="0">
       </div>
       <div class="form-row">
         <label>Note /5</label>
@@ -837,24 +957,24 @@
       </div>
       <div class="form-row">
         <label>Début apogée (année)</label>
-        <input type="number" id="f-apogee-debut" placeholder="ex: 2026" min="2000" max="2060">
+        <input type="number" inputmode="numeric" id="f-apogee-debut" placeholder="ex: 2026" min="2000" max="2060">
       </div>
       <div class="form-row">
         <label>Fin apogée (année)</label>
-        <input type="number" id="f-apogee-fin" placeholder="ex: 2035" min="2000" max="2060">
+        <input type="number" inputmode="numeric" id="f-apogee-fin" placeholder="ex: 2035" min="2000" max="2060">
       </div>
       <div class="form-row form-full">
         <label>Photo étiquette</label>
         <div id="img-preview-wrap" style="display:none;margin-bottom:10px;position:relative;width:fit-content">
-          <img id="img-preview" src="" alt="" style="max-height:160px;max-width:100%;object-fit:contain;border-radius:4px;border:1px solid var(--border);box-shadow:0 4px 16px rgba(0,0,0,0.5)">
+          <img id="img-preview" src="" alt="Aperçu étiquette" style="max-height:160px;max-width:100%;object-fit:contain;border-radius:4px;border:1px solid var(--border);box-shadow:0 4px 16px rgba(0,0,0,0.5)">
           <button type="button" onclick="clearImage()" title="Supprimer" style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:var(--wine2);border:none;color:white;cursor:pointer;font-size:0.75rem;line-height:1">✕</button>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
-          <label for="f-photo-camera" style="white-space:nowrap;padding:9px 14px;background:var(--wine);border:none;color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:0.95rem;letter-spacing:1px;cursor:pointer;border-radius:2px;transition:background 0.2s;flex-shrink:0;display:inline-flex;align-items:center;gap:6px" onmouseover="this.style.background='var(--wine2)'" onmouseout="this.style.background='var(--wine)'">📷 Prendre une photo</label>
+          <label for="f-photo-camera" style="white-space:nowrap;padding:9px 14px;background:var(--wine);border:none;color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:0.95rem;letter-spacing:1px;cursor:pointer;border-radius:2px;transition:background 0.2s;flex-shrink:0;display:inline-flex;align-items:center;gap:6px" class="btn-action-wine">📷 Prendre une photo</label>
           <input type="file" id="f-photo-camera" accept="image/*" capture="environment" style="display:none" onchange="handleImageFile(this)">
-          <label for="f-photo-file" style="white-space:nowrap;padding:9px 14px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.95rem;letter-spacing:1px;cursor:pointer;border-radius:2px;transition:all 0.2s;flex-shrink:0;display:inline-flex;align-items:center;gap:6px" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">🖼 Depuis la galerie</label>
+          <label for="f-photo-file" style="white-space:nowrap;padding:9px 14px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.95rem;letter-spacing:1px;cursor:pointer;border-radius:2px;transition:all 0.2s;flex-shrink:0;display:inline-flex;align-items:center;gap:6px" class="btn-action-file">🖼 Depuis la galerie</label>
           <input type="file" id="f-photo-file" accept="image/*" style="display:none" onchange="handleImageFile(this)">
-          <button type="button" onclick="searchVivino()" style="white-space:nowrap;padding:9px 14px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.95rem;letter-spacing:1px;cursor:pointer;border-radius:2px;transition:all 0.2s;flex-shrink:0" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">🍇 Vivino</button>
+          <button type="button" onclick="searchVivino()" style="white-space:nowrap;padding:9px 14px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.95rem;letter-spacing:1px;cursor:pointer;border-radius:2px;transition:all 0.2s;flex-shrink:0" class="btn-action-file">🍇 Vivino</button>
         </div>
         <input type="text" id="f-image" placeholder="ou coller une URL d'image…" style="width:100%;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:2px;outline:none;font-family:'Cormorant Garamond',serif;font-size:0.88rem" oninput="onImageUrlChange(this.value)" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">
         <div id="vivino-results" style="display:none;margin-top:10px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:14px">
@@ -870,7 +990,7 @@
 </div>
 
 <!-- ===== DÉGUSTATION VIEW (historique cave + hors cave) ===== -->
-<div id="historique" class="content">
+<div id="historique" class="content" role="tabpanel" aria-labelledby="tab-historique" tabindex="0">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
     <div>
       <h2 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem">🥂 Dégustations</h2>
@@ -881,7 +1001,7 @@
     </div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <span id="histo-count" style="color:var(--text2);font-size:0.85rem"></span>
-      <button onclick="openAddDegustation()" style="padding:9px 18px;background:var(--wine);border:none;color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:0.95rem;letter-spacing:1px;cursor:pointer;border-radius:2px;transition:background 0.2s;display:flex;align-items:center;gap:6px" onmouseover="this.style.background='var(--wine2)'" onmouseout="this.style.background='var(--wine)'">＋ Hors cave</button>
+      <button onclick="openAddDegustation()" style="padding:9px 18px;background:var(--wine);border:none;color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:0.95rem;letter-spacing:1px;cursor:pointer;border-radius:2px;transition:background 0.2s;display:flex;align-items:center;gap:6px" class="btn-action-wine">＋ Hors cave</button>
     </div>
   </div>
   <!-- Filtres -->
@@ -910,7 +1030,7 @@
 </div>
 
 <!-- ===== ACCORDS VIEW ===== -->
-<div id="accords" class="content">
+<div id="accords" class="content" role="tabpanel" aria-labelledby="tab-accords" tabindex="0">
   <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:28px">
 
     <!-- Recherche plat -> vin -->
@@ -953,13 +1073,13 @@
 
 <div id="tooltip">
   <div id="tt-img-wrap" style="margin-bottom:8px;display:none">
-    <img id="tt-img" src="" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:3px;border:1px solid var(--border)">
+    <img id="tt-img" src="" alt="Photo du vin" style="width:100%;height:120px;object-fit:cover;border-radius:3px;border:1px solid var(--border)">
   </div>
   <div class="tt-name" id="tt-name"></div>
   <div class="tt-info" id="tt-info"></div>
 </div>
 <!-- ===== APOGEE VIEW ===== -->
-<div id="apogee" class="content">
+<div id="apogee" class="content" role="tabpanel" aria-labelledby="tab-apogee" tabindex="0">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px">
     <h2 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem">🔔 Alertes d'apogée</h2>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -974,7 +1094,7 @@
 </div>
 
 <!-- ===== CARTE DES VIGNOBLES ===== -->
-<div id="carte" class="content" style="padding:16px 20px">
+<div id="carte" class="content" role="tabpanel" aria-labelledby="tab-carte" tabindex="0" style="padding:16px 20px">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
     <div>
       <h2 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem">🌍️ Carte des vignobles</h2>
@@ -988,14 +1108,14 @@
   <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
     <button onclick="resetToEurope()" style="padding:4px 11px;background:var(--bg2);border:1px solid var(--gold);color:var(--gold);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s;font-weight:600">🌍 Europe</button>
     <button id="btn-inao-toggle" onclick="toggleInaoLayer()" style="padding:4px 10px;background:#1a2e1a;border:1px solid #4a8a4a;color:#7aba7a;cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s;font-weight:600" title="Afficher/masquer les délimitations officielles INAO (France)">🏛️ AOC France</button>
-    <button onclick="carteZoomPays('France')"    style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#3a2830';this.style.color='var(--text2)'">🇫🇷 France</button>
-    <button onclick="carteZoomPays('Espagne')"   style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#3a2830';this.style.color='var(--text2)'">🇪🇸 Espagne</button>
-    <button onclick="carteZoomPays('Portugal')"  style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#3a2830';this.style.color='var(--text2)'">🇵🇹 Portugal</button>
-    <button onclick="carteZoomPays('Italie')"    style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#3a2830';this.style.color='var(--text2)'">🇮🇹 Italie</button>
-    <button onclick="carteZoomPays('Allemagne')" style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#3a2830';this.style.color='var(--text2)'">🇩🇪 Allemagne</button>
-    <button onclick="carteZoomPays('Autriche')"  style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#3a2830';this.style.color='var(--text2)'">🇦🇹 Autriche</button>
-    <button onclick="carteZoomPays('Grèce')"     style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#3a2830';this.style.color='var(--text2)'">🇬🇷 Grèce</button>
-    <button onclick="carteZoomPays('Hongrie')"   style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#3a2830';this.style.color='var(--text2)'">🇭🇺 Hongrie</button>
+    <button onclick="carteZoomPays('France')"    style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" class="btn-action-country">🇫🇷 France</button>
+    <button onclick="carteZoomPays('Espagne')"   style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" class="btn-action-country">🇪🇸 Espagne</button>
+    <button onclick="carteZoomPays('Portugal')"  style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" class="btn-action-country">🇵🇹 Portugal</button>
+    <button onclick="carteZoomPays('Italie')"    style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" class="btn-action-country">🇮🇹 Italie</button>
+    <button onclick="carteZoomPays('Allemagne')" style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" class="btn-action-country">🇩🇪 Allemagne</button>
+    <button onclick="carteZoomPays('Autriche')"  style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" class="btn-action-country">🇦🇹 Autriche</button>
+    <button onclick="carteZoomPays('Grèce')"     style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" class="btn-action-country">🇬🇷 Grèce</button>
+    <button onclick="carteZoomPays('Hongrie')"   style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" class="btn-action-country">🇭🇺 Hongrie</button>
   </div>
   <div id="carte-wrap" style="position:relative;background:#0d1520;border:1px solid var(--border);border-radius:4px;overflow:hidden;height:620px">
     <div id="carte-leaflet" style="width:100%;height:100%"></div>
@@ -1022,13 +1142,13 @@
       <div class="form-row form-full">
         <label>Photo étiquette</label>
         <div id="deg-img-preview-wrap" style="display:none;margin-bottom:10px;position:relative;width:fit-content">
-          <img id="deg-img-preview" src="" alt="" style="max-height:160px;max-width:100%;object-fit:contain;border-radius:4px;border:1px solid var(--border);box-shadow:0 4px 16px rgba(0,0,0,0.5)">
+          <img id="deg-img-preview" src="" alt="Aperçu étiquette" style="max-height:160px;max-width:100%;object-fit:contain;border-radius:4px;border:1px solid var(--border);box-shadow:0 4px 16px rgba(0,0,0,0.5)">
           <button type="button" onclick="clearDegImageAndNotify()" title="Retirer l'image" style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:var(--wine2);border:none;color:white;cursor:pointer;font-size:0.75rem;line-height:1">✕</button>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-          <label for="deg-photo-camera" style="padding:8px 14px;background:var(--wine);color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:0.9rem;cursor:pointer;border-radius:2px;display:inline-flex;align-items:center;gap:5px" onmouseover="this.style.background='var(--wine2)'" onmouseout="this.style.background='var(--wine)'">📷 Photo</label>
+          <label for="deg-photo-camera" style="padding:8px 14px;background:var(--wine);color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:0.9rem;cursor:pointer;border-radius:2px;display:inline-flex;align-items:center;gap:5px" class="btn-action-wine">📷 Photo</label>
           <input type="file" id="deg-photo-camera" accept="image/*" capture="environment" style="display:none" onchange="handleDegImageFile(this)">
-          <label for="deg-photo-file" style="padding:8px 14px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.9rem;cursor:pointer;border-radius:2px;display:inline-flex;align-items:center;gap:5px" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">🖼 Galerie</label>
+          <label for="deg-photo-file" style="padding:8px 14px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.9rem;cursor:pointer;border-radius:2px;display:inline-flex;align-items:center;gap:5px" class="btn-action-file">🖼 Galerie</label>
           <input type="file" id="deg-photo-file" accept="image/*" style="display:none" onchange="handleDegImageFile(this)">
         </div>
         <input type="text" id="deg-image" placeholder="ou URL d'image…" style="width:100%;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:2px;outline:none;font-family:'Cormorant Garamond',serif;font-size:0.88rem" oninput="onDegImageUrlChange(this.value)" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">
@@ -1064,11 +1184,11 @@
       </div>
       <div class="form-row">
         <label>Millésime</label>
-        <input type="number" id="deg-annee" placeholder="2019" min="1900" max="2030">
+        <input type="number" inputmode="numeric" id="deg-annee" placeholder="2019" min="1900" max="2030">
       </div>
       <div class="form-row">
         <label>Prix payé (€)</label>
-        <input type="number" id="deg-prix" placeholder="0" min="0">
+        <input type="number" inputmode="decimal" id="deg-prix" placeholder="0" min="0">
       </div>
       <div class="form-row">
         <label>Note /5</label>
@@ -1214,13 +1334,13 @@
     <div class="form-row">
       <label>Photo étiquette</label>
       <div id="edit-histo-img-wrap" style="display:none;margin-bottom:10px;position:relative;width:fit-content">
-        <img id="edit-histo-img-preview" src="" alt="" style="max-height:140px;max-width:100%;object-fit:contain;border-radius:4px;border:1px solid var(--border);box-shadow:0 2px 12px rgba(0,0,0,0.5)">
+        <img id="edit-histo-img-preview" src="" alt="Aperçu étiquette" style="max-height:140px;max-width:100%;object-fit:contain;border-radius:4px;border:1px solid var(--border);box-shadow:0 2px 12px rgba(0,0,0,0.5)">
         <button type="button" onclick="clearHistoImage()" title="Supprimer l'image" style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:var(--wine2);border:none;color:white;cursor:pointer;font-size:0.75rem;line-height:1">✕</button>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-        <label for="edit-histo-photo-camera" style="padding:7px 13px;background:var(--wine);color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:0.88rem;cursor:pointer;border-radius:2px;display:inline-flex;align-items:center;gap:5px" onmouseover="this.style.background='var(--wine2)'" onmouseout="this.style.background='var(--wine)'">📷 Photo</label>
+        <label for="edit-histo-photo-camera" style="padding:7px 13px;background:var(--wine);color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:0.88rem;cursor:pointer;border-radius:2px;display:inline-flex;align-items:center;gap:5px" class="btn-action-wine">📷 Photo</label>
         <input type="file" id="edit-histo-photo-camera" accept="image/*" capture="environment" style="display:none" onchange="handleHistoImageFile(this)">
-        <label for="edit-histo-photo-file" style="padding:7px 13px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.88rem;cursor:pointer;border-radius:2px;display:inline-flex;align-items:center;gap:5px" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">🖼 Galerie</label>
+        <label for="edit-histo-photo-file" style="padding:7px 13px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.88rem;cursor:pointer;border-radius:2px;display:inline-flex;align-items:center;gap:5px" class="btn-action-file">🖼 Galerie</label>
         <input type="file" id="edit-histo-photo-file" accept="image/*" style="display:none" onchange="handleHistoImageFile(this)">
       </div>
       <input type="text" id="edit-histo-image" placeholder="ou URL d'image…" style="width:100%;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:2px;outline:none;font-family:'Cormorant Garamond',serif;font-size:0.88rem" oninput="onHistoImageUrlChange(this.value)" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">
@@ -1420,9 +1540,13 @@ function _doSyncToSheets() {
 }
 
 function loadFromSheets() {
+  // Afficher le spinner de synchronisation
+  const overlay = document.getElementById('sync-loading-overlay');
+  if(overlay) { overlay.classList.remove('hidden'); }
   showNotif('Synchronisation en cours…');
   const cbName = 'caveCallback_' + Date.now();
   const timeout = setTimeout(() => {
+    if(overlay) overlay.classList.add('hidden');
     showNotif('Mode hors ligne — données locales', true);
     delete window[cbName];
     const s = document.getElementById('jsonp-script');
@@ -1430,6 +1554,7 @@ function loadFromSheets() {
   }, 8000);
   window[cbName] = function(data) {
     clearTimeout(timeout);
+    if(overlay) overlay.classList.add('hidden');
     try {
       if(Array.isArray(data) && data.length > 0) {
         // Récupérer les images depuis imageStore (par ID) et localStorage (par ID ou cave_floor_slot)
@@ -1502,6 +1627,8 @@ function loadFromSheets() {
   script.src = SCRIPT_URL + '?callback=' + cbName + '&t=' + Date.now();
   script.onerror = function() {
     clearTimeout(timeout);
+    const _ov = document.getElementById('sync-loading-overlay');
+    if(_ov) _ov.classList.add('hidden');
     showNotif('Mode hors ligne — données locales', true);
     delete window[cbName];
     this.remove();
@@ -1522,6 +1649,34 @@ function updateHeader() {
   // Prix saisi en priorité, sinon estimation Groq
   const val = wineData.reduce((s,w)=>s+(parseFloat(w.prix)||parseFloat(w._prixEstime)||0),0);
   document.getElementById('hdr-val').textContent = Math.round(val).toLocaleString('fr-FR')+' €';
+  // ── Alerte "À boire bientôt / Apogée dépassée" ──────────────────────
+  const now = new Date().getFullYear();
+  const abientot = wineData.filter(w => {
+    if(!w.apogee_debut) return false;
+    const debut = parseInt(w.apogee_debut);
+    return debut > now && debut - now <= 2;
+  }).length;
+  const depasse = wineData.filter(w => {
+    if(!w.apogee_fin) return false;
+    return parseInt(w.apogee_fin) < now;
+  }).length;
+  let banner = document.getElementById('apogee-alert-banner');
+  if(!banner) {
+    banner = document.createElement('div');
+    banner.id = 'apogee-alert-banner';
+    banner.style.cssText = 'width:100%;background:linear-gradient(90deg,rgba(123,28,46,0.18),rgba(201,168,76,0.10));border-top:1px solid rgba(201,168,76,0.2);padding:4px 40px;font-size:0.75rem;display:flex;gap:16px;align-items:center;flex-wrap:wrap;cursor:pointer;transition:background 0.2s';
+    banner.onclick = () => switchTab('apogee', document.querySelector('[data-tab="apogee"]'));
+    const hdr = document.querySelector('header');
+    if(hdr) hdr.after(banner);
+  }
+  if(abientot > 0 || depasse > 0) {
+    banner.style.display = 'flex';
+    banner.innerHTML = (abientot ? `<span>🟡 <b style="color:var(--gold)">${abientot}</b> vin${abientot>1?'s':''} à apogée dans ≤ 2 ans</span>` : '')
+      + (depasse ? `<span style="color:var(--wine3)">🔴 <b>${depasse}</b> vin${depasse>1?'s':''} dépassé${depasse>1?'s':''}</span>` : '')
+      + `<span style="color:var(--text3);font-size:0.68rem;margin-left:auto">→ Voir l'onglet Apogée</span>`;
+  } else {
+    banner.style.display = 'none';
+  }
 }
 
 // =====================================================================
@@ -1538,13 +1693,9 @@ function switchTab(id, el, skipHistory) {
     el.classList.add('active');
     el.setAttribute('aria-selected', 'true');
   } else {
-    // Active the matching tab without an element reference
-    document.querySelectorAll('.tab').forEach(t => {
-      if(t.getAttribute('onclick') && t.getAttribute('onclick').includes("'"+id+"'")) {
-        t.classList.add('active');
-        t.setAttribute('aria-selected', 'true');
-      }
-    });
+    // Sélection robuste par data-tab (ne dépend plus du texte de l'attribut onclick)
+    const match = document.querySelector('.tab[data-tab="'+id+'"]');
+    if(match) { match.classList.add('active'); match.setAttribute('aria-selected','true'); }
   }
   if(id==='list')       renderList();
   if(id==='stats')      renderStats();
@@ -2690,6 +2841,7 @@ function addWine() {
 // LIST
 // =====================================================================
 function renderList() {
+  try {
   const q    = document.getElementById('searchInput').value.toLowerCase();
   const cave = document.getElementById('filterCave').value;
   const type = document.getElementById('filterType').value;
@@ -2750,7 +2902,7 @@ function renderList() {
     const prixColor = w.prix ? 'var(--cream)' : 'var(--gold)';
     cards += `<div class="wine-card" onclick="openSlotModal(${w.cave},${w.floor},${w.slot})">
       <div class="wine-card-img">
-        ${img ? `<img src="${img}" alt="">` : '🍷'}
+        ${img ? `<img src="${img}" alt="${w.nom||'bouteille'} ${w.annee||''}">` : '🍷'}
       </div>
       <div class="wine-card-body">
         <div class="wine-card-name">${w.nom||'—'}</div>
@@ -2767,6 +2919,7 @@ function renderList() {
   cards += '</div>';
 
   cont.innerHTML = html + cards;
+  } catch(e) { console.warn('renderList error:', e); }
 }
 
 // =====================================================================
@@ -3525,7 +3678,7 @@ function renderHistorique() {
     const stars   = '★'.repeat(parseInt(h.note)||0) + '☆'.repeat(5-(parseInt(h.note)||0));
     const _hImg = h._source === 'cave' ? (imgGet('hist_' + h.id) || h.image || '') : (imgGet('deg_' + h.id) || h.image || '');
     const imgHtml = _hImg
-      ? `<img src="${_hImg}" alt="" style="width:50px;height:70px;object-fit:contain;border-radius:3px;flex-shrink:0;border:1px solid var(--border)">`
+      ? `<img src="${_hImg}" alt="${h.nom||'bouteille'} ${h.annee||''}" style="width:50px;height:70px;object-fit:contain;border-radius:3px;flex-shrink:0;border:1px solid var(--border)">`
       : `<div style="width:50px;height:70px;background:var(--bg3);border-radius:3px;flex-shrink:0;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:1.4rem">🍷</div>`;
     const isHorsCave = h._source === 'hors_cave';
     const sourceBadge = isHorsCave
@@ -3533,12 +3686,12 @@ function renderHistorique() {
       : `<span style="font-size:0.67rem;color:var(--text2);border:1px solid rgba(80,80,80,0.3);border-radius:10px;padding:1px 7px;background:rgba(80,80,80,0.07);white-space:nowrap;margin-left:5px">cave</span>`;
     const editBtns = isHorsCave
       ? `<div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end">
-           <button onclick="openAddDegustation('${h.id}')" style="padding:4px 9px;background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.78rem;cursor:pointer;border-radius:2px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">✏️</button>
-           <button onclick="deleteDegustation('${h.id}')" style="padding:4px 9px;background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.78rem;cursor:pointer;border-radius:2px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--wine2)';this.style.color='var(--wine2)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">🗑</button>
+           <button onclick="openAddDegustation('${h.id}')" style="padding:4px 9px;background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.78rem;cursor:pointer;border-radius:2px;transition:all 0.2s" class="btn-action-file">✏️</button>
+           <button onclick="deleteDegustation('${h.id}')" style="padding:4px 9px;background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.78rem;cursor:pointer;border-radius:2px;transition:all 0.2s" class="btn-action-del">🗑</button>
          </div>`
       : `<div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end">
-           <button onclick="openEditHistorique('${h.id}')" style="padding:4px 9px;background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.78rem;cursor:pointer;border-radius:2px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">✏️</button>
-           <button onclick="deleteHistorique('${h.id}')" style="padding:4px 9px;background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.78rem;cursor:pointer;border-radius:2px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--wine2)';this.style.color='var(--wine2)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">🗑</button>
+           <button onclick="openEditHistorique('${h.id}')" style="padding:4px 9px;background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.78rem;cursor:pointer;border-radius:2px;transition:all 0.2s" class="btn-action-file">✏️</button>
+           <button onclick="deleteHistorique('${h.id}')" style="padding:4px 9px;background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:0.78rem;cursor:pointer;border-radius:2px;transition:all 0.2s" class="btn-action-del">🗑</button>
          </div>`;
     const borderCol = isHorsCave ? 'rgba(201,168,76,0.2)' : 'var(--border)';
     const bgCol     = isHorsCave ? 'rgba(201,168,76,0.025)' : 'var(--bg2)';
@@ -4696,6 +4849,30 @@ function closeMobileBubble() {
   lastTapTime = 0;
 }
 
+// ── Swipe-down pour fermer la mobile bubble ──────────────────────────
+(function() {
+  let _swipeStartY = 0;
+  document.addEventListener('touchstart', function(e) {
+    const bubble = document.getElementById('mobile-bubble');
+    if(bubble && bubble.classList.contains('open')) {
+      _swipeStartY = e.touches[0].clientY;
+    }
+  }, { passive: true });
+  document.addEventListener('touchmove', function(e) {
+    const bubble = document.getElementById('mobile-bubble');
+    if(!bubble || !bubble.classList.contains('open')) return;
+    const dy = e.touches[0].clientY - _swipeStartY;
+    if(dy > 0) bubble.style.transform = `translateY(${dy}px)`;
+  }, { passive: true });
+  document.addEventListener('touchend', function(e) {
+    const bubble = document.getElementById('mobile-bubble');
+    if(!bubble || !bubble.classList.contains('open')) return;
+    const dy = e.changedTouches[0].clientY - _swipeStartY;
+    bubble.style.transform = '';
+    if(dy > 80) closeMobileBubble();
+  }, { passive: true });
+})();
+
 function mobileBubbleOpenFiche() {
   if(mobileBubbleCave !== null) {
     const c = mobileBubbleCave, f = mobileBubbleFloor, s = mobileBubbleSlot;
@@ -5347,14 +5524,21 @@ function getRegionKey(w) {
 function renderCarte() {
   const container = document.getElementById('carte-leaflet');
   if(!container) return;
+  // Lazy-load les librairies cartographiques si pas encore chargées
+  if(!_mapLibsLoaded) {
+    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text2);font-family:\'Cormorant Garamond\',serif;flex-direction:column;gap:14px"><div class="sync-spinner"></div><div style="font-size:0.85rem;letter-spacing:1px">Chargement de la carte…</div></div>';
+    loadMapLibs().then(() => renderCarte()).catch(() => { container.innerHTML = '<div style="color:var(--wine3);padding:20px">Erreur de chargement de la carte — vérifiez votre connexion</div>'; });
+    return;
+  }
 
   // Init Leaflet une seule fois
   if(!leafletMap) {
+    container.innerHTML = '';
     leafletMap = L.map('carte-leaflet', {
       center: [46.0, 10.0],
       zoom: 5,
       zoomControl: false,           // on le recrée en bas à droite
-      attributionControl: false
+      attributionControl: true
     });
 
     // Zoom en bas à droite
@@ -5364,7 +5548,7 @@ function renderCarte() {
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       maxZoom: 19,
       subdomains: 'abcd',
-      attribution: '© CartoDB © OpenStreetMap contributors'
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/">CARTO</a>'
     }).addTo(leafletMap);
 
     // ── Frontières terrestres entre pays viticoles (lignes inter-pays uniquement) ──
@@ -5529,11 +5713,10 @@ function renderCarte() {
       <div style="font-family:'Playfair Display',serif;min-width:200px;max-width:270px">
         <div style="color:#c9a84c;font-size:0.95rem;font-weight:700;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid rgba(201,168,76,0.25)">${region.label}</div>
         ${region.cepages ? (() => {
-          const RBLANCS = ['chardonnay','sauvignon blanc','sauvignon','sémillon','semillon','riesling','gewurztraminer','gewürztraminer','pinot gris','pinot blanc','aligoté','aligote','muscat','viognier','marsanne','roussanne','clairette','bourboulenc','ugni blanc','ugni','rolle','vermentino','grenache blanc','macabeu','macabeo','viura','malvasia','malvasía','palomino','palomino fino','pedro ximénez','pedro ximenez','moscatel','albariño','albarino','treixadura','loureira','verdejo','godello','arinto','alvarinho','loureiro','trajadura','azal','encruzado','bical','antão vaz','antao vaz','fernão pires','fernao pires','sercial','verdelho','bual','malmsey','terrantez','cortese','arneis','turbiana','garganega','glera','pinot grigio','friulano','tocai','ribolla gialla','müller-thurgau','muller-thurgau','savagnin','jacquère','jacquere','altesse','roussette','chasselas','gros manseng','petit manseng','melon de bourgogne','chenin blanc','chenin','hondarrabi zuri','xarel·lo','xarello','parellada','furmint','hárslevelű','harslevelü','harslevelu','assyrtiko','moschofilero'];
-          const RROUGES = ['cabernet sauvignon','merlot','cabernet franc','pinot noir','syrah','grenache','mourvèdre','mourvedre','carignan','cinsault','gamay','gamay noir','malbec','côt','cot','tannat','fer servadou','tempranillo','garnacha','mazuelo','graciano','mencía','mencia','tinto fino','cariñena','carinena','touriga nacional','touriga franca','tinta roriz','tinta barroca','tinta cão','tinta cao','aragonez','trincadeira','alicante bouschet','castelão','castelao','nebbiolo','barbera','dolcetto','corvina','molinara','rondinella','sangiovese','primitivo','aglianico','teroldego','lagrein','schiava','vernatsch','refosco','nielluccio','sciaccarello','poulsard','trousseau','mondeuse','hondarrabi beltza','blaufränkisch','zweigelt','pinot meunier','mavrud','tempranillo/tinto fino','xinomavro','agiorgitiko'];
+          // Utilise les listes globales CEPAGES_BLANCS_LIST / CEPAGES_ROUGES_LIST (définies une seule fois)
           const lst = region.cepages.split(',').map(s=>s.trim());
           const r=[], b=[], a=[];
-          lst.forEach(c=>{const k=c.toLowerCase().trim();if(RROUGES.some(x=>k===x||k.startsWith(x)||k.includes(x)))r.push(c);else if(RBLANCS.some(x=>k===x||k.startsWith(x)||k.includes(x)))b.push(c);else a.push(c);});
+          lst.forEach(c=>{const k=c.toLowerCase().trim();if(CEPAGES_ROUGES_LIST.some(x=>k===x||k.startsWith(x)||k.includes(x)))r.push(c);else if(CEPAGES_BLANCS_LIST.some(x=>k===x||k.startsWith(x)||k.includes(x)))b.push(c);else a.push(c);});
           let h='<div style="font-size:0.72rem;margin-bottom:6px">';
           if(r.length)h+=`<span style="color:#c87080">🍷 ${r.join(', ')}</span>`;
           if(r.length&&b.length)h+=' <span style="color:#555">·</span> ';
@@ -6449,7 +6632,7 @@ function selectCarteRegion(key, label) {
           ${ws.map(w => `
             <div onclick="openSlotModal(${w.cave},${w.floor},${w.slot})"
               style="display:flex;gap:8px;align-items:center;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;cursor:pointer;min-width:180px;flex:1;max-width:260px">
-              ${w.image?`<img src="${w.image}" style="width:28px;height:40px;object-fit:contain;border-radius:2px;flex-shrink:0">`:`<span style="font-size:1rem;flex-shrink:0">🍷</span>`}
+              ${w.image?`<img src="${w.image}" alt="${w.nom||'vin'}" style="width:28px;height:40px;object-fit:contain;border-radius:2px;flex-shrink:0">`:`<span style="font-size:1rem;flex-shrink:0">🍷</span>`}
               <div style="min-width:0">
                 <div style="color:var(--text);font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${w.nom||'—'}</div>
                 <div style="color:var(--text2);font-size:0.75rem">${w.annee||''} ${w.domaine?'· '+w.domaine:''}</div>
