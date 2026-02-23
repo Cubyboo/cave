@@ -533,6 +533,9 @@
     .wine-table { display: none; }
     .wine-cards { display: flex; }
     #cave-svg-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg2); }
+    #caveSvg { user-select: none; -webkit-user-select: none; }
+    #caveSvg circle[data-cave] { cursor: pointer; transition: opacity 0.15s; }
+    #drag-ghost { pointer-events: none; }
     .cave-selector { flex-wrap: wrap; gap: 8px; }
     .cave-legend { flex-wrap: wrap; gap: 6px; }
 
@@ -1633,58 +1636,58 @@ function renderCave2D() {
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
 
-    <!-- Halo froid ambiant (éclairage cave) -->
-    <filter id="coldglow" x="-50%" y="-50%" width="200%" height="200%">
+    <!-- Halo chaud ambiant (éclairage cave bordeaux) -->
+    <filter id="warmglow" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="8" result="blur"/>
-      <feColorMatrix type="matrix" values="0.6 0 0.2 0 0.05  0 0.7 0.3 0 0.05  0.1 0.2 1 0 0.1  0 0 0 0.25 0" in="blur" result="tinted"/>
+      <feColorMatrix type="matrix" values="0.9 0.1 0 0 0.02  0.1 0.5 0 0 0.01  0 0 0.4 0 0  0 0 0 0.22 0" in="blur" result="tinted"/>
       <feMerge><feMergeNode in="tinted"/></feMerge>
     </filter>
 
-    <!-- Fond cave — inox noir mat -->
+    <!-- Fond cave — inox noir chaud (accord avec --bg: #0e0a0b) -->
     <linearGradient id="caveBg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"   stop-color="#0a0c0d"/>
-      <stop offset="50%"  stop-color="#080a0b"/>
-      <stop offset="100%" stop-color="#050709"/>
+      <stop offset="0%"   stop-color="#0e0a0b"/>
+      <stop offset="50%"  stop-color="#0a0708"/>
+      <stop offset="100%" stop-color="#080506"/>
     </linearGradient>
 
-    <!-- Gradient vitre (gauche→droite, reflet) -->
+    <!-- Gradient vitre (teinte chaude bordeaux très subtile) -->
     <linearGradient id="glassReflect" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%"   stop-color="rgba(160,200,220,0.10)"/>
-      <stop offset="18%"  stop-color="rgba(200,230,255,0.05)"/>
-      <stop offset="50%"  stop-color="rgba(100,160,200,0.01)"/>
-      <stop offset="78%"  stop-color="rgba(180,220,240,0.04)"/>
-      <stop offset="100%" stop-color="rgba(160,200,220,0.08)"/>
+      <stop offset="0%"   stop-color="rgba(200,160,140,0.07)"/>
+      <stop offset="20%"  stop-color="rgba(220,180,160,0.04)"/>
+      <stop offset="50%"  stop-color="rgba(180,130,110,0.01)"/>
+      <stop offset="80%"  stop-color="rgba(210,170,150,0.03)"/>
+      <stop offset="100%" stop-color="rgba(200,160,140,0.06)"/>
     </linearGradient>
 
-    <!-- Reflet vertical vitre -->
+    <!-- Reflet vertical vitre (chaud) -->
     <linearGradient id="glassReflectV" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"   stop-color="rgba(200,230,255,0.07)"/>
-      <stop offset="30%"  stop-color="rgba(150,200,230,0.02)"/>
-      <stop offset="100%" stop-color="rgba(80,140,180,0.04)"/>
+      <stop offset="0%"   stop-color="rgba(220,180,160,0.06)"/>
+      <stop offset="40%"  stop-color="rgba(180,140,120,0.02)"/>
+      <stop offset="100%" stop-color="rgba(140,100,80,0.03)"/>
     </linearGradient>
 
-    <!-- Inox noir brossé horizontal (montants) -->
+    <!-- Inox noir chaud brossé (montants) -->
     <linearGradient id="inoxBlack" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%"   stop-color="#0d0f10"/>
-      <stop offset="25%"  stop-color="#1a1e20"/>
-      <stop offset="50%"  stop-color="#242829"/>
-      <stop offset="75%"  stop-color="#1a1e20"/>
-      <stop offset="100%" stop-color="#0d0f10"/>
+      <stop offset="0%"   stop-color="#100c0d"/>
+      <stop offset="25%"  stop-color="#1e1a1b"/>
+      <stop offset="50%"  stop-color="#262020"/>
+      <stop offset="75%"  stop-color="#1e1a1b"/>
+      <stop offset="100%" stop-color="#100c0d"/>
     </linearGradient>
-    <!-- Inox noir brossé vertical (rails) -->
+    <!-- Inox noir chaud vertical (rails) -->
     <linearGradient id="inoxBlackV" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"   stop-color="#1e2224"/>
-      <stop offset="40%"  stop-color="#292e30"/>
-      <stop offset="100%" stop-color="#0e1012"/>
+      <stop offset="0%"   stop-color="#201a1b"/>
+      <stop offset="40%"  stop-color="#2c2426"/>
+      <stop offset="100%" stop-color="#100c0e"/>
     </linearGradient>
 
-    <!-- Éclairage LED froid (bande du haut) -->
+    <!-- Éclairage LED chaud (ambre/crème) -->
     <linearGradient id="ledLight" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%"   stop-color="rgba(100,180,220,0)"/>
-      <stop offset="20%"  stop-color="rgba(140,210,255,0.18)"/>
-      <stop offset="50%"  stop-color="rgba(160,220,255,0.28)"/>
-      <stop offset="80%"  stop-color="rgba(140,210,255,0.18)"/>
-      <stop offset="100%" stop-color="rgba(100,180,220,0)"/>
+      <stop offset="0%"   stop-color="rgba(201,168,76,0)"/>
+      <stop offset="20%"  stop-color="rgba(201,168,76,0.14)"/>
+      <stop offset="50%"  stop-color="rgba(220,190,100,0.22)"/>
+      <stop offset="80%"  stop-color="rgba(201,168,76,0.14)"/>
+      <stop offset="100%" stop-color="rgba(201,168,76,0)"/>
     </linearGradient>
 
     <!-- Bois CLAIR verni (hêtre/chêne blond) -->
@@ -1694,15 +1697,14 @@ function renderCave2D() {
       <stop offset="60%"  stop-color="#b89448"/>
       <stop offset="100%" stop-color="#a07830"/>
     </linearGradient>
-    <!-- Tranche avant bois (plus sombre) -->
     <linearGradient id="woodShelfFront" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%"   stop-color="#a07830"/>
       <stop offset="100%" stop-color="#7a5818"/>
     </linearGradient>
 
-    <!-- Lumière ambiante froide -->
+    <!-- Lumière ambiante chaude (bordeaux/or) -->
     <radialGradient id="ambientLight" cx="50%" cy="0%" r="80%">
-      <stop offset="0%"   stop-color="rgba(60,120,180,0.10)"/>
+      <stop offset="0%"   stop-color="rgba(120,40,30,0.08)"/>
       <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
     </radialGradient>
 
@@ -1717,85 +1719,82 @@ function renderCave2D() {
       <stop offset="40%"  stop-color="rgba(255,230,140,0.10)"/>
       <stop offset="100%" stop-color="rgba(200,160,80,0.05)"/>
     </linearGradient>
+
+    <!-- Highlight drag cible -->
+    <filter id="dropTarget" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
   </defs>
 
-  <!-- ═══ FOND : INOX NOIR ════════════════════════════════════════ -->
+  <!-- ═══ FOND : INOX NOIR CHAUD ══════════════════════════════════ -->
   <rect width="${W}" height="${H}" fill="url(#caveBg)" rx="0"/>
 
-  <!-- Micro-texture brossée (lignes horizontales très fines) -->
+  <!-- Micro-texture brossée (lignes très fines) -->
   ${Array.from({length: Math.floor(H/3)}, (_,i) =>
     i%2===0 ? `<line x1="0" y1="${i*3+1.5}" x2="${W}" y2="${i*3+1.5}"
-      stroke="rgba(255,255,255,${i%10===0?'0.012':'0.005'})" stroke-width="0.4"/>` : ''
+      stroke="rgba(255,220,200,${i%10===0?'0.010':'0.004'})" stroke-width="0.4"/>` : ''
   ).join('')}
 
-  <!-- Lumière ambiante froide du plafond -->
+  <!-- Lumière ambiante chaude -->
   <rect width="${W}" height="${H}" fill="url(#ambientLight)"/>
 
-  <!-- Bande LED plafond -->
+  <!-- Bande LED ambre plafond -->
   <rect x="${PAD_H-16}" y="${PAD_V-14}" width="${maxLayerW+32}" height="4"
     fill="url(#ledLight)" rx="2" opacity="0.9"/>
   <rect x="${PAD_H-16}" y="${PAD_V-11}" width="${maxLayerW+32}" height="10"
-    fill="url(#ledLight)" opacity="0.25"/>
+    fill="url(#ledLight)" opacity="0.22"/>
 
-  <!-- ═══ AFFICHAGE TEMPÉRATURE ══════════════════════════════════ -->
-  <!-- Fond capsule inox -->
+  <!-- ═══ AFFICHAGE TEMPÉRATURE (tons chauds) ══════════════════════ -->
   <rect x="${W/2 - 26}" y="${PAD_V-19}" width="52" height="16"
-    fill="#131618" rx="3" stroke="#2a2e32" stroke-width="1"/>
+    fill="#16100f" rx="3" stroke="#2e2028" stroke-width="1"/>
   <rect x="${W/2 - 25}" y="${PAD_V-18}" width="50" height="7"
-    fill="rgba(100,180,220,0.06)" rx="2" style="pointer-events:none"/>
-  <!-- Texte température -->
+    fill="rgba(201,168,76,0.05)" rx="2" style="pointer-events:none"/>
   <text x="${W/2}" y="${PAD_V-7}"
-    text-anchor="middle" font-size="10" fill="rgba(140,210,255,0.90)"
+    text-anchor="middle" font-size="10" fill="rgba(201,168,76,0.85)"
     font-family="'Courier New', monospace" font-weight="bold"
     letter-spacing="1" style="pointer-events:none">12°C</text>
-  <!-- Petite icône thermomètre -->
   <text x="${W/2 - 19}" y="${PAD_V-7}"
-    text-anchor="middle" font-size="8" fill="rgba(100,180,220,0.60)"
+    text-anchor="middle" font-size="8" fill="rgba(180,140,60,0.65)"
     style="pointer-events:none">🌡</text>
 
-  <!-- ═══ STRUCTURE INOX NOIR ════════════════════════════════════ -->
-  <!-- Montant gauche inox noir -->
+  <!-- ═══ STRUCTURE INOX NOIR CHAUD ════════════════════════════════ -->
   <rect x="${PAD_H-22}" y="${PAD_V-18}" width="12" height="${H - PAD_V*2 + 30}"
     fill="url(#inoxBlack)" rx="2"/>
-  <!-- Reflet fin gauche -->
   <rect x="${PAD_H-22}" y="${PAD_V-18}" width="2" height="${H - PAD_V*2 + 30}"
-    fill="rgba(180,200,220,0.12)" rx="1"/>
-  <!-- Ombre intérieure gauche -->
+    fill="rgba(201,168,76,0.08)" rx="1"/>
   <rect x="${PAD_H-11}" y="${PAD_V-18}" width="2" height="${H - PAD_V*2 + 30}"
     fill="rgba(0,0,0,0.4)" rx="1"/>
 
-  <!-- Montant droit inox noir -->
   <rect x="${PAD_H+maxLayerW+10}" y="${PAD_V-18}" width="12" height="${H - PAD_V*2 + 30}"
     fill="url(#inoxBlack)" rx="2"/>
-  <!-- Reflet fin droit -->
   <rect x="${PAD_H+maxLayerW+19}" y="${PAD_V-18}" width="2" height="${H - PAD_V*2 + 30}"
-    fill="rgba(100,120,140,0.18)" rx="1"/>
-  <!-- Ombre intérieure droite -->
+    fill="rgba(100,80,60,0.18)" rx="1"/>
   <rect x="${PAD_H+maxLayerW+10}" y="${PAD_V-18}" width="2" height="${H - PAD_V*2 + 30}"
     fill="rgba(0,0,0,0.4)" rx="1"/>
 
-  <!-- Rail haut inox noir -->
+  <!-- Rail haut -->
   <rect x="${PAD_H-24}" y="${PAD_V-22}" width="${maxLayerW+50}" height="8"
     fill="url(#inoxBlackV)" rx="2"/>
   <rect x="${PAD_H-24}" y="${PAD_V-22}" width="${maxLayerW+50}" height="2"
-    fill="rgba(180,200,220,0.15)" rx="1"/>
+    fill="rgba(201,168,76,0.10)" rx="1"/>
   <rect x="${PAD_H-24}" y="${PAD_V-16}" width="${maxLayerW+50}" height="1"
     fill="rgba(0,0,0,0.5)"/>
 
-  <!-- Rail bas inox noir -->
+  <!-- Rail bas -->
   <rect x="${PAD_H-24}" y="${H - PAD_V+14}" width="${maxLayerW+50}" height="8"
     fill="url(#inoxBlackV)" rx="2"/>
   <rect x="${PAD_H-24}" y="${H - PAD_V+20}" width="${maxLayerW+50}" height="1"
-    fill="rgba(100,120,140,0.20)"/>
+    fill="rgba(80,60,40,0.20)"/>
 
-  <!-- Vis déco inox (coins) -->
+  <!-- Vis décoratives inox -->
   ${[
     [PAD_H-17, PAD_V-18], [PAD_H+maxLayerW+16, PAD_V-18],
     [PAD_H-17, H-PAD_V+18], [PAD_H+maxLayerW+16, H-PAD_V+18]
   ].map(([vx,vy]) => `
-    <circle cx="${vx}" cy="${vy}" r="3" fill="#1a1e20" stroke="#2e3336" stroke-width="0.8"/>
-    <line x1="${vx-1.5}" y1="${vy}" x2="${vx+1.5}" y2="${vy}" stroke="rgba(180,200,220,0.35)" stroke-width="0.8"/>
-    <line x1="${vx}" y1="${vy-1.5}" x2="${vx}" y2="${vy+1.5}" stroke="rgba(180,200,220,0.35)" stroke-width="0.8"/>
+    <circle cx="${vx}" cy="${vy}" r="3" fill="#181214" stroke="#2e2428" stroke-width="0.8"/>
+    <line x1="${vx-1.5}" y1="${vy}" x2="${vx+1.5}" y2="${vy}" stroke="rgba(201,168,76,0.30)" stroke-width="0.8"/>
+    <line x1="${vx}" y1="${vy-1.5}" x2="${vx}" y2="${vy+1.5}" stroke="rgba(201,168,76,0.30)" stroke-width="0.8"/>
   `).join('')}
   `;
 
@@ -1807,15 +1806,15 @@ function renderCave2D() {
     const fH     = floorH(floor);
     const pos    = layerPositions(floor.front, floor.back);
 
-    // Fond de l'étage (intérieur noir légèrement bleuté)
+    // Fond de l'étage (intérieur brun très sombre)
     html += `<rect x="${PAD_H-10}" y="${yTop-4}"
       width="${maxLayerW+20}" height="${fH - FLOOR_GAP + 4}"
-      fill="rgba(6,10,14,0.97)" rx="1"/>`;
+      fill="rgba(10,6,7,0.97)" rx="1"/>`;
 
-    // Reflet lumière froide en haut de chaque casier
+    // Légère lueur ambre en haut de chaque casier
     html += `<rect x="${PAD_H-8}" y="${yTop-4}"
       width="${maxLayerW+16}" height="${Math.min(14, fH/4)}"
-      fill="rgba(60,120,200,0.04)" rx="1" style="pointer-events:none"/>`;
+      fill="rgba(120,60,20,0.04)" rx="1" style="pointer-events:none"/>`;
 
     for(let layer = 0; layer < layers; layer++) {
       // INVERSION : pour étage double, layer 0 = bas (calculé en dernier = plus bas Y)
@@ -1836,10 +1835,10 @@ function renderCave2D() {
         const isFront = floor.double && layer === 1 ? !p.isFront : p.isFront;
         const r       = isFront ? R_BIG : R_SMALL;
 
-        // Halo lumineux ambiant derrière bouteille pleine
+        // Halo lumineux ambiant derrière bouteille pleine (effet rétro-éclairé)
         if(!empty && isFront) {
           html += `<circle cx="${cx}" cy="${cy}" r="${r*1.5}"
-            fill="${col.fill}" opacity="0.07" filter="url(#coldglow)"
+            fill="${col.fill}" opacity="0.07" filter="url(#warmglow)"
             style="pointer-events:none"/>`;
         }
 
@@ -1873,9 +1872,9 @@ function renderCave2D() {
             html += `<path d="M ${cx-r*0.52} ${cy-r*0.42} A ${r*0.6} ${r*0.6} 0 0 1 ${cx+r*0.28} ${cy-r*0.68}"
               stroke="rgba(255,255,255,0.28)" stroke-width="2.5" fill="none" stroke-linecap="round"
               style="pointer-events:none"/>`;
-            // Reflet bas bleuté (condensation)
+            // Reflet bas chaud (reflet verre)
             html += `<path d="M ${cx-r*0.3} ${cy+r*0.45} A ${r*0.4} ${r*0.4} 0 0 0 ${cx+r*0.18} ${cy+r*0.62}"
-              stroke="rgba(120,200,230,0.14)" stroke-width="1.2" fill="none" stroke-linecap="round"
+              stroke="rgba(220,180,100,0.10)" stroke-width="1.2" fill="none" stroke-linecap="round"
               style="pointer-events:none"/>`;
           }
 
@@ -1886,10 +1885,10 @@ function renderCave2D() {
               style="pointer-events:none">M</text>`;
           }
         } else {
-          // Reflet goulot
+          // Reflet goulot (chaud)
           if(!empty) {
             html += `<circle cx="${cx-r*0.3}" cy="${cy-r*0.32}" r="${r*0.28}"
-              fill="rgba(180,220,255,0.14)" style="pointer-events:none"/>`;
+              fill="rgba(220,180,100,0.12)" style="pointer-events:none"/>`;
           }
         }
       });
@@ -1930,19 +1929,18 @@ function renderCave2D() {
         style="pointer-events:none"/>`;
     }
 
-    // Séparateur couche double (ligne de clayette intermédiaire)
+    // Séparateur couche double (réglette inox chaud)
     if(floor.double) {
       const midY = yTop + layerH + ROW_GAP * 0.5;
-      // Petite réglette inox entre les deux rangées
       html += `<rect x="${PAD_H-6}" y="${midY-1}" width="${maxLayerW+12}" height="2"
-        fill="#1a1e22" rx="1" opacity="0.7" style="pointer-events:none"/>`;
+        fill="#1e1818" rx="1" opacity="0.7" style="pointer-events:none"/>`;
       html += `<rect x="${PAD_H-6}" y="${midY-1}" width="${maxLayerW+12}" height="0.8"
-        fill="rgba(180,200,220,0.12)" rx="1" style="pointer-events:none"/>`;
+        fill="rgba(201,168,76,0.10)" rx="1" style="pointer-events:none"/>`;
     }
 
     // Numéro d'étage
     html += `<text x="${PAD_H-16}" y="${yTop + (fH-FLOOR_GAP)*0.5 + 4}"
-      text-anchor="middle" font-size="8" fill="rgba(100,160,180,0.50)"
+      text-anchor="middle" font-size="8" fill="rgba(160,120,80,0.45)"
       font-family="'Courier New', monospace" font-weight="bold"
       style="pointer-events:none">${floor.id}</text>`;
 
@@ -1959,36 +1957,193 @@ function renderCave2D() {
   html += `<rect x="${PAD_H-22}" y="${PAD_V-18}" width="${maxLayerW+44}" height="${H - PAD_V*2 + 30}"
     fill="url(#glassReflectV)" style="pointer-events:none"/>`;
 
-  // Liserets bords vitre
+  // Liserets bords vitre (chauds)
   html += `<rect x="${PAD_H-22}" y="${PAD_V-18}" width="2" height="${H - PAD_V*2 + 30}"
-    fill="rgba(200,230,255,0.09)" style="pointer-events:none"/>`;
+    fill="rgba(201,168,76,0.07)" style="pointer-events:none"/>`;
   html += `<rect x="${PAD_H+maxLayerW+20}" y="${PAD_V-18}" width="2" height="${H - PAD_V*2 + 30}"
-    fill="rgba(120,160,200,0.06)" style="pointer-events:none"/>`;
+    fill="rgba(160,120,80,0.05)" style="pointer-events:none"/>`;
 
-  // Trainées de condensation
+  // Trainées de condensation (chaudes)
   const condensLines = [0.06, 0.15, 0.27, 0.39, 0.52, 0.61, 0.72, 0.84, 0.91];
   condensLines.forEach((xRatio, i) => {
     const lx = PAD_H - 20 + xRatio * (maxLayerW + 42);
     const ly = PAD_V + 8 + (i % 5) * 16;
     const lh = 12 + (i % 4) * 10;
     html += `<line x1="${lx}" y1="${ly}" x2="${lx+(i%2===0?0.4:-0.4)}" y2="${ly+lh}"
-      stroke="rgba(180,220,250,0.09)" stroke-width="${0.7+(i%3)*0.3}"
+      stroke="rgba(220,180,140,0.07)" stroke-width="${0.7+(i%3)*0.3}"
       stroke-linecap="round" style="pointer-events:none"/>`;
   });
 
-  // Raies lumineuses obliques (reflet vitre)
+  // Raies lumineuses obliques (reflet vitre chaud)
   html += `<line x1="${PAD_H + maxLayerW*0.28}" y1="${PAD_V-12}"
     x2="${PAD_H + maxLayerW*0.52}" y2="${H - PAD_V+10}"
-    stroke="rgba(200,230,255,0.045)" stroke-width="26" style="pointer-events:none"/>`;
+    stroke="rgba(220,180,130,0.035)" stroke-width="26" style="pointer-events:none"/>`;
   html += `<line x1="${PAD_H + maxLayerW*0.66}" y1="${PAD_V-12}"
     x2="${PAD_H + maxLayerW*0.80}" y2="${H - PAD_V+10}"
-    stroke="rgba(200,230,255,0.020)" stroke-width="11" style="pointer-events:none"/>`;
+    stroke="rgba(220,180,130,0.015)" stroke-width="11" style="pointer-events:none"/>`;
 
   svg.innerHTML = html;
+
+  // ── DRAG & DROP ──────────────────────────────────────────────
+  // State partagé entre tous les cercles
+  let _drag = null; // { cave, floor, slot, wine, ghostEl }
+
+  svg.querySelectorAll('circle[data-cave]').forEach(el => {
+    // Rendre draggable uniquement les emplacements occupés
+    el.addEventListener('mousedown', (e) => {
+      const cave  = parseInt(el.dataset.cave);
+      const floor = parseInt(el.dataset.floor);
+      const slot  = parseInt(el.dataset.slot);
+      const wine  = getWineAtSlot(cave, floor, slot);
+      if(!wine) return; // vide → pas de drag
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Créer un fantôme visuel qui suit la souris
+      const ghost = document.createElement('div');
+      ghost.id = 'drag-ghost';
+      ghost.innerHTML = `<div style="
+        background:${WINE_COLORS[wine.type]?.fill||'#4a2030'};
+        border:2px solid ${WINE_COLORS[wine.type]?.stroke||'#c04060'};
+        border-radius:50%; width:32px; height:32px;
+        box-shadow:0 4px 16px rgba(0,0,0,0.7);
+        display:flex; align-items:center; justify-content:center;
+        font-size:9px; color:rgba(255,255,255,0.9); font-weight:bold;
+        pointer-events:none; user-select:none;
+      ">${wine.annee||'?'}</div>
+      <div style="
+        position:absolute; top:36px; left:50%; transform:translateX(-50%);
+        background:rgba(14,10,11,0.92); border:1px solid rgba(201,168,76,0.4);
+        border-radius:4px; padding:3px 7px; white-space:nowrap;
+        font-size:10px; color:var(--gold3); pointer-events:none;
+      ">${(wine.nom||'').substring(0,20)}</div>`;
+      ghost.style.cssText = `
+        position:fixed; pointer-events:none; z-index:9999;
+        transform:translate(-50%,-50%);
+        left:${e.clientX}px; top:${e.clientY}px;
+      `;
+      document.body.appendChild(ghost);
+
+      // Atténuer la bouteille source
+      el.setAttribute('opacity', '0.35');
+      el.style.cursor = 'grabbing';
+
+      _drag = { cave, floor, slot, wine, ghost, srcEl: el };
+      document.getElementById('tooltip').style.display = 'none';
+    });
+  });
+
+  // Mouvement global
+  document.addEventListener('mousemove', _onDragMove);
+  document.addEventListener('mouseup',   _onDragUp);
+
+  function _onDragMove(e) {
+    if(!_drag) return;
+    _drag.ghost.style.left = e.clientX + 'px';
+    _drag.ghost.style.top  = e.clientY + 'px';
+
+    // Highlight de la cible sous la souris
+    svg.querySelectorAll('circle[data-cave]').forEach(el => {
+      const isSrc = parseInt(el.dataset.cave) === _drag.cave &&
+                    parseInt(el.dataset.floor) === _drag.floor &&
+                    parseInt(el.dataset.slot)  === _drag.slot;
+      if(!isSrc) {
+        const rect = el.getBoundingClientRect();
+        const cx = rect.left + rect.width/2;
+        const cy = rect.top  + rect.height/2;
+        const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+        const r = rect.width / 2;
+        if(dist < r + 8) {
+          el.setAttribute('stroke', '#c9a84c');
+          el.setAttribute('stroke-width', '3');
+          el.style.filter = 'url(#softglow)';
+          el.dataset.hovered = '1';
+        } else if(el.dataset.hovered) {
+          // Restore
+          const w = getWineAtSlot(parseInt(el.dataset.cave), parseInt(el.dataset.floor), parseInt(el.dataset.slot));
+          const c = w ? (WINE_COLORS[w.type] || WINE_COLORS.empty) : WINE_COLORS.empty;
+          el.setAttribute('stroke', c.stroke);
+          el.setAttribute('stroke-width', w ? '1.8' : '0.6');
+          delete el.dataset.hovered;
+        }
+      }
+    });
+  }
+
+  function _onDragUp(e) {
+    if(!_drag) return;
+    document.removeEventListener('mousemove', _onDragMove);
+    document.removeEventListener('mouseup',   _onDragUp);
+
+    // Trouver la cible
+    let target = null;
+    svg.querySelectorAll('circle[data-cave]').forEach(el => {
+      const isSrc = parseInt(el.dataset.cave) === _drag.cave &&
+                    parseInt(el.dataset.floor) === _drag.floor &&
+                    parseInt(el.dataset.slot)  === _drag.slot;
+      if(!isSrc) {
+        const rect = el.getBoundingClientRect();
+        const cx = rect.left + rect.width/2;
+        const cy = rect.top  + rect.height/2;
+        const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+        if(dist < rect.width/2 + 8) {
+          target = {
+            cave:  parseInt(el.dataset.cave),
+            floor: parseInt(el.dataset.floor),
+            slot:  parseInt(el.dataset.slot)
+          };
+        }
+      }
+    });
+
+    // Effectuer le déplacement
+    if(target) {
+      const srcWine = getWineAtSlot(_drag.cave, _drag.floor, _drag.slot);
+      const dstWine = getWineAtSlot(target.cave, target.floor, target.slot);
+
+      if(srcWine) {
+        // Mettre à jour les positions
+        srcWine.cave  = target.cave;
+        srcWine.floor = target.floor;
+        srcWine.slot  = target.slot;
+
+        if(dstWine) {
+          // Échange : la bouteille de destination va à la source
+          dstWine.cave  = _drag.cave;
+          dstWine.floor = _drag.floor;
+          dstWine.slot  = _drag.slot;
+        }
+
+        saveData();
+
+        // Feedback visuel bref
+        const flash = document.createElement('div');
+        flash.style.cssText = `
+          position:fixed; left:${e.clientX-40}px; top:${e.clientY-20}px;
+          background:rgba(201,168,76,0.9); color:#0e0a0b;
+          border-radius:6px; padding:4px 10px; font-size:11px; font-weight:bold;
+          pointer-events:none; z-index:9999; opacity:1;
+          transition:opacity 0.5s;
+        `;
+        flash.textContent = dstWine ? '⇄ Échangé' : '✓ Déplacé';
+        document.body.appendChild(flash);
+        setTimeout(() => { flash.style.opacity = '0'; setTimeout(() => flash.remove(), 500); }, 800);
+      }
+    }
+
+    // Nettoyage
+    _drag.ghost.remove();
+    _drag.srcEl.removeAttribute('opacity');
+    _drag.srcEl.style.cursor = '';
+    _drag = null;
+
+    renderCave2D();
+  }
 
   // ── Tooltip au survol ────────────────────────────────────────
   svg.querySelectorAll('circle[data-cave]').forEach(el => {
     el.addEventListener('mouseenter', (e) => {
+      if(_drag) return; // pas de tooltip pendant drag
       const cave  = parseInt(el.dataset.cave);
       const floor = parseInt(el.dataset.floor);
       const slot  = parseInt(el.dataset.slot);
