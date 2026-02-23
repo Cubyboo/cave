@@ -642,6 +642,7 @@
     <div class="stat-item"><b id="hdr-val">0 €</b>valeur</div>
     <div class="stat-item">
       <button onclick="syncToSheets()" title="Sauvegarder vers Google Sheets" style="background:rgba(201,168,76,0.15);border:1px solid var(--gold);color:var(--gold);padding:5px 12px;border-radius:20px;cursor:pointer;font-family:inherit;font-size:0.75rem;letter-spacing:1px">💾 Sync</button>
+      <button onclick="loadFromSheets()" title="Recharger depuis Google Sheets" style="background:rgba(100,160,100,0.15);border:1px solid var(--green2);color:var(--green2);padding:5px 12px;border-radius:20px;cursor:pointer;font-family:inherit;font-size:0.75rem;letter-spacing:1px;margin-left:6px">🔄 Charger</button>
     </div>
   </div>
 </header>
@@ -1327,7 +1328,7 @@ function wineImg(w)    { return imgGet('wine_' + w.id)    || w.image    || ''; }
 function histImg(h)    { return imgGet('hist_' + h.id)    || h.image    || ''; }
 function degImg(d)     { return imgGet('deg_'  + d.id)    || d.image    || ''; }
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_GkA2thpGf_tCdgMtoVYt5-xANAztBu6Rmks9SE5-9yF8_jdbBu7iXbgS13_5iqH_6Q/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz5jU2YbiPNRvDEI1BTGDthJNDtP75hryUhBef3EjmLQwVJUTjJXXQH_4YFN3rVBZFnWQ/exec';
 
 let wineData = JSON.parse(localStorage.getItem('caveData') || '[]');
 let currentCave = 1;
@@ -2612,7 +2613,14 @@ async function checkPwd() {
       sessionStorage.setItem('cave_auth', '1');
       document.getElementById('pwd-screen').classList.add('hidden');
       migrateImagesToStore();
-      loadFromSheets();
+      // Si données locales présentes, on les garde — sinon on charge depuis le sheet
+      const localData = localStorage.getItem('caveData');
+      if(localData && JSON.parse(localData).length > 0) {
+        showNotif('Données locales chargées (' + wineData.length + ' vins)');
+        loadHistoriqueFromSheets();
+      } else {
+        loadFromSheets();
+      }
     } else {
       showLoginError();
     }
@@ -2647,7 +2655,15 @@ window.addEventListener('load', () => {
   renderCave2D();
   initAuth();
   if(sessionStorage.getItem('cave_auth') === '1') {
-    loadFromSheets();
+    // Si on a déjà des données locales, on les utilise directement — pas de sync auto
+    const localData = localStorage.getItem('caveData');
+    if(localData && JSON.parse(localData).length > 0) {
+      showNotif('Données locales chargées (' + wineData.length + ' vins)');
+      loadHistoriqueFromSheets();
+    } else {
+      // localStorage vide : on charge depuis le sheet
+      loadFromSheets();
+    }
   }
 });
 
