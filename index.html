@@ -535,20 +535,16 @@
     /* ── Cave de vieillissement vitrée ─────────────────────────── */
 
   #caves-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     width: 100%;
   }
 
   .cave-unit {
-    display: block;
     width: 460px;
     max-width: 100%;
-    margin: 0 auto;
-  }
-  /* Les enfants directs reprennent le comportement colonne via block normal */
-  .cave-unit .cave-header-panel,
-  .cave-unit .cave-frame {
-    display: block;
-    width: 100%;
+    flex-shrink: 0;
   }
 
   /* Panneau supérieur — métal brossé avec nom + temp */
@@ -1689,8 +1685,8 @@ function selectCaveView(v, btn) {
   currentCave = v;
   document.querySelectorAll('.cave-btn').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
-  document.getElementById('cave-unit-1').style.display = v === 1 ? 'block' : 'none';
-  document.getElementById('cave-unit-2').style.display = v === 2 ? 'block' : 'none';
+  document.getElementById('cave-unit-1').style.display = v === 1 ? '' : 'none';
+  document.getElementById('cave-unit-2').style.display = v === 2 ? '' : 'none';
   renderCave2D();
 }
 
