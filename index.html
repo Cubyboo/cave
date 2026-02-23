@@ -1345,8 +1345,12 @@ const WINE_COLORS = {
 
 function saveData() {
   localStorage.setItem('caveData', JSON.stringify(wineData));
-  localStorage.setItem('caveDataTs', Date.now()); // horodatage pour protéger contre la synchro
   updateHeader();
+  // Sécurité critique : ne jamais envoyer un tableau vide au sheet (effacement accidentel)
+  if(wineData.length === 0) {
+    console.warn('saveData: wineData vide — sync Sheets ignorée pour protéger les données');
+    return;
+  }
   fetch(SCRIPT_URL, {
     method: 'POST',
     body: JSON.stringify({ action: 'save', data: wineData })
@@ -1365,18 +1369,6 @@ function loadFromSheets() {
   window[cbName] = function(data) {
     clearTimeout(timeout);
     try {
-      // Protection race condition : si une sauvegarde locale date de moins de 45s,
-      // le sheet distant n'est peut-être pas encore à jour — on conserve le localStorage
-      const localTs = parseInt(localStorage.getItem('caveDataTs') || '0');
-      const ageSec = (Date.now() - localTs) / 1000;
-      if (ageSec < 45 && localStorage.getItem('caveData')) {
-        showNotif('Données locales récentes conservées ✓');
-        updateHeader();
-        renderCave2D();
-        loadHistoriqueFromSheets();
-        return;
-      }
-
       if(Array.isArray(data) && data.length > 0) {
         // Récupérer les images depuis imageStore (par ID) et localStorage (par ID ou cave_floor_slot)
         const localData = JSON.parse(localStorage.getItem('caveData') || '[]');
@@ -2111,7 +2103,7 @@ function confirmerDuplication() {
 
     // ID unique pour chaque copie
     const newId = Date.now().toString() + '_dup' + i + '_' + Math.random().toString(36).slice(2,6);
-    // Ne pas propager _prixEstime dans la copie (champ calculé, sera ré-estimé)
+    // Ne pas propager _prixEstime (champ calculé, sera ré-estimé)
     const { _prixEstime: _ignored, ...wineBase } = wine;
     const copy = {
       ...wineBase,
