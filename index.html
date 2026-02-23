@@ -4,7 +4,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍷</text></svg>">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🍷  Cave à Vin MMM</title>
+<title>Cave à Vin MMM</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
   /* ============================================================
@@ -148,6 +148,8 @@
   }
   .tab:hover { color: var(--cream); }
   .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+  /* Sur desktop : tab-icon = inline normal, tab-icon-mobile = caché */
+  .tab .tab-icon-mobile { display: none; }
   .tab.active::after {
     content: '';
     position: absolute;
@@ -296,7 +298,7 @@
   .info-cell { background: var(--bg3); padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); transition: var(--transition); }
   .info-cell:hover { border-color: var(--border2); }
   .info-cell .lbl { font-size: 0.67rem; color: var(--text3); text-transform: uppercase; letter-spacing: 1.5px; }
-  .info-cell .val { font-size: 1.05rem; color: var(--cream); margin-top: 3px; }
+  .info-cell .val { font-size: 1.05rem; color: var(--text); margin-top: 3px; }
   .modal-actions { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
 
   /* ============================================================
@@ -307,8 +309,9 @@
   .badge-blanc        { background: rgba(201,168,76,0.12); color: #e8c870; border: 1px solid rgba(201,168,76,0.3); }
   .badge-rosé         { background: rgba(200,100,120,0.18);color: #e8a0b0; border: 1px solid rgba(160,80,100,0.5); }
   .badge-effervescent { background: rgba(100,160,220,0.15);color: #90c8f0; border: 1px solid rgba(80,120,180,0.4); }
-  .badge-vdn          { background: rgba(160,80,200,0.18); color: #d0a0f0; border: 1px solid rgba(120,60,160,0.4); }
-  .badge-magnum       { background: rgba(80,50,100,0.25);  color: #c0a0e8; border: 1px solid rgba(80,50,130,0.5); }
+  .badge-vdn_blanc    { background: rgba(201,168,76,0.18); color: #f5d97a; border: 1px solid rgba(201,168,76,0.45); }
+  .badge-vdn_rouge    { background: rgba(120,40,20,0.22);  color: #d08060; border: 1px solid rgba(140,60,30,0.5); }
+  .badge-liquoreux    { background: rgba(200,100,20,0.18); color: #f0a050; border: 1px solid rgba(180,90,20,0.4); }
   .format-badge { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 0.65rem; letter-spacing: 0.5px; text-transform: uppercase; background: rgba(201,168,76,0.07); color: var(--text2); border: 1px solid var(--border); }
   .rating-stars { color: var(--gold); letter-spacing: -1px; }
 
@@ -346,7 +349,7 @@
   .wine-card-img { width: 52px; height: 72px; object-fit: contain; border-radius: 3px; border: 1px solid var(--border); flex-shrink: 0; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; }
   .wine-card-img img { width: 100%; height: 100%; object-fit: contain; border-radius: 3px; }
   .wine-card-body { flex: 1; min-width: 0; }
-  .wine-card-name { font-family: 'Playfair Display', serif; color: var(--cream); font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wine-card-name { font-family: 'Playfair Display', serif; color: var(--text); font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .wine-card-sub { font-size: 0.82rem; color: var(--text2); font-style: italic; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .wine-card-tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
   .wine-card-price { margin-left: auto; text-align: right; flex-shrink: 0; }
@@ -502,7 +505,25 @@
     .tab.active { border-top-color: var(--gold); border-bottom: none; color: var(--gold); }
     .tab.active::after { display: none; }
     /* Icônes plus grandes sur mobile */
-    .tab .tab-icon { font-size: 1.3rem; display: block; }
+    .tab .tab-icon { font-size: 1.3rem; display: block; line-height: 1; }
+    .tab .tab-icon-desktop { display: none; }
+    .tab .tab-icon-mobile  {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 1.3rem;        /* même hauteur qu'un emoji 1.3rem */
+      line-height: 1;
+    }
+    .tab .tab-icon-mobile img {
+      width: 1.3rem;
+      height: 1.3rem;
+      display: block;
+      vertical-align: top;
+    }
+    /* Si un tab a une icône mobile custom, cacher l'emoji par défaut */
+    .tab:has(.tab-icon-mobile) .tab-icon { display: none; }
+    /* Icône cave custom sur mobile — remplace l'emoji 🗺 */
+    .tab-icon-cave { display:flex; align-items:center; justify-content:center; height:1.3rem; }
     .tab .tab-label { display: block; font-size: 0.58rem; }
 
     /* Content — padding bas pour la nav fixe */
@@ -512,6 +533,9 @@
     .wine-table { display: none; }
     .wine-cards { display: flex; }
     #cave-svg-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg2); }
+    #caveSvg { user-select: none; -webkit-user-select: none; }
+    #caveSvg circle[data-cave] { cursor: pointer; transition: opacity 0.15s; }
+    #drag-ghost { pointer-events: none; }
     .cave-selector { flex-wrap: wrap; gap: 8px; }
     .cave-legend { flex-wrap: wrap; gap: 6px; }
 
@@ -540,6 +564,50 @@
     #wine-labels-g { display: none; }
   }
 
+  /* Leaflet tooltip wine style */
+  .leaflet-country-tooltip {
+    background: rgba(14,10,11,0.7) !important;
+    border: 1px solid #c9a84c55 !important;
+    border-radius: 3px !important;
+    padding: 3px 8px !important;
+    font-family: 'Cormorant Garamond', serif !important;
+    font-size: 0.75rem !important;
+    color: #c9a84c !important;
+    letter-spacing: 0.05em !important;
+    box-shadow: none !important;
+  }
+  .leaflet-country-tooltip::before { display:none !important; }
+  .leaflet-wine-tooltip {
+    background: rgba(14,10,11,0.96) !important;
+    border: 1px solid rgba(201,168,76,0.5) !important;
+    border-radius: 5px !important;
+    padding: 10px 13px !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.75) !important;
+    font-family: 'Cormorant Garamond', serif !important;
+    font-size: 0.82rem !important;
+    color: #e0d4c4 !important;
+    max-width: 280px !important;
+    min-width: 160px !important;
+    white-space: normal !important;
+    word-break: keep-all !important;
+    pointer-events: none !important;
+    line-height: 1.5 !important;
+  }
+  .leaflet-wine-tooltip::before { display: none !important; }
+  .leaflet-control-attribution { display: none !important; }
+  .appel-label-icon { background: none !important; border: none !important; box-shadow: none !important; }
+  .leaflet-control-zoom a {
+    background: rgba(14,10,11,0.9) !important;
+    color: #a09080 !important;
+    border-color: #2e2028 !important;
+  }
+  .leaflet-control-zoom a:hover { color: #c9a84c !important; border-color: #c9a84c !important; }
+  #carte-leaflet { border-radius: 4px; }
+
+  @media (max-width: 768px) {
+    #carte-wrap { height: 400px !important; }
+  }
+
   @media (max-width: 480px) {
     .logo { font-size: 0.95rem; }
     .stats-bar { gap: 10px; }
@@ -550,6 +618,8 @@
 </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 </head>
 <body>
 
@@ -567,7 +637,7 @@
 </div>
 
 <header>
-  <div class="logo"><span>Cave</span> à Vin<div class="logo-dot"></div></div>
+  <div class="logo"><span style="font-style:normal;font-size:1.6rem">🍷️</span> Cave à Vin<div class="logo-dot"></div></div>
   <div class="stats-bar">
     <div class="stat-item"><b id="hdr-total">0</b>bouteilles</div>
     <div class="stat-item"><b id="hdr-c1">0</b>cave 1</div>
@@ -580,7 +650,7 @@
 <div class="search-results-panel" id="search-panel" style="display:none"></div>
 
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('view2d',this)"><span class="tab-icon">🗺</span><span class="tab-label">Cave</span></div>
+  <div class="tab active" onclick="switchTab('view2d',this)"><span class="tab-icon">🗺</span><span class="tab-icon-mobile"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI0IiBoZWlnaHQ9IjEyNCIgdmlld0JveD0iMCAwIDEyNCAxMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMyQzMxMzYiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMTcxQTFEIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJnbGFzcyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTgpIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDUpIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0icmdiYSgyNTUsMjU1LDI1NSwwLjEyKSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDwhLS0gUm91Z2UgYm9yZGVhdXggLS0+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImJyIiBjeD0iMzUlIiBjeT0iMzUlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2M0MzY0ZiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM0YTBlMWEiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8IS0tIEJsYW5jL29yIC0tPgogICAgPHJhZGlhbEdyYWRpZW50IGlkPSJiZzIiIGN4PSIzNSUiIGN5PSIzNSUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZThjODcwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzdhNWExMCIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICAgIDwhLS0gUm9zw6kgLS0+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImJwIiBjeD0iMzUlIiBjeT0iMzUlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2UwNzA5MCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3YTIwNDAiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8IS0tIExpcXVvcmV1eC9hbWJyZSAtLT4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iYmwiIGN4PSIzNSUiIGN5PSIzNSUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZThhMDMwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzdhNGEwMCIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIHJ4PSIxNiIKICAgICAgICBmaWxsPSJ1cmwoI2JnKSIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utb3BhY2l0eT0iMC41IiBzdHJva2Utd2lkdGg9IjIiLz4KICA8dGV4dCB4PSI2MiIgeT0iMTEiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iOCIKICAgICAgICB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjN0VENkZGIiBvcGFjaXR5PSIwLjg1Ij4xNCYjMTc2OzwvdGV4dD4KICA8ZyBzdHJva2U9IiNGRkZGRkYiIHN0cm9rZS1vcGFjaXR5PSIwLjEwIiBzdHJva2Utd2lkdGg9IjEiPgogICAgPGxpbmUgeDE9IjEwIiB5MT0iMjciIHgyPSIxMTAiIHkyPSIyNyIvPgogICAgPGxpbmUgeDE9IjEwIiB5MT0iNDIiIHgyPSIxMTAiIHkyPSI0MiIvPgogICAgPGxpbmUgeDE9IjEwIiB5MT0iNTciIHgyPSIxMTAiIHkyPSI1NyIvPgogICAgPGxpbmUgeDE9IjEwIiB5MT0iNzIiIHgyPSIxMTAiIHkyPSI3MiIvPgogICAgPGxpbmUgeDE9IjEwIiB5MT0iODciIHgyPSIxMTAiIHkyPSI4NyIvPgogIDwvZz4KICA8Y2lyY2xlIGN4PSIyMiIgY3k9IjE5IiByPSI1LjUiIGZpbGw9InVybCgjYnIpIi8+CiAgPGNpcmNsZSBjeD0iNDgiIGN5PSIxOSIgcj0iNS41IiBmaWxsPSJ1cmwoI2JnMikiLz4KICA8Y2lyY2xlIGN4PSI3NCIgY3k9IjE5IiByPSI1LjUiIGZpbGw9InVybCgjYnApIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTkiIHI9IjUuNSIgZmlsbD0idXJsKCNicikiLz4KICA8Y2lyY2xlIGN4PSIyMiIgY3k9IjM0IiByPSI1LjUiIGZpbGw9InVybCgjYnApIi8+CiAgPGNpcmNsZSBjeD0iNDgiIGN5PSIzNCIgcj0iNS41IiBmaWxsPSJ1cmwoI2JsKSIvPgogIDxjaXJjbGUgY3g9Ijc0IiBjeT0iMzQiIHI9IjUuNSIgZmlsbD0idXJsKCNicikiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSIzNCIgcj0iNS41IiBmaWxsPSJ1cmwoI2JnMikiLz4KICA8Y2lyY2xlIGN4PSIyMiIgY3k9IjQ5IiByPSI1LjUiIGZpbGw9InVybCgjYmcyKSIvPgogIDxjaXJjbGUgY3g9IjQ4IiBjeT0iNDkiIHI9IjUuNSIgZmlsbD0idXJsKCNicikiLz4KICA8Y2lyY2xlIGN4PSI3NCIgY3k9IjQ5IiByPSI1LjUiIGZpbGw9InVybCgjYmwpIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iNDkiIHI9IjUuNSIgZmlsbD0idXJsKCNicCkiLz4KICA8Y2lyY2xlIGN4PSIyMiIgY3k9IjY0IiByPSI1LjUiIGZpbGw9InVybCgjYnIpIi8+CiAgPGNpcmNsZSBjeD0iNDgiIGN5PSI2NCIgcj0iNS41IiBmaWxsPSJ1cmwoI2JwKSIvPgogIDxjaXJjbGUgY3g9Ijc0IiBjeT0iNjQiIHI9IjUuNSIgZmlsbD0idXJsKCNiZzIpIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iNjQiIHI9IjUuNSIgZmlsbD0idXJsKCNibCkiLz4KICA8Y2lyY2xlIGN4PSIyMiIgY3k9Ijc5IiByPSI1LjUiIGZpbGw9InVybCgjYmwpIi8+CiAgPGNpcmNsZSBjeD0iNDgiIGN5PSI3OSIgcj0iNS41IiBmaWxsPSJ1cmwoI2JyKSIvPgogIDxjaXJjbGUgY3g9Ijc0IiBjeT0iNzkiIHI9IjUuNSIgZmlsbD0idXJsKCNicCkiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSI3OSIgcj0iNS41IiBmaWxsPSJ1cmwoI2JnMikiLz4KICA8Y2lyY2xlIGN4PSIyMiIgY3k9Ijk0IiByPSI1LjUiIGZpbGw9InVybCgjYmcyKSIvPgogIDxjaXJjbGUgY3g9IjQ4IiBjeT0iOTQiIHI9IjUuNSIgZmlsbD0idXJsKCNicCkiLz4KICA8Y2lyY2xlIGN4PSI3NCIgY3k9Ijk0IiByPSI1LjUiIGZpbGw9InVybCgjYnIpIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iOTQiIHI9IjUuNSIgZmlsbD0idXJsKCNibCkiLz4KICA8cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iMTE2IiBoZWlnaHQ9IjExNiIgcng9IjE0IgogICAgICAgIGZpbGw9InVybCgjZ2xhc3MpIiBwb2ludGVyLWV2ZW50cz0ibm9uZSIvPgogIDxyZWN0IHg9IjEwIiB5PSI0IiB3aWR0aD0iMTgiIGhlaWdodD0iMTE2IgogICAgICAgIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiIHJ4PSI5Ii8+Cjwvc3ZnPg==" style="border-radius:3px" alt="cave"/></span><span class="tab-label">Cave</span></div>
   <div class="tab" onclick="switchTab('list',this)"><span class="tab-icon">📋</span><span class="tab-label">Liste</span></div>
   <div class="tab" onclick="switchTab('historique',this)"><span class="tab-icon">🥂</span><span class="tab-label">Dégustation</span></div>
   <div class="tab" onclick="switchTab('carte',this)"><span class="tab-icon">🌍</span><span class="tab-label">Carte</span></div>
@@ -604,14 +674,16 @@
     <button class="cave-btn active" onclick="selectCave(1,this)">Cave 1 — 156 empl.</button>
     <button class="cave-btn" onclick="selectCave(2,this)">Cave 2 — 110 empl.</button>
     <div class="cave-legend">
-      <div class="legend-item"><div class="legend-big" style="background:#8a1828"></div> Rouge</div>
-      <div class="legend-item"><div class="legend-big" style="background:#a88018"></div> Blanc</div>
-      <div class="legend-item"><div class="legend-big" style="background:#b84068"></div> Rosé</div>
-      <div class="legend-item"><div class="legend-big" style="background:#204870"></div> Effervescent</div>
-      <div class="legend-item"><div class="legend-big" style="background:#703090"></div> VDN</div>
-      <div class="legend-item"><div class="legend-big" style="background:#504898"></div> Magnum</div>
-      <div class="legend-item"><div class="legend-big" style="background:#1a1014;border:1.5px solid #4a3040"></div> Vide</div>
-      <div class="legend-item"><div class="legend-small" style="background:#4a4a4a"></div> Goulot arrière</div>
+      <div class="legend-item"><div class="legend-big" style="background:#8a1828"></div> <span style="color:#e06878">Rouge</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#a88018"></div> <span style="color:#e8c870">Blanc</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#b84068"></div> <span style="color:#e8a0b0">Rosé</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#1e4870"></div> <span style="color:#90c8f0">Effervescent</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#b8901a"></div> <span style="color:#f5d97a">VDN Blanc</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#6a2010"></div> <span style="color:#d08060">VDN Rouge</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#c06020"></div> <span style="color:#f0a850">Liquoreux</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#1a1014;border:1.5px solid #4a3040"></div> <span style="color:#6a5a50">Vide</span></div>
+      <div class="legend-item"><div class="legend-small" style="background:#4a4a4a"></div> <span style="color:#6a5a50">Goulot arrière</span></div>
+      <div class="legend-item"><div style="width:16px;height:16px;border-radius:50%;background:transparent;border:2.5px solid #c9a84c;box-shadow:0 0 6px rgba(201,168,76,0.6)"></div> <span style="color:#c9a84c">Magnum</span></div>
     </div>
   </div>
   <div class="cave-2d-wrap" id="cave2dWrap">
@@ -634,8 +706,9 @@
       <option value="blanc">Blanc</option>
       <option value="rosé">Rosé</option>
       <option value="effervescent">Effervescent</option>
-      <option value="vdn">VDN</option>
-      <option value="magnum">Magnum</option>
+      <option value="vdn_blanc">VDN Blanc</option>
+      <option value="vdn_rouge">VDN Rouge</option>
+      <option value="liquoreux">Liquoreux</option>
     </select>
     <select id="sortBy" onchange="renderList()">
       <option value="nom">Trier par nom</option>
@@ -697,8 +770,9 @@
           <option value="blanc">Blanc</option>
           <option value="rosé">Rosé</option>
           <option value="effervescent">Effervescent (Champagne, Crémant…)</option>
-          <option value="vdn">VDN (Muscat, Banyuls, Rivesaltes…)</option>
-          <option value="magnum">Magnum</option>
+          <option value="vdn_blanc">VDN Blanc (Muscat, Rivesaltes Ambré…)</option>
+          <option value="vdn_rouge">VDN Rouge (Banyuls, Maury, Rivesaltes Grenat…)</option>
+          <option value="liquoreux">Liquoreux (Sauternes, Jurançon, Monbazillac…)</option>
         </select>
       </div>
       <div class="form-row">
@@ -813,7 +887,9 @@
       <option value="blanc">Blanc</option>
       <option value="rosé">Rosé</option>
       <option value="effervescent">Effervescent</option>
-      <option value="vdn">VDN</option>
+      <option value="vdn_blanc">VDN Blanc</option>
+      <option value="vdn_rouge">VDN Rouge</option>
+      <option value="liquoreux">Liquoreux</option>
     </select>
   </div>
   <div id="histo-empty" style="display:none;text-align:center;padding:60px 0;color:var(--text2);font-style:italic">Aucune dégustation enregistrée</div>
@@ -888,8 +964,8 @@
 <div id="carte" class="content" style="padding:16px 20px">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
     <div>
-      <h2 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem">🗺️ Carte des vignobles</h2>
-      <div style="color:var(--text2);font-size:0.75rem;margin-top:2px">102 appellations · 9 pays · polygones officiels</div>
+      <h2 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem">🌍️ Carte des vignobles</h2>
+      <div style="color:var(--text2);font-size:0.75rem;margin-top:2px">102 régions · couches WMS officielles INAO + frontières pays</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <div id="carte-legend" style="display:flex;gap:10px;flex-wrap:wrap;font-size:0.78rem;color:var(--text2)"></div>
@@ -898,6 +974,7 @@
   <!-- Filtres rapides par pays -->
   <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
     <button onclick="resetToEurope()" style="padding:4px 11px;background:var(--bg2);border:1px solid var(--gold);color:var(--gold);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s;font-weight:600">🌍 Europe</button>
+    <button id="btn-inao-toggle" onclick="toggleInaoLayer()" style="padding:4px 10px;background:#1a2e1a;border:1px solid #4a8a4a;color:#7aba7a;cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s;font-weight:600" title="Afficher/masquer les délimitations officielles INAO (France)">🏛️ AOC France</button>
     <button onclick="carteZoomPays('France')"    style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#3a2830';this.style.color='var(--text2)'">🇫🇷 France</button>
     <button onclick="carteZoomPays('Espagne')"   style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#3a2830';this.style.color='var(--text2)'">🇪🇸 Espagne</button>
     <button onclick="carteZoomPays('Portugal')"  style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#3a2830';this.style.color='var(--text2)'">🇵🇹 Portugal</button>
@@ -908,14 +985,10 @@
     <button onclick="carteZoomPays('Hongrie')"   style="padding:4px 10px;background:var(--bg3);border:1px solid #3a2830;color:var(--text2);cursor:pointer;border-radius:2px;font-size:0.75rem;font-family:'Cormorant Garamond',serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#3a2830';this.style.color='var(--text2)'">🇭🇺 Hongrie</button>
   </div>
   <div id="carte-wrap" style="position:relative;background:#0d1520;border:1px solid var(--border);border-radius:4px;overflow:hidden;height:620px">
-    <svg id="carte-svg" style="width:100%;height:100%;display:block"></svg>
-    <div id="carte-tooltip" style="display:none;position:absolute;background:var(--bg2);border:1px solid var(--gold);border-radius:3px;padding:10px 14px;pointer-events:none;z-index:10;min-width:180px;box-shadow:0 4px 20px rgba(0,0,0,0.6);font-size:0.85rem"></div>
-    <!-- Boutons zoom superposés sur la carte -->
-    <div style="position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:4px;z-index:5">
-      <button onclick="carteZoomIn()" style="width:34px;height:34px;background:rgba(8,4,6,0.82);border:1px solid var(--border);color:var(--text2);cursor:pointer;border-radius:3px;font-size:1.2rem;line-height:1;transition:all 0.2s;backdrop-filter:blur(4px)" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">+</button>
-      <button onclick="carteZoomOut()" style="width:34px;height:34px;background:rgba(8,4,6,0.82);border:1px solid var(--border);color:var(--text2);cursor:pointer;border-radius:3px;font-size:1.2rem;line-height:1;transition:all 0.2s;backdrop-filter:blur(4px)" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">−</button>
-    </div>
-    <div style="position:absolute;bottom:8px;right:10px;color:rgba(255,255,255,0.3);font-size:0.7rem">Molette pour zoomer · Glisser pour déplacer</div>
+    <div id="carte-leaflet" style="width:100%;height:100%"></div>
+    <div id="carte-tooltip" style="display:none;position:absolute;background:var(--bg2);border:1px solid var(--gold);border-radius:3px;padding:10px 14px;pointer-events:none;z-index:1000;min-width:180px;box-shadow:0 4px 20px rgba(0,0,0,0.6);font-size:0.85rem"></div>
+    <div id="carte-zoom-hint" style="position:absolute;bottom:40px;left:10px;color:rgba(255,255,255,0.6);font-size:0.68rem;z-index:999;background:rgba(0,0,0,0.55);padding:3px 8px;border-radius:3px;pointer-events:none;transition:opacity 0.3s">🔍 Zoomez sur la France (zoom 10+) pour voir les délimitations AOC parcellaires</div>
+    <div style="position:absolute;bottom:8px;left:10px;color:rgba(255,255,255,0.4);font-size:0.68rem;z-index:999;background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:2px;pointer-events:none">Molette pour zoomer · Glisser pour déplacer</div>
   </div>
   <div style="margin-top:14px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:16px">
     <div id="carte-region-title" style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1rem;margin-bottom:12px">Cliquez sur un point pour voir les vins</div>
@@ -971,7 +1044,9 @@
           <option value="blanc">Blanc</option>
           <option value="rosé">Rosé</option>
           <option value="effervescent">Effervescent</option>
-          <option value="vdn">VDN</option>
+          <option value="vdn_blanc">VDN Blanc</option>
+          <option value="vdn_rouge">VDN Rouge</option>
+          <option value="liquoreux">Liquoreux</option>
         </select>
       </div>
       <div class="form-row">
@@ -1206,7 +1281,7 @@ const CAVE_CONFIG = {
       { id:2, front:6, back:6, double:false, isMagnum:false, label:'Étage 2',           slots:12 },
       { id:3, front:6, back:6, double:false, isMagnum:false, label:'Étage 3',           slots:12 },
       { id:4, front:6, back:6, double:false, isMagnum:false, label:'Étage 4',           slots:12 },
-      { id:5, front:6, back:6, double:false, isMagnum:false, label:'Étage 5',           slots:12 },
+      { id:5, front:6, back:6, double:true,  isMagnum:false, label:'Étage 5',           slots:24 },
       { id:6, front:6, back:6, double:true,  isMagnum:false, label:'Étage 6',           slots:24 },
       { id:7, front:6, back:6, double:true,  isMagnum:false, label:'Étage 7',           slots:24 },
       { id:8, front:6, back:6, double:false, isMagnum:true,  label:'Étage 8 (Magnums)', slots:12 },
@@ -1258,15 +1333,16 @@ let wineData = JSON.parse(localStorage.getItem('caveData') || '[]');
 let currentCave = 1;
 let addingToSlot = null;
 
-const TYPE_LABELS   = { rouge:'Rouge', blanc:'Blanc', 'rosé':'Rosé', effervescent:'Effervescent', vdn:'VDN', magnum:'Magnum' };
+const TYPE_LABELS   = { rouge:'Rouge', blanc:'Blanc', 'rosé':'Rosé', effervescent:'Effervescent', vdn_blanc:'VDN Blanc', vdn_rouge:'VDN Rouge', liquoreux:'Liquoreux' };
 const FORMAT_LABELS = { '75cl':'75 cl','37.5cl':'37,5 cl','62cl':'62 cl','150cl':'Magnum 150 cl','300cl':'Double Magnum','autre':'Autre' };
 const WINE_COLORS = {
   rouge:        { fill:'#8a1828', stroke:'#c04060', small:'#5a1020' },
   blanc:        { fill:'#a88018', stroke:'#e0c060', small:'#6a5010' },
   'rosé':       { fill:'#b84068', stroke:'#e080a0', small:'#803050' },
   effervescent: { fill:'#1e4870', stroke:'#5090c0', small:'#102840' },
-  vdn:          { fill:'#703090', stroke:'#b060d0', small:'#481870' },
-  magnum:       { fill:'#504898', stroke:'#9080d0', small:'#302870' },
+  vdn_blanc:    { fill:'#b8901a', stroke:'#f5d97a', small:'#7a6010' },
+  vdn_rouge:    { fill:'#6a2010', stroke:'#b05030', small:'#3e1008' },
+  liquoreux:    { fill:'#c06020', stroke:'#e89040', small:'#803810' },
   empty:        { fill:'#1a1014', stroke:'#4a3040', small:'#2a1a22' }
 };
 
@@ -1388,11 +1464,17 @@ function updateHeader() {
 // =====================================================================
 // TABS
 // =====================================================================
-function switchTab(id, el) {
+function switchTab(id, el, skipHistory) {
   document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   if(el) el.classList.add('active');
+  else {
+    // Active the matching tab without an element reference
+    document.querySelectorAll('.tab').forEach(t => {
+      if(t.getAttribute('onclick') && t.getAttribute('onclick').includes("'"+id+"'")) t.classList.add('active');
+    });
+  }
   if(id==='list')  renderList();
   if(id==='stats') renderStats();
   if(id==='accords') populateVinSelect();
@@ -1402,7 +1484,39 @@ function switchTab(id, el) {
   if(id==='degustation') renderDegustations();
   if(id==='add')   updateEtageSelect();
   if(id==='view2d') renderCave2D();
+  // Gestion historique navigateur (protégé contre SecurityError sur file://)
+  if(!skipHistory) {
+    try { history.pushState({tab: id}, '', '#' + id); } catch(e) {}
+  }
 }
+
+// Gérer la touche Retour du navigateur
+window.addEventListener('popstate', function(event) {
+  // Fermer les modals ouverts en priorité
+  const openModals = document.querySelectorAll('.modal-overlay.open');
+  if(openModals.length > 0) {
+    openModals.forEach(m => m.classList.remove('open'));
+    return;
+  }
+  // Fermer le mobile bubble si ouvert
+  if(document.getElementById('mobile-bubble')?.classList.contains('open')) {
+    closeMobileBubble();
+    return;
+  }
+  // Naviguer vers l'onglet correspondant
+  const tabId = (event.state && event.state.tab) || 'view2d';
+  switchTab(tabId, null, true);
+});
+
+// Initialiser l'état d'historique au chargement (protégé contre SecurityError sur file://)
+window.addEventListener('load', function() {
+  try {
+    const hash = window.location.hash.replace('#','');
+    const validTabs = ['view2d','list','historique','carte','apogee','accords','stats','add'];
+    const initialTab = validTabs.includes(hash) ? hash : 'view2d';
+    history.replaceState({tab: initialTab}, '', '#' + initialTab);
+  } catch(e) {}
+});
 
 function selectCave(n, btn) {
   currentCave = n;
@@ -1459,18 +1573,13 @@ function renderCave2D() {
   const GAP    = 7; // espace bord-à-bord entre deux cercles consécutifs
 
   // ── Pré-calcul : positions X de chaque cercle dans une couche ──
-  // On alterne big / small en les centrant bord-à-bord avec GAP constant.
-  // Retourne un tableau [{cx, r, isFront, localIdx}]
   function layerPositions(front, back) {
     const seq = [];
     let f = 0, b = 0;
-    // Intercalage : on alterne tant qu'il reste des deux côtés,
-    // puis on finit avec ce qui reste.
     while(f < front || b < back) {
       if(f < front)  { seq.push({isFront:true,  li:f});  f++; }
       if(b < back)   { seq.push({isFront:false, li:b});  b++; }
     }
-    // Calcul des X
     const positions = [];
     let x = 0;
     seq.forEach((s, i) => {
@@ -1485,7 +1594,7 @@ function renderCave2D() {
     return positions;
   }
 
-  // ── Largeur max de toutes les couches ─────────────────────
+  // ── Largeur max ─────────────────────────────────────────────
   let maxLayerW = 0;
   floors.forEach(f => {
     const pos = layerPositions(f.front, f.back);
@@ -1504,10 +1613,8 @@ function renderCave2D() {
   const totalW = PAD_H + maxLayerW + PAD_H;
   const totalH = PAD_V + floors.reduce((s,f) => s + floorH(f), 0) + PAD_V;
 
-  // SVG responsive : viewBox fixe, width s'adapte au conteneur
   svg.setAttribute('viewBox', `0 0 ${totalW} ${totalH}`);
   svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-  // Sur mobile, limiter à la largeur du conteneur
   const isMobile = window.innerWidth <= 768;
   if(isMobile) {
     svg.setAttribute('width', '100%');
@@ -1519,37 +1626,202 @@ function renderCave2D() {
     svg.style.maxWidth = '';
   }
 
+  const W = totalW, H = totalH;
+
   let html = `
-    <defs>
-      <filter id="softglow" x="-20%" y="-20%" width="140%" height="140%">
-        <feGaussianBlur stdDeviation="1.8" result="blur"/>
-        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-    <rect width="${totalW}" height="${totalH}" fill="#080406" rx="4"/>
-    <rect x="1" y="1" width="${totalW-2}" height="${totalH-2}"
-      fill="none" stroke="#3a2830" stroke-width="1" rx="3"/>
+  <defs>
+    <!-- Filtre lueur douce des bouteilles -->
+    <filter id="softglow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Halo chaud ambiant (éclairage cave bordeaux) -->
+    <filter id="warmglow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feColorMatrix type="matrix" values="0.9 0.1 0 0 0.02  0.1 0.5 0 0 0.01  0 0 0.4 0 0  0 0 0 0.22 0" in="blur" result="tinted"/>
+      <feMerge><feMergeNode in="tinted"/></feMerge>
+    </filter>
+
+    <!-- Fond cave — inox noir chaud (accord avec --bg: #0e0a0b) -->
+    <linearGradient id="caveBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#0e0a0b"/>
+      <stop offset="50%"  stop-color="#0a0708"/>
+      <stop offset="100%" stop-color="#080506"/>
+    </linearGradient>
+
+    <!-- Gradient vitre (teinte chaude bordeaux très subtile) -->
+    <linearGradient id="glassReflect" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="rgba(200,160,140,0.07)"/>
+      <stop offset="20%"  stop-color="rgba(220,180,160,0.04)"/>
+      <stop offset="50%"  stop-color="rgba(180,130,110,0.01)"/>
+      <stop offset="80%"  stop-color="rgba(210,170,150,0.03)"/>
+      <stop offset="100%" stop-color="rgba(200,160,140,0.06)"/>
+    </linearGradient>
+
+    <!-- Reflet vertical vitre (chaud) -->
+    <linearGradient id="glassReflectV" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="rgba(220,180,160,0.06)"/>
+      <stop offset="40%"  stop-color="rgba(180,140,120,0.02)"/>
+      <stop offset="100%" stop-color="rgba(140,100,80,0.03)"/>
+    </linearGradient>
+
+    <!-- Inox noir chaud brossé (montants) -->
+    <linearGradient id="inoxBlack" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#100c0d"/>
+      <stop offset="25%"  stop-color="#1e1a1b"/>
+      <stop offset="50%"  stop-color="#262020"/>
+      <stop offset="75%"  stop-color="#1e1a1b"/>
+      <stop offset="100%" stop-color="#100c0d"/>
+    </linearGradient>
+    <!-- Inox noir chaud vertical (rails) -->
+    <linearGradient id="inoxBlackV" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#201a1b"/>
+      <stop offset="40%"  stop-color="#2c2426"/>
+      <stop offset="100%" stop-color="#100c0e"/>
+    </linearGradient>
+
+    <!-- Éclairage LED chaud (ambre/crème) -->
+    <linearGradient id="ledLight" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="rgba(201,168,76,0)"/>
+      <stop offset="20%"  stop-color="rgba(201,168,76,0.14)"/>
+      <stop offset="50%"  stop-color="rgba(220,190,100,0.22)"/>
+      <stop offset="80%"  stop-color="rgba(201,168,76,0.14)"/>
+      <stop offset="100%" stop-color="rgba(201,168,76,0)"/>
+    </linearGradient>
+
+    <!-- Bois CLAIR verni (hêtre/chêne blond) -->
+    <linearGradient id="woodShelf" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#c8a860"/>
+      <stop offset="25%"  stop-color="#d4b870"/>
+      <stop offset="60%"  stop-color="#b89448"/>
+      <stop offset="100%" stop-color="#a07830"/>
+    </linearGradient>
+    <linearGradient id="woodShelfFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#a07830"/>
+      <stop offset="100%" stop-color="#7a5818"/>
+    </linearGradient>
+
+    <!-- Lumière ambiante chaude (bordeaux/or) -->
+    <radialGradient id="ambientLight" cx="50%" cy="0%" r="80%">
+      <stop offset="0%"   stop-color="rgba(120,40,30,0.08)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+    </radialGradient>
+
+    <!-- Ombre planche -->
+    <filter id="shelfShadow" x="-5%" y="0%" width="110%" height="300%">
+      <feDropShadow dx="0" dy="3" stdDeviation="2.5" flood-color="rgba(0,0,0,0.8)"/>
+    </filter>
+
+    <!-- Reflet verni bois -->
+    <linearGradient id="woodVarnish" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="rgba(255,240,180,0.35)"/>
+      <stop offset="40%"  stop-color="rgba(255,230,140,0.10)"/>
+      <stop offset="100%" stop-color="rgba(200,160,80,0.05)"/>
+    </linearGradient>
+
+    <!-- Highlight drag cible -->
+    <filter id="dropTarget" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- ═══ FOND : INOX NOIR CHAUD ══════════════════════════════════ -->
+  <rect width="${W}" height="${H}" fill="url(#caveBg)" rx="0"/>
+
+  <!-- Micro-texture brossée (lignes très fines) -->
+  ${Array.from({length: Math.floor(H/3)}, (_,i) =>
+    i%2===0 ? `<line x1="0" y1="${i*3+1.5}" x2="${W}" y2="${i*3+1.5}"
+      stroke="rgba(255,220,200,${i%10===0?'0.010':'0.004'})" stroke-width="0.4"/>` : ''
+  ).join('')}
+
+  <!-- Lumière ambiante chaude -->
+  <rect width="${W}" height="${H}" fill="url(#ambientLight)"/>
+
+  <!-- Bande LED ambre plafond -->
+  <rect x="${PAD_H-16}" y="${PAD_V-14}" width="${maxLayerW+32}" height="4"
+    fill="url(#ledLight)" rx="2" opacity="0.9"/>
+  <rect x="${PAD_H-16}" y="${PAD_V-11}" width="${maxLayerW+32}" height="10"
+    fill="url(#ledLight)" opacity="0.22"/>
+
+  <!-- ═══ AFFICHAGE TEMPÉRATURE (tons chauds) ══════════════════════ -->
+  <rect x="${W/2 - 26}" y="${PAD_V-19}" width="52" height="16"
+    fill="#16100f" rx="3" stroke="#2e2028" stroke-width="1"/>
+  <rect x="${W/2 - 25}" y="${PAD_V-18}" width="50" height="7"
+    fill="rgba(201,168,76,0.05)" rx="2" style="pointer-events:none"/>
+  <text x="${W/2}" y="${PAD_V-7}"
+    text-anchor="middle" font-size="10" fill="rgba(201,168,76,0.85)"
+    font-family="'Courier New', monospace" font-weight="bold"
+    letter-spacing="1" style="pointer-events:none">12°C</text>
+  <text x="${W/2 - 19}" y="${PAD_V-7}"
+    text-anchor="middle" font-size="8" fill="rgba(180,140,60,0.65)"
+    style="pointer-events:none">🌡</text>
+
+  <!-- ═══ STRUCTURE INOX NOIR CHAUD ════════════════════════════════ -->
+  <rect x="${PAD_H-22}" y="${PAD_V-18}" width="12" height="${H - PAD_V*2 + 30}"
+    fill="url(#inoxBlack)" rx="2"/>
+  <rect x="${PAD_H-22}" y="${PAD_V-18}" width="2" height="${H - PAD_V*2 + 30}"
+    fill="rgba(201,168,76,0.08)" rx="1"/>
+  <rect x="${PAD_H-11}" y="${PAD_V-18}" width="2" height="${H - PAD_V*2 + 30}"
+    fill="rgba(0,0,0,0.4)" rx="1"/>
+
+  <rect x="${PAD_H+maxLayerW+10}" y="${PAD_V-18}" width="12" height="${H - PAD_V*2 + 30}"
+    fill="url(#inoxBlack)" rx="2"/>
+  <rect x="${PAD_H+maxLayerW+19}" y="${PAD_V-18}" width="2" height="${H - PAD_V*2 + 30}"
+    fill="rgba(100,80,60,0.18)" rx="1"/>
+  <rect x="${PAD_H+maxLayerW+10}" y="${PAD_V-18}" width="2" height="${H - PAD_V*2 + 30}"
+    fill="rgba(0,0,0,0.4)" rx="1"/>
+
+  <!-- Rail haut -->
+  <rect x="${PAD_H-24}" y="${PAD_V-22}" width="${maxLayerW+50}" height="8"
+    fill="url(#inoxBlackV)" rx="2"/>
+  <rect x="${PAD_H-24}" y="${PAD_V-22}" width="${maxLayerW+50}" height="2"
+    fill="rgba(201,168,76,0.10)" rx="1"/>
+  <rect x="${PAD_H-24}" y="${PAD_V-16}" width="${maxLayerW+50}" height="1"
+    fill="rgba(0,0,0,0.5)"/>
+
+  <!-- Rail bas -->
+  <rect x="${PAD_H-24}" y="${H - PAD_V+14}" width="${maxLayerW+50}" height="8"
+    fill="url(#inoxBlackV)" rx="2"/>
+  <rect x="${PAD_H-24}" y="${H - PAD_V+20}" width="${maxLayerW+50}" height="1"
+    fill="rgba(80,60,40,0.20)"/>
+
+  <!-- Vis décoratives inox -->
+  ${[
+    [PAD_H-17, PAD_V-18], [PAD_H+maxLayerW+16, PAD_V-18],
+    [PAD_H-17, H-PAD_V+18], [PAD_H+maxLayerW+16, H-PAD_V+18]
+  ].map(([vx,vy]) => `
+    <circle cx="${vx}" cy="${vy}" r="3" fill="#181214" stroke="#2e2428" stroke-width="0.8"/>
+    <line x1="${vx-1.5}" y1="${vy}" x2="${vx+1.5}" y2="${vy}" stroke="rgba(201,168,76,0.30)" stroke-width="0.8"/>
+    <line x1="${vx}" y1="${vy-1.5}" x2="${vx}" y2="${vy+1.5}" stroke="rgba(201,168,76,0.30)" stroke-width="0.8"/>
+  `).join('')}
   `;
 
-  // Bords latéraux bois
-  const sideH = totalH - PAD_V * 2;
-  html += `<rect x="${PAD_H-14}" y="${PAD_V}" width="6" height="${sideH}" fill="#1c0a04" rx="2"/>`;
-  html += `<rect x="${PAD_H+maxLayerW+8}" y="${PAD_V}" width="6" height="${sideH}" fill="#1c0a04" rx="2"/>`;
-
+  // ═══ ÉTAGES ══════════════════════════════════════════════════
   let yTop = PAD_V;
 
-  floors.forEach(floor => {
+  floors.forEach((floor, floorIdx) => {
     const layers = floor.double ? 2 : 1;
     const fH     = floorH(floor);
     const pos    = layerPositions(floor.front, floor.back);
 
-    // Fond de l'étage
-    html += `<rect x="${PAD_H-6}" y="${yTop-3}"
-      width="${maxLayerW+12}" height="${fH - FLOOR_GAP + 3}"
-      fill="${floor.double ? '#0f0a0c' : '#0b0709'}" rx="2"/>`;
+    // Fond de l'étage (intérieur brun très sombre)
+    html += `<rect x="${PAD_H-10}" y="${yTop-4}"
+      width="${maxLayerW+20}" height="${fH - FLOOR_GAP + 4}"
+      fill="rgba(10,6,7,0.97)" rx="1"/>`;
+
+    // Légère lueur ambre en haut de chaque casier
+    html += `<rect x="${PAD_H-8}" y="${yTop-4}"
+      width="${maxLayerW+16}" height="${Math.min(14, fH/4)}"
+      fill="rgba(120,60,20,0.04)" rx="1" style="pointer-events:none"/>`;
 
     for(let layer = 0; layer < layers; layer++) {
-      const yCenter    = yTop + layer * (layerH + ROW_GAP) + R_BIG;
+      // INVERSION : pour étage double, layer 0 = bas (calculé en dernier = plus bas Y)
+      // layer 0 → rangée du BAS  (yCenter plus grand)
+      // layer 1 → rangée du HAUT (yCenter plus petit)
+      const displayLayer = floor.double ? (layers - 1 - layer) : layer;
+      const yCenter    = yTop + displayLayer * (layerH + ROW_GAP) + R_BIG;
       const slotOffset = layer * (floor.front + floor.back);
 
       pos.forEach(p => {
@@ -1557,66 +1829,321 @@ function renderCave2D() {
         const wine  = getWineAtSlot(currentCave, floor.id, slot);
         const col   = wine ? (WINE_COLORS[wine.type] || WINE_COLORS.empty) : WINE_COLORS.empty;
         const empty = !wine;
+        const isMagnumBottle = !empty && (wine.format === '150cl' || wine.format === '300cl');
         const cx      = PAD_H + p.cx;
         const cy      = yCenter;
-        // Couche supérieure (layer=1) : on inverse cul/goulot pour l'imbrication
         const isFront = floor.double && layer === 1 ? !p.isFront : p.isFront;
         const r       = isFront ? R_BIG : R_SMALL;
 
-        // Cercle principal
+        // Halo lumineux ambiant derrière bouteille pleine (effet rétro-éclairé)
+        if(!empty && isFront) {
+          html += `<circle cx="${cx}" cy="${cy}" r="${r*1.5}"
+            fill="${col.fill}" opacity="0.07" filter="url(#warmglow)"
+            style="pointer-events:none"/>`;
+        }
+
+        // Anneau Magnum couleur du type
+        if(isMagnumBottle && isFront) {
+          html += `<circle cx="${cx}" cy="${cy}" r="${r+3.5}"
+            fill="none" stroke="${col.stroke}" stroke-width="2"
+            opacity="0.9" style="pointer-events:none"
+            filter="url(#softglow)"/>`;
+        }
+
+        // Cercle principal — bouteille
         html += `<circle cx="${cx}" cy="${cy}" r="${r}"
           fill="${col.fill}" stroke="${col.stroke}"
-          stroke-width="${empty ? 0.7 : (isFront ? 1.5 : 1.1)}"
-          opacity="${empty ? 0.45 : 1}"
+          stroke-width="${empty ? 0.6 : (isFront ? 1.8 : 1.2)}"
+          opacity="${empty ? 0.22 : 1}"
           ${(!empty) ? 'filter="url(#softglow)"' : ''}
           style="cursor:pointer"
           onclick="handleBottleClick(event,${currentCave},${floor.id},${slot})"
           data-cave="${currentCave}" data-floor="${floor.id}" data-slot="${slot}"/>`;
 
         if(isFront) {
-          // Creux central du cul
+          // Creux central
           html += `<circle cx="${cx}" cy="${cy}" r="${r*0.28}"
-            fill="${empty ? '#100a0e' : col.small}"
-            opacity="${empty ? 0.35 : 0.88}"
+            fill="${empty ? '#040a0c' : col.small}"
+            opacity="${empty ? 0.20 : 0.92}"
             style="pointer-events:none"/>`;
-          // Reflet
+
           if(!empty) {
+            // Reflet principal (arc lumineux)
             html += `<path d="M ${cx-r*0.52} ${cy-r*0.42} A ${r*0.6} ${r*0.6} 0 0 1 ${cx+r*0.28} ${cy-r*0.68}"
-              stroke="rgba(255,255,255,0.20)" stroke-width="2.2" fill="none" stroke-linecap="round"
+              stroke="rgba(255,255,255,0.28)" stroke-width="2.5" fill="none" stroke-linecap="round"
+              style="pointer-events:none"/>`;
+            // Reflet bas chaud (reflet verre)
+            html += `<path d="M ${cx-r*0.3} ${cy+r*0.45} A ${r*0.4} ${r*0.4} 0 0 0 ${cx+r*0.18} ${cy+r*0.62}"
+              stroke="rgba(220,180,100,0.10)" stroke-width="1.2" fill="none" stroke-linecap="round"
               style="pointer-events:none"/>`;
           }
+
+          // M Magnum
+          if(isMagnumBottle) {
+            html += `<text x="${cx}" y="${cy+r*0.55}" text-anchor="middle" font-size="${r*0.58}"
+              fill="${col.stroke}" opacity="0.98" font-family="serif" font-weight="bold"
+              style="pointer-events:none">M</text>`;
+          }
         } else {
-          // Petit reflet sur goulot
+          // Reflet goulot (chaud)
           if(!empty) {
-            html += `<circle cx="${cx-r*0.32}" cy="${cy-r*0.35}" r="${r*0.25}"
-              fill="rgba(255,255,255,0.15)" style="pointer-events:none"/>`;
+            html += `<circle cx="${cx-r*0.3}" cy="${cy-r*0.32}" r="${r*0.28}"
+              fill="rgba(220,180,100,0.12)" style="pointer-events:none"/>`;
           }
         }
       });
     }
 
-    // Planche
+    // ── CLAYETTE BOIS CLAIR VERNI ──────────────────────────────
     const shelfY = yTop + fH - FLOOR_GAP - SHELF_H;
-    html += `<rect x="${PAD_H-8}" y="${shelfY}" width="${maxLayerW+16}" height="${SHELF_H}"
-      fill="#200e08" rx="1"/>`;
-    html += `<rect x="${PAD_H-8}" y="${shelfY+SHELF_H}" width="${maxLayerW+16}" height="3"
-      fill="rgba(0,0,0,0.45)" rx="1"/>`;
 
-    // Séparateur couche double
+    // Ombre portée
+    html += `<rect x="${PAD_H-12}" y="${shelfY+2}" width="${maxLayerW+24}" height="${SHELF_H+5}"
+      fill="rgba(0,0,0,0.6)" rx="1" filter="url(#shelfShadow)" style="pointer-events:none"/>`;
+
+    // Corps principal bois clair
+    html += `<rect x="${PAD_H-10}" y="${shelfY}" width="${maxLayerW+20}" height="${SHELF_H+3}"
+      fill="url(#woodShelf)" rx="1"/>`;
+
+    // Reflet verni (brillance)
+    html += `<rect x="${PAD_H-10}" y="${shelfY}" width="${maxLayerW+20}" height="${SHELF_H+3}"
+      fill="url(#woodVarnish)" rx="1" style="pointer-events:none"/>`;
+
+    // Tranche avant (bois foncé)
+    html += `<rect x="${PAD_H-10}" y="${shelfY+SHELF_H+2}" width="${maxLayerW+20}" height="3"
+      fill="url(#woodShelfFront)" rx="1"/>`;
+
+    // Filets de grain bois clair (horizontaux)
+    for(let g = 0; g < 5; g++) {
+      const gy = shelfY + 1.5 + g * ((SHELF_H+1) / 5);
+      html += `<line x1="${PAD_H-8}" y1="${gy}" x2="${PAD_H+maxLayerW+8}" y2="${gy + (g%2===0?0.3:-0.3)}"
+        stroke="rgba(160,120,50,0.30)" stroke-width="${g%2===0?'0.7':'0.4'}"
+        style="pointer-events:none"/>`;
+    }
+
+    // Nœuds de bois décoratifs
+    for(let k = 0; k < 3; k++) {
+      const kx = PAD_H + maxLayerW * (0.18 + k * 0.32);
+      html += `<ellipse cx="${kx}" cy="${shelfY + SHELF_H*0.5}" rx="${3.5}" ry="${1.5}"
+        fill="none" stroke="rgba(140,100,40,0.22)" stroke-width="0.8"
+        style="pointer-events:none"/>`;
+    }
+
+    // Séparateur couche double (réglette inox chaud)
     if(floor.double) {
       const midY = yTop + layerH + ROW_GAP * 0.5;
-      html += `<line x1="${PAD_H}" y1="${midY}" x2="${PAD_H+maxLayerW}" y2="${midY}"
-        stroke="#1e1018" stroke-width="0.5" stroke-dasharray="4,7"/>`;
+      html += `<rect x="${PAD_H-6}" y="${midY-1}" width="${maxLayerW+12}" height="2"
+        fill="#1e1818" rx="1" opacity="0.7" style="pointer-events:none"/>`;
+      html += `<rect x="${PAD_H-6}" y="${midY-1}" width="${maxLayerW+12}" height="0.8"
+        fill="rgba(201,168,76,0.10)" rx="1" style="pointer-events:none"/>`;
     }
+
+    // Numéro d'étage
+    html += `<text x="${PAD_H-16}" y="${yTop + (fH-FLOOR_GAP)*0.5 + 4}"
+      text-anchor="middle" font-size="8" fill="rgba(160,120,80,0.45)"
+      font-family="'Courier New', monospace" font-weight="bold"
+      style="pointer-events:none">${floor.id}</text>`;
 
     yTop += fH;
   });
 
+  // ═══ VITRE SUPERPOSÉE ═══════════════════════════════════════
+  html += `<rect x="${PAD_H-22}" y="${PAD_V-18}" width="${maxLayerW+44}" height="${H - PAD_V*2 + 30}"
+    fill="rgba(80,140,200,0.012)" stroke="none" style="pointer-events:none"/>`;
+
+  html += `<rect x="${PAD_H-22}" y="${PAD_V-18}" width="${maxLayerW+44}" height="${H - PAD_V*2 + 30}"
+    fill="url(#glassReflect)" style="pointer-events:none"/>`;
+
+  html += `<rect x="${PAD_H-22}" y="${PAD_V-18}" width="${maxLayerW+44}" height="${H - PAD_V*2 + 30}"
+    fill="url(#glassReflectV)" style="pointer-events:none"/>`;
+
+  // Liserets bords vitre (chauds)
+  html += `<rect x="${PAD_H-22}" y="${PAD_V-18}" width="2" height="${H - PAD_V*2 + 30}"
+    fill="rgba(201,168,76,0.07)" style="pointer-events:none"/>`;
+  html += `<rect x="${PAD_H+maxLayerW+20}" y="${PAD_V-18}" width="2" height="${H - PAD_V*2 + 30}"
+    fill="rgba(160,120,80,0.05)" style="pointer-events:none"/>`;
+
+  // Trainées de condensation (chaudes)
+  const condensLines = [0.06, 0.15, 0.27, 0.39, 0.52, 0.61, 0.72, 0.84, 0.91];
+  condensLines.forEach((xRatio, i) => {
+    const lx = PAD_H - 20 + xRatio * (maxLayerW + 42);
+    const ly = PAD_V + 8 + (i % 5) * 16;
+    const lh = 12 + (i % 4) * 10;
+    html += `<line x1="${lx}" y1="${ly}" x2="${lx+(i%2===0?0.4:-0.4)}" y2="${ly+lh}"
+      stroke="rgba(220,180,140,0.07)" stroke-width="${0.7+(i%3)*0.3}"
+      stroke-linecap="round" style="pointer-events:none"/>`;
+  });
+
+  // Raies lumineuses obliques (reflet vitre chaud)
+  html += `<line x1="${PAD_H + maxLayerW*0.28}" y1="${PAD_V-12}"
+    x2="${PAD_H + maxLayerW*0.52}" y2="${H - PAD_V+10}"
+    stroke="rgba(220,180,130,0.035)" stroke-width="26" style="pointer-events:none"/>`;
+  html += `<line x1="${PAD_H + maxLayerW*0.66}" y1="${PAD_V-12}"
+    x2="${PAD_H + maxLayerW*0.80}" y2="${H - PAD_V+10}"
+    stroke="rgba(220,180,130,0.015)" stroke-width="11" style="pointer-events:none"/>`;
+
   svg.innerHTML = html;
 
-  // ── Tooltip au survol ────────────────────────────────────
+  // ── DRAG & DROP ──────────────────────────────────────────────
+  // State partagé entre tous les cercles
+  let _drag = null; // { cave, floor, slot, wine, ghostEl }
+
+  svg.querySelectorAll('circle[data-cave]').forEach(el => {
+    // Rendre draggable uniquement les emplacements occupés
+    el.addEventListener('mousedown', (e) => {
+      const cave  = parseInt(el.dataset.cave);
+      const floor = parseInt(el.dataset.floor);
+      const slot  = parseInt(el.dataset.slot);
+      const wine  = getWineAtSlot(cave, floor, slot);
+      if(!wine) return; // vide → pas de drag
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Créer un fantôme visuel qui suit la souris
+      const ghost = document.createElement('div');
+      ghost.id = 'drag-ghost';
+      ghost.innerHTML = `<div style="
+        background:${WINE_COLORS[wine.type]?.fill||'#4a2030'};
+        border:2px solid ${WINE_COLORS[wine.type]?.stroke||'#c04060'};
+        border-radius:50%; width:32px; height:32px;
+        box-shadow:0 4px 16px rgba(0,0,0,0.7);
+        display:flex; align-items:center; justify-content:center;
+        font-size:9px; color:rgba(255,255,255,0.9); font-weight:bold;
+        pointer-events:none; user-select:none;
+      ">${wine.annee||'?'}</div>
+      <div style="
+        position:absolute; top:36px; left:50%; transform:translateX(-50%);
+        background:rgba(14,10,11,0.92); border:1px solid rgba(201,168,76,0.4);
+        border-radius:4px; padding:3px 7px; white-space:nowrap;
+        font-size:10px; color:var(--gold3); pointer-events:none;
+      ">${(wine.nom||'').substring(0,20)}</div>`;
+      ghost.style.cssText = `
+        position:fixed; pointer-events:none; z-index:9999;
+        transform:translate(-50%,-50%);
+        left:${e.clientX}px; top:${e.clientY}px;
+      `;
+      document.body.appendChild(ghost);
+
+      // Atténuer la bouteille source
+      el.setAttribute('opacity', '0.35');
+      el.style.cursor = 'grabbing';
+
+      _drag = { cave, floor, slot, wine, ghost, srcEl: el };
+      document.getElementById('tooltip').style.display = 'none';
+    });
+  });
+
+  // Mouvement global
+  document.addEventListener('mousemove', _onDragMove);
+  document.addEventListener('mouseup',   _onDragUp);
+
+  function _onDragMove(e) {
+    if(!_drag) return;
+    _drag.ghost.style.left = e.clientX + 'px';
+    _drag.ghost.style.top  = e.clientY + 'px';
+
+    // Highlight de la cible sous la souris
+    svg.querySelectorAll('circle[data-cave]').forEach(el => {
+      const isSrc = parseInt(el.dataset.cave) === _drag.cave &&
+                    parseInt(el.dataset.floor) === _drag.floor &&
+                    parseInt(el.dataset.slot)  === _drag.slot;
+      if(!isSrc) {
+        const rect = el.getBoundingClientRect();
+        const cx = rect.left + rect.width/2;
+        const cy = rect.top  + rect.height/2;
+        const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+        const r = rect.width / 2;
+        if(dist < r + 8) {
+          el.setAttribute('stroke', '#c9a84c');
+          el.setAttribute('stroke-width', '3');
+          el.style.filter = 'url(#softglow)';
+          el.dataset.hovered = '1';
+        } else if(el.dataset.hovered) {
+          // Restore
+          const w = getWineAtSlot(parseInt(el.dataset.cave), parseInt(el.dataset.floor), parseInt(el.dataset.slot));
+          const c = w ? (WINE_COLORS[w.type] || WINE_COLORS.empty) : WINE_COLORS.empty;
+          el.setAttribute('stroke', c.stroke);
+          el.setAttribute('stroke-width', w ? '1.8' : '0.6');
+          delete el.dataset.hovered;
+        }
+      }
+    });
+  }
+
+  function _onDragUp(e) {
+    if(!_drag) return;
+    document.removeEventListener('mousemove', _onDragMove);
+    document.removeEventListener('mouseup',   _onDragUp);
+
+    // Trouver la cible
+    let target = null;
+    svg.querySelectorAll('circle[data-cave]').forEach(el => {
+      const isSrc = parseInt(el.dataset.cave) === _drag.cave &&
+                    parseInt(el.dataset.floor) === _drag.floor &&
+                    parseInt(el.dataset.slot)  === _drag.slot;
+      if(!isSrc) {
+        const rect = el.getBoundingClientRect();
+        const cx = rect.left + rect.width/2;
+        const cy = rect.top  + rect.height/2;
+        const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+        if(dist < rect.width/2 + 8) {
+          target = {
+            cave:  parseInt(el.dataset.cave),
+            floor: parseInt(el.dataset.floor),
+            slot:  parseInt(el.dataset.slot)
+          };
+        }
+      }
+    });
+
+    // Effectuer le déplacement
+    if(target) {
+      const srcWine = getWineAtSlot(_drag.cave, _drag.floor, _drag.slot);
+      const dstWine = getWineAtSlot(target.cave, target.floor, target.slot);
+
+      if(srcWine) {
+        // Mettre à jour les positions
+        srcWine.cave  = target.cave;
+        srcWine.floor = target.floor;
+        srcWine.slot  = target.slot;
+
+        if(dstWine) {
+          // Échange : la bouteille de destination va à la source
+          dstWine.cave  = _drag.cave;
+          dstWine.floor = _drag.floor;
+          dstWine.slot  = _drag.slot;
+        }
+
+        saveData();
+
+        // Feedback visuel bref
+        const flash = document.createElement('div');
+        flash.style.cssText = `
+          position:fixed; left:${e.clientX-40}px; top:${e.clientY-20}px;
+          background:rgba(201,168,76,0.9); color:#0e0a0b;
+          border-radius:6px; padding:4px 10px; font-size:11px; font-weight:bold;
+          pointer-events:none; z-index:9999; opacity:1;
+          transition:opacity 0.5s;
+        `;
+        flash.textContent = dstWine ? '⇄ Échangé' : '✓ Déplacé';
+        document.body.appendChild(flash);
+        setTimeout(() => { flash.style.opacity = '0'; setTimeout(() => flash.remove(), 500); }, 800);
+      }
+    }
+
+    // Nettoyage
+    _drag.ghost.remove();
+    _drag.srcEl.removeAttribute('opacity');
+    _drag.srcEl.style.cursor = '';
+    _drag = null;
+
+    renderCave2D();
+  }
+
+  // ── Tooltip au survol ────────────────────────────────────────
   svg.querySelectorAll('circle[data-cave]').forEach(el => {
     el.addEventListener('mouseenter', (e) => {
+      if(_drag) return; // pas de tooltip pendant drag
       const cave  = parseInt(el.dataset.cave);
       const floor = parseInt(el.dataset.floor);
       const slot  = parseInt(el.dataset.slot);
@@ -1744,7 +2271,6 @@ function openAddToSlot(cave, floor, slot) {
   updateSlotSelect();
   document.getElementById('f-slot').value = slot;
   if(CAVE_CONFIG[cave].floors.find(f=>f.id==floor)?.isMagnum) {
-    document.getElementById('f-type').value   = 'magnum';
     document.getElementById('f-format').value = '150cl';
   }
   showNotif(`Cave ${cave} · Étage ${floor} · Emplacement #${slot}`);
@@ -2126,7 +2652,7 @@ function renderList() {
     const tLabel = TYPE_LABELS[w.type]||w.type;
     const fLabel = FORMAT_LABELS[w.format]||(w.format||'75 cl');
     html += `<tr onclick="openSlotModal(${w.cave},${w.floor},${w.slot})" title="Voir">
-      <td><b style="color:var(--cream)">${w.nom||'—'}</b></td>
+      <td><b style="color:var(--text)">${w.nom||'—'}</b></td>
       <td style="color:var(--text2);font-style:italic">${w.appellation||'—'}</td>
       <td style="color:var(--text2)">${w.domaine||'—'}</td>
       <td><span class="type-badge badge-${w.type}">${tLabel}</span></td>
@@ -2343,9 +2869,9 @@ function renderStats() {
   }
 
   // Type
-  const typeOrder = ['rouge','blanc','rosé','effervescent','vdn','magnum'];
-  const typeNames = {rouge:'Rouge',blanc:'Blanc','rosé':'Rosé',effervescent:'Effervescent',vdn:'VDN',magnum:'Magnum'};
-  const typeColors = {rouge:'background:linear-gradient(90deg,#5a1020,#9e2a3f)',blanc:'background:linear-gradient(90deg,#7a5a10,#c9a84c)','rosé':'background:linear-gradient(90deg,#8a3050,#c06080)',effervescent:'background:linear-gradient(90deg,#204060,#5090c0)',vdn:'background:linear-gradient(90deg,#502080,#9040c0)',magnum:'background:linear-gradient(90deg,#4a2870,#9060c0)'};
+  const typeOrder = ['rouge','blanc','rosé','effervescent','vdn_blanc','vdn_rouge','liquoreux'];
+  const typeNames = {rouge:'Rouge',blanc:'Blanc','rosé':'Rosé',effervescent:'Effervescent',vdn_blanc:'VDN Blanc',vdn_rouge:'VDN Rouge',liquoreux:'Liquoreux'};
+  const typeColors = {rouge:'background:linear-gradient(90deg,#5a1020,#9e2a3f)',blanc:'background:linear-gradient(90deg,#7a5a10,#c9a84c)','rosé':'background:linear-gradient(90deg,#8a3050,#c06080)',effervescent:'background:linear-gradient(90deg,#204060,#5090c0)',vdn_blanc:'background:linear-gradient(90deg,#7a6010,#f5d97a)',vdn_rouge:'background:linear-gradient(90deg,#3e1008,#a04020)',liquoreux:'background:linear-gradient(90deg,#803810,#d07030)'};
   const maxT = Math.max(1,...Object.values(types));
   document.getElementById('chartType').innerHTML = typeOrder.map(t=>`
     <div class="bar-row">
@@ -3468,13 +3994,17 @@ const ACCORDS_AUTO = {
     plats: ["Aperitif","Fruits de mer","Foie gras","Desserts legers"],
     mots: ["aperitif","huitres","foie gras","desserts"]
   },
-  "vdn": {
-    plats: ["Foie gras","Chocolat noir","Fromage persille","Desserts"],
-    mots: ["foie gras","chocolat","roquefort","stilton","desserts","sucre"]
+  "vdn_blanc": {
+    plats: ["Foie gras","Melon jambon","Tarte aux abricots","Crème brûlée","Fromage bleu"],
+    mots: ["foie gras","melon","abricots","creme brulee","fromage bleu","desserts","sucre"]
   },
-  "magnum": {
-    plats: ["Grandes tablees","Repas de fete","Viandes rotis","Plateau de fromages"],
-    mots: ["fete","tablée","viande","fromages"]
+  "vdn_rouge": {
+    plats: ["Chocolat noir 70%","Fondant chocolat","Fromage persillé","Tarte aux noix","Fruits rouges"],
+    mots: ["chocolat","fondant","roquefort","noix","fruits rouges","desserts"]
+  },
+  "liquoreux": {
+    plats: ["Foie gras d'oie","Roquefort","Tarte tatin","Crème brûlée","Abricots pochés","Desserts fruités"],
+    mots: ["foie gras","roquefort","tarte tatin","creme brulee","abricots","peches","desserts","sucre"]
   }
 };
 
@@ -3562,7 +4092,7 @@ function rechercherParVin(id) {
 }
 
 function wineCardHtml(w) {
-  const tLabel = {rouge:'Rouge',blanc:'Blanc','rosé':'Rosé',effervescent:'Effervescent',vdn:'VDN',magnum:'Magnum'}[w.type] || w.type;
+  const tLabel = {rouge:'Rouge',blanc:'Blanc','rosé':'Rosé',effervescent:'Effervescent',vdn_blanc:'VDN Blanc',vdn_rouge:'VDN Rouge',liquoreux:'Liquoreux'}[w.type] || w.type;
   return `<div style="display:flex;gap:12px;align-items:center;padding:10px;background:var(--bg3);border-radius:3px;margin-bottom:8px;border:1px solid var(--border)">
     ${(imgGet('wine_'+w.id)||w.image)?`<img src="${imgGet('wine_'+w.id)||w.image}" style="width:36px;height:50px;object-fit:contain;border-radius:2px;flex-shrink:0">`:'<div style="width:36px;height:50px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">🍷</div>'}
     <div style="flex:1;min-width:0">
@@ -3659,7 +4189,9 @@ const APOGEE_AUTO = {
   "blanc":                 { min: 2,  max: 6  },
   "rose":                  { min: 1,  max: 3  },
   "effervescent":          { min: 2,  max: 8  },
-  "vdn":                   { min: 5,  max: 20 },
+  "vdn_blanc":             { min: 5,  max: 20 },
+  "vdn_rouge":             { min: 8,  max: 30 },
+  "liquoreux":             { min: 8,  max: 30 },
 };
 
 function getApogeeAuto(wine) {
@@ -3918,7 +4450,7 @@ function handleSearch(query) {
     return;
   }
 
-  const typeColors = {rouge:'#9e2a3f',blanc:'#c9a84c','rosé':'#c06080',effervescent:'#5090c0',vdn:'#9040c0',magnum:'#9060c0'};
+  const typeColors = {rouge:'#9e2a3f',blanc:'#c9a84c','rosé':'#c06080',effervescent:'#5090c0',vdn_blanc:'#f5d97a',vdn_rouge:'#a04020',liquoreux:'#d07030'};
 
   panel.style.display = 'block';
   panel.innerHTML = `<div class="search-count">${results.length} résultat${results.length>1?'s':''} pour "${query}"</div>` +
@@ -4338,7 +4870,7 @@ const WINE_REGION_POLYGONS = {
     cepages:"Grenache, Mourvèdre, Cinsault, Syrah, Vermentino, Clairette, Ugni Blanc",
     geometry:{"type":"MultiPolygon","coordinates":[[[[4.8,43.82],[5.22,43.95],[5.52,43.82],[5.55,43.58],[5.28,43.38],[4.88,43.38],[4.68,43.52],[4.72,43.68],[4.8,43.82]]],[[[5.38,43.88],[5.85,44.0],[6.35,43.95],[6.88,43.8],[7.1,43.62],[7.02,43.35],[6.45,43.12],[5.88,43.05],[5.45,43.15],[5.25,43.35],[5.38,43.88]]]]}},
 
-  "roussillon":{label:"Roussillon",num:13,country:"France",color:"#558822",type:"vdn",
+  "roussillon":{label:"Roussillon",num:13,country:"France",color:"#558822",type:"vdn_rouge",
     appellations:["Côtes du Roussillon","Côtes du Roussillon Villages","Banyuls","Banyuls Grand Cru","Collioure","Maury","Maury Sec","Rivesaltes","Muscat de Rivesaltes"],
     cepages:"Grenache Noir, Grenache Blanc, Grenache Gris, Carignan, Mourvèdre, Macabeu",
     geometry:{"type":"MultiPolygon","coordinates":[[[[2.45,42.98],[2.82,43.05],[3.1,42.92],[3.15,42.65],[2.95,42.45],[2.62,42.38],[2.32,42.45],[2.18,42.68],[2.45,42.98]]],[[[2.92,42.58],[3.1,42.68],[3.25,42.55],[3.22,42.38],[3.0,42.32],[2.8,42.38],[2.82,42.5],[2.92,42.58]]]]}},
@@ -4430,7 +4962,7 @@ const WINE_REGION_POLYGONS = {
     geometry:{"type":"MultiPolygon","coordinates":[[[[ 2.78,42.52],[3.22,42.52],[3.32,42.22],[2.98,42.05],[2.62,42.15],[2.62,42.38],[2.78,42.52]]]]}},
 
   /* ===== PORTUGAL ===== */
-  "douro_porto":{label:"Douro / Porto",num:40,country:"Portugal",color:"#8b2252",type:"vdn",
+  "douro_porto":{label:"Douro / Porto",num:40,country:"Portugal",color:"#8b2252",type:"vdn_rouge",
     appellations:["Porto Vintage","Porto LBV","Porto Tawny","Porto Ruby","Porto Colheita","Douro DOC","Douro Superior"],
     cepages:"Touriga Nacional, Touriga Franca, Tinta Roriz, Tinta Barroca, Tinta Cão",
     geometry:{"type":"MultiPolygon","coordinates":[[[[-8.22,41.62],[-7.22,41.68],[-6.82,41.55],[-6.48,41.28],[-6.65,40.98],[-7.18,40.88],[-7.92,40.92],[-8.25,41.22],[-8.22,41.62]]]]}},
@@ -4455,7 +4987,7 @@ const WINE_REGION_POLYGONS = {
     cepages:"Castelão, Moscatel de Setúbal, Fernão Pires, Arinto",
     geometry:{"type":"MultiPolygon","coordinates":[[[[-9.42,39.08],[-8.82,39.18],[-8.45,39.08],[-8.38,38.68],[-8.68,38.42],[-9.18,38.38],[-9.52,38.62],[-9.42,39.08]]]]}},
 
-  "madere":{label:"Madère",num:45,country:"Portugal",color:"#884400",type:"vdn",
+  "madere":{label:"Madère",num:45,country:"Portugal",color:"#884400",type:"vdn_blanc",
     appellations:["Sercial","Verdelho","Bual","Malmsey/Malvasia","Terrantez","Rainwater"],
     cepages:"Sercial, Verdelho, Bual, Malmsey/Malvasia, Terrantez",
     geometry:{"type":"MultiPolygon","coordinates":[[[[-17.32,32.82],[-16.98,32.94],[-16.65,32.88],[-16.58,32.7],[-16.78,32.58],[-17.12,32.55],[-17.35,32.68],[-17.32,32.82]]]]}},
@@ -4683,275 +5215,125 @@ const WINE_REGION_POLYGONS = {
     geometry:{"type":"MultiPolygon","coordinates":[[[[6.12,49.62],[6.52,49.78],[6.52,49.42],[6.22,49.38],[6.05,49.48],[6.12,49.62]]]]}},
 };
 
+// =====================================================================
+// LEAFLET MAP ENGINE
+// =====================================================================
+
+let leafletMap = null;
+let leafletMarkers = {}; // key -> marker
+let leafletMarkerCluster = null;
+let carteSelectedRegion = null;
+
 const TYPE_COLORS_CARTE = {
-  rouge:"#9e2a3f", blanc:"#c9a84c", "rosé":"#c06080",
-  effervescent:"#5090c0", vdn:"#9040c0", magnum:"#9060c0"
+  rouge: '#e06878',
+  blanc: '#e8c870',
+  rosé: '#e8a0b0',
+  effervescent: '#90c8f0',
+  vdn_blanc: '#f5d97a',
+  vdn_rouge: '#d08060',
+  liquoreux: '#f0a850',
 };
 
-function getRegionKey(wine) {
-  const r = (wine.region || '').toLowerCase().trim();
-  if(REGION_MAP[r]) return REGION_MAP[r];
-  for(const [k,v] of Object.entries(REGION_MAP)) {
-    if(r.includes(k) || k.includes(r)) return v;
+function getRegionKey(w) {
+  const r = (w.region || '').toLowerCase().trim();
+  const a = (w.appellation || '').toLowerCase().trim();
+  for(const [key, region] of Object.entries(WINE_REGION_POLYGONS)) {
+    const label = (region.label || '').toLowerCase();
+    const apps  = (region.appellations || []).map(x => x.toLowerCase());
+    if(r && (label.includes(r) || r.includes(label.split('—')[0].trim()))) return key;
+    if(a && apps.some(ap => ap.includes(a) || a.includes(ap.replace(' doc','').replace(' aoc','').replace(' aop','').replace(' docg','').trim()))) return key;
   }
   return null;
 }
 
-// =====================================================================
-// D3 MAP ENGINE
-// =====================================================================
-
 function renderCarte() {
-  const container = document.getElementById('carte-wrap');
+  const container = document.getElementById('carte-leaflet');
   if(!container) return;
-  
-  // Nettoyer
-  d3.select('#carte-svg').selectAll('*').remove();
-  
-  carteW = container.clientWidth  || 900;
-  carteH = container.clientHeight || 500;
-  
-  const svg = d3.select('#carte-svg')
-    .attr('viewBox', `0 0 ${carteW} ${carteH}`)
-    .style('background', '#0d1a2a')
-    .style('cursor', 'grab');
-  
-  carteSvg = svg;
-  
-  // Projection Mercator correcte sur l'Europe, auto-fit
-  carteProjection = d3.geoMercator()
-    .center([10, 48])
-    .scale(carteW * 0.98)
-    .translate([carteW / 2, carteH / 2]);
-  
-  cartePath = d3.geoPath().projection(carteProjection);
-  
-  // Groupe principal (cible du zoom)
-  const g = svg.append('g').attr('id', 'carte-map-g');
-  
-  // Tooltip
-  const tooltip = d3.select('#carte-tooltip');
-  
-  // Zoom & pan D3
-  carteZoomBehavior = d3.zoom()
-    .scaleExtent([0.5, 30])
-    .on('zoom', (event) => {
-      g.attr('transform', event.transform);
+
+  // Init Leaflet une seule fois
+  if(!leafletMap) {
+    leafletMap = L.map('carte-leaflet', {
+      center: [46.0, 10.0],
+      zoom: 5,
+      zoomControl: false,           // on le recrée en bas à droite
+      attributionControl: false
     });
-  
-  svg.call(carteZoomBehavior)
-    .on('dblclick.zoom', null);
-  
-  // Charger les pays (fond)
-  fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
-    .then(r => r.json())
-    .then(topo => {
-      const countries = topojson.feature(topo, topo.objects.countries);
-      const wineCountryIds = new Set([250,724,620,380,276,756,40,348,528,56,300,100,642,191,705,498,642,616,203,703,826,372,208,578,752,688,807,792,20,442,233,428,440]);
-      
-      // Fond de mer / hors Europe
-      g.append('rect')
-        .attr('width', carteW * 10).attr('height', carteH * 10)
-        .attr('x', -carteW * 4).attr('y', -carteH * 4)
-        .attr('fill', '#0d1a2a')
-        .on('mouseenter', () => d3.select('#carte-tooltip').style('display','none'));
-      
-      // Pays non-viticoles (fond gris)
-      g.selectAll('.country-other')
-        .data(countries.features.filter(f => !wineCountryIds.has(parseInt(f.id))))
-        .enter().append('path')
-        .attr('class','country-other')
-        .attr('d', cartePath)
-        .attr('fill', '#111e2b')
-        .attr('stroke', '#1a2d3d')
-        .attr('stroke-width', 0.3)
-        .on('mouseenter', () => d3.select('#carte-tooltip').style('display','none'));
-      
-      // Pays viticoles (fond légèrement plus clair)
-      const countryColors = {
-        250:'#162412', 724:'#162014', 620:'#162014', 380:'#141828',
-        276:'#121a28', 756:'#141828', 40:'#141828', 348:'#141828',
-        300:'#141828', 642:'#141828', 100:'#141828', 191:'#141828',
-        705:'#141828', 498:'#141828', 616:'#141828', 203:'#121a28', 703:'#121a28'
-      };
-      g.selectAll('.country-wine')
-        .data(countries.features.filter(f => wineCountryIds.has(parseInt(f.id))))
-        .enter().append('path')
-        .attr('class','country-wine')
-        .attr('d', cartePath)
-        .attr('fill', f => countryColors[parseInt(f.id)] || '#141828')
-        .attr('stroke', '#253545')
-        .attr('stroke-width', 0.5)
-        .on('mouseenter', () => d3.select('#carte-tooltip').style('display','none'));
-      
-      // Frontières internes (borders)
-      if(topo.objects.countries) {
-        g.append('path')
-          .datum(topojson.mesh(topo, topo.objects.countries, (a,b) => a !== b))
-          .attr('fill','none')
-          .attr('stroke','#2a3d52')
-          .attr('stroke-width', 0.6)
-          .attr('d', cartePath);
+
+    // Zoom en bas à droite
+    L.control.zoom({ position: 'topright' }).addTo(leafletMap);
+
+    // Fond carte épuré style "poster" — CartoDB Voyager (libre, sans clé)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      subdomains: 'abcd',
+      attribution: '© CartoDB © OpenStreetMap contributors'
+    }).addTo(leafletMap);
+
+    // ── Frontières terrestres entre pays viticoles (lignes inter-pays uniquement) ──
+    fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_boundary_lines_land.geojson')
+      .then(r => r.ok ? r.json() : null)
+      .catch(() => null)
+      .then(data => {
+        if(!data || !leafletMap) return;
+        const WINE_COUNTRIES = new Set(['France','Spain','Italy','Germany','Portugal','Austria','Greece',
+          'Hungary','Switzerland','Croatia','Slovenia','Bulgaria','Romania','Czech Republic',
+          'Slovakia','Luxembourg','Georgia','Armenia','Moldova','Serbia','Montenegro',
+          'Bosnia and Herzegovina','Albania','North Macedonia']);
+        L.geoJSON(data, {
+          // Garder uniquement les segments dont les deux côtés sont des pays viticoles
+          filter: f => {
+            const a = f.properties.adm0_left  || f.properties.ADM0_LEFT  || '';
+            const b = f.properties.adm0_right || f.properties.ADM0_RIGHT || '';
+            return WINE_COUNTRIES.has(a) && WINE_COUNTRIES.has(b);
+          },
+          style: {
+            color: '#7a3a1e',
+            weight: 1.5,
+            fillOpacity: 0,
+            opacity: 0.55,
+            dashArray: '4,3'
+          }
+        }).addTo(leafletMap);
+      });
+
+    // ── WMTS INAO : tuiles parcellaires officielles ──
+    leafletMap._inaoVisible = true;
+    const inaoTiles = L.tileLayer(
+      'https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0' +
+      '&LAYER=Aire-Parcellaire&STYLE=normal&TILEMATRIXSET=PM' +
+      '&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image%2Fpng',
+      { maxZoom: 19, opacity: 0.80, attribution: '© IGN/INAO' }
+    );
+    inaoTiles.addTo(leafletMap);
+    leafletMap._inaoLayer = inaoTiles;
+
+    // ── Couche appellations embarquée (affichée au clic région) ──
+    leafletMap._appelLayer = null;  // L.layerGroup courant
+    leafletMap._appelRegion = null; // clé région active
+
+    window.updateZoomHint = function updateZoomHint(regionLabel) {
+      const hint = document.getElementById('carte-zoom-hint');
+      if(!hint) return;
+      if(regionLabel) {
+        hint.innerHTML = `🏛️ <b style="color:#e8c870">${regionLabel}</b> — appellations affichées · zoomez pour les parcelles`;
+        hint.style.color = 'rgba(220,200,120,0.9)';
+      } else {
+        hint.innerHTML = '🌍 Cliquez sur une région pour voir ses appellations';
+        hint.style.color = 'rgba(200,200,200,0.65)';
       }
-    })
-    .catch(() => {
-      g.append('rect').attr('width',carteW).attr('height',carteH)
-        .attr('fill','#12202e');
-    })
-    .finally(() => {
-      drawWineRegionPolygons(g);
-      drawWinePoints(g);
-      renderCarteLegend();
-    });
-  
-  // Vue par défaut : Europe
-  resetToEurope();
-}
-
-function resetToEurope() {
-  if(!carteSvg || !carteZoomBehavior) return;
-  // Europe viticole centrée ~10°E, 46°N — vue d'ensemble
-  const [cx, cy] = carteProjection([10.0, 46.0]);
-  const scale = 1.5;
-  const tx = carteW/2 - cx * scale;
-  const ty = carteH/2 - cy * scale;
-  carteSvg.transition().duration(600)
-    .call(carteZoomBehavior.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
-}
-
-function resetToFrance() {
-  if(!carteSvg || !carteZoomBehavior) return;
-  // France centre ~2.3°E, 46.5°N → trouver les coordonnées pixel
-  const [cx, cy] = carteProjection([2.3, 46.5]);
-  // Zoom ~3.2x, centré sur la France
-  const scale = 3.2;
-  const tx = carteW/2 - cx * scale;
-  const ty = carteH/2 - cy * scale;
-  carteSvg.transition().duration(600)
-    .call(carteZoomBehavior.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
-}
-
-function carteZoomIn() {
-  if(!carteSvg || !carteZoomBehavior) return;
-  carteSvg.transition().duration(300)
-    .call(carteZoomBehavior.scaleBy, 1.6);
-}
-function carteZoomOut() {
-  if(!carteSvg || !carteZoomBehavior) return;
-  carteSvg.transition().duration(300)
-    .call(carteZoomBehavior.scaleBy, 0.625);
-}
-function carteReset() { resetToEurope(); }
-
-// Zoom par pays
-const PAYS_ZOOM = {
-  'France':    { center:[2.3,46.5],  scale:3.2 },
-  'Espagne':   { center:[-3.5,40.2], scale:3.0 },
-  'Portugal':  { center:[-8.1,39.5], scale:4.2 },
-  'Italie':    { center:[12.5,43.0], scale:2.8 },
-  'Allemagne': { center:[9.5,49.5],  scale:3.5 },
-  'Autriche':  { center:[15.8,47.5], scale:5.0 },
-  'Grèce':     { center:[22.5,37.8], scale:3.8 },
-  'Hongrie':   { center:[19.5,47.5], scale:5.5 },
-};
-
-function carteZoomPays(pays) {
-  if(!carteSvg || !carteZoomBehavior || !carteProjection) return;
-  const cfg = PAYS_ZOOM[pays];
-  if(!cfg) return;
-  const [cx, cy] = carteProjection(cfg.center);
-  const tx = carteW/2 - cx * cfg.scale;
-  const ty = carteH/2 - cy * cfg.scale;
-  carteSvg.transition().duration(700)
-    .call(carteZoomBehavior.transform, d3.zoomIdentity.translate(tx, ty).scale(cfg.scale));
-}
-
-function drawWineRegionPolygons(g) {
-  const layerZones = g.append('g').attr('id','wine-zones-g');
-  const layerLabels = g.append('g').attr('id','wine-labels-g');
-
-  Object.entries(WINE_REGION_POLYGONS).forEach(([key, region]) => {
-    // Supporte Polygon et MultiPolygon
-    const geom = region.geometry
-      ? region.geometry
-      : { type:'Polygon', coordinates:[region.coords] };
-
-    const geoJson = { type:'Feature', geometry: geom };
-
-    // Un path par polygone (MultiPolygon = plusieurs paths)
-    const polysCoords = geom.type === 'MultiPolygon'
-      ? geom.coordinates
-      : [geom.coordinates];
-
-    polysCoords.forEach((polyCoords, pi) => {
-      const singleGeo = { type:'Feature', geometry:{ type:'Polygon', coordinates: polyCoords }};
-      layerZones.append('path')
-        .datum(singleGeo)
-        .attr('class', 'wine-zone')
-        .attr('data-key', key)
-        .attr('data-pi', pi)
-        .attr('d', cartePath)
-        .attr('fill', region.color)
-        .attr('fill-opacity', 0.30)
-        .attr('stroke', region.color)
-        .attr('stroke-width', 0.2)
-        .attr('stroke-opacity', 0.85)
-        .style('cursor', 'pointer')
-        .on('mouseenter', function(event) {
-          // Highlight tous les polygones de cette région
-          d3.selectAll(`.wine-zone[data-key="${key}"]`)
-            .attr('fill-opacity', 0.52)
-            .attr('stroke-width', 0.7);
-          showRegionTooltip(event, key, region.label);
-        })
-        .on('mousemove', updateTooltipPos)
-        .on('mouseleave', function() {
-          const isSel = carteSelectedRegion === key;
-          d3.selectAll(`.wine-zone[data-key="${key}"]`)
-            .attr('fill-opacity', isSel ? 0.52 : 0.30)
-            .attr('stroke-width', isSel ? 0.7 : 0.2);
-          d3.select('#carte-tooltip').style('display','none');
-        })
-        .on('click', function() {
-          d3.selectAll('.wine-zone')
-            .attr('fill-opacity', 0.30)
-            .attr('stroke-width', 0.2);
-          d3.selectAll(`.wine-zone[data-key="${key}"]`)
-            .attr('fill-opacity', 0.52)
-            .attr('stroke-width', 0.7);
-          selectCarteRegion(key, region.label);
-        });
-    });
-
-    // Label au centroïde du premier polygone (principal)
-    const mainGeo = { type:'Feature', geometry:{ type:'Polygon', coordinates: polysCoords[0] }};
-    const centroid = cartePath.centroid(mainGeo);
-    if(centroid && !isNaN(centroid[0])) {
-      // Fond blanc semi-transparent pour lisibilité
-      layerLabels.append('rect')
-        .attr('x', centroid[0] - 18).attr('y', centroid[1] - 5)
-        .attr('width', 36).attr('height', 7)
-        .attr('fill', 'rgba(8,4,6,0.45)')
-        .attr('rx', 2)
-        .style('pointer-events','none');
-      layerLabels.append('text')
-        .attr('x', centroid[0]).attr('y', centroid[1])
-        .attr('text-anchor','middle')
-        .attr('dominant-baseline','middle')
-        .attr('font-size','5')
-        .attr('fill', region.color)
-        .attr('font-family','Cormorant Garamond, serif')
-        .attr('font-weight','700')
-        .attr('letter-spacing','0.3')
-        .style('pointer-events','none')
-        .text(region.label.toUpperCase());
     }
-  });
-}
+    updateZoomHint(null);
 
-function drawWinePoints(g) {
-  const layerPoints = g.append('g').attr('id','carte-points-g');
+    // Fix taille après affichage
+    setTimeout(() => { if(leafletMap) leafletMap.invalidateSize(); }, 200);
+  } else {
+    // Réinitialiser les marqueurs existants
+    Object.values(leafletMarkers).forEach(m => leafletMap.removeLayer(m));
+    leafletMarkers = {};
+    setTimeout(() => { if(leafletMap) leafletMap.invalidateSize(); }, 100);
+  }
 
+  // Regrouper les vins par région
   const regionData = {};
   wineData.forEach(w => {
     const key = getRegionKey(w);
@@ -4960,140 +5342,996 @@ function drawWinePoints(g) {
     regionData[key].push(w);
   });
 
-  Object.entries(regionData).forEach(([key, wines]) => {
-    const region = WINE_REGION_POLYGONS[key];
-    if(!region) return;
+  // Créer un marqueur par région
+  // Positions personnalisées pour certaines régions
+  const MARKER_OVERRIDE = {
+    'bourgogne':      { lat: 47.150, lng: 4.720 }, // à gauche de la Côte de Nuits
+    'beaujolais':     { lat: 46.100, lng: 4.580 },
+    'cotes-du-rhone': { lat: 44.600, lng: 4.780 },
+    'provence':       { lat: 43.480, lng: 5.900 },
+    'languedoc':      { lat: 43.450, lng: 3.100 },
+    'roussillon':     { lat: 42.680, lng: 2.780 },
+    'sud_ouest':      { lat: 44.100, lng: 0.600 },
+    'loire':          { lat: 47.380, lng: 0.200 },
+  };
 
-    const geom = region.geometry
-      ? region.geometry
-      : { type:'Polygon', coordinates:[region.coords] };
-    const polysCoords = geom.type === 'MultiPolygon' ? geom.coordinates : [geom.coordinates];
-    const mainGeo = { type:'Feature', geometry:{ type:'Polygon', coordinates: polysCoords[0] }};
-    const centroid = (key === 'bourgogne')
-      ? carteProjection([4.60, 47.22])
-      : cartePath.centroid(mainGeo);
-    if(!centroid || isNaN(centroid[0])) return;
+  Object.entries(WINE_REGION_POLYGONS).forEach(([key, region]) => {
+    // Position : override si défini, sinon centroïde calculé
+    let lat, lng;
+    if (MARKER_OVERRIDE[key]) {
+      lat = MARKER_OVERRIDE[key].lat;
+      lng = MARKER_OVERRIDE[key].lng;
+    } else {
+      try {
+        const geom = region.geometry || { type:'Polygon', coordinates:[region.coords] };
+        const coords = geom.type === 'MultiPolygon' ? geom.coordinates[0][0] : geom.coordinates[0];
+        const sumLng = coords.reduce((s,c) => s+c[0], 0);
+        const sumLat = coords.reduce((s,c) => s+c[1], 0);
+        lng = sumLng / coords.length;
+        lat = sumLat / coords.length;
+      } catch(e) { return; }
+    }
 
+    const wines = regionData[key] || [];
+    const hasWines = wines.length > 0;
+
+    // Couleur dominante
     const typeCount = {};
     wines.forEach(w => { typeCount[w.type] = (typeCount[w.type]||0)+1; });
-    const dom = Object.entries(typeCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'rouge';
-    const color = TYPE_COLORS_CARTE[dom] || '#9e2a3f';
-    const isSel = carteSelectedRegion === key;
-    const r = Math.max(5, Math.min(10, 5 + wines.length * 0.4));
+    const domType = Object.entries(typeCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'rouge';
+    const radius = hasWines ? Math.max(10, Math.min(22, 10 + wines.length * 0.8)) : 7;
 
-    const group = layerPoints.append('g')
-      .attr('class','wine-point-g')
-      .attr('data-key', key)
-      .style('cursor','pointer');
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="
+        width:${radius*2}px;height:${radius*2}px;
+        border-radius:50%;
+        background:${hasWines ? 'rgba(110,40,180,0.45)' : 'rgba(110,40,180,0.15)'};
+        border:2px solid ${hasWines ? 'rgba(160,80,220,0.80)' : 'rgba(130,60,200,0.35)'};
+        box-shadow:0 2px 10px rgba(80,20,140,0.40);
+        display:flex;align-items:center;justify-content:center;
+        font-size:${radius > 12 ? '11' : '9'}px;
+        font-weight:bold;color:rgba(255,255,255,0.95);
+        cursor:pointer;
+        transition:transform 0.15s ease, background 0.2s ease;
+      ">${hasWines ? wines.length : ''}</div>`,
+      iconSize: [radius*2, radius*2],
+      iconAnchor: [radius, radius],
+      popupAnchor: [0, -radius]
+    });
 
-    group.append('circle')
-      .attr('cx', centroid[0]).attr('cy', centroid[1])
-      .attr('r', r + 3.5).attr('fill', color).attr('opacity', 0.10)
-      .style('pointer-events','none');
-    group.append('circle')
-      .attr('cx', centroid[0]).attr('cy', centroid[1])
-      .attr('r', r)
-      .attr('fill', color)
-      .attr('opacity', isSel ? 0.90 : 0.38)
-      .attr('stroke', isSel ? 'white' : 'rgba(255,255,255,0.22)')
-      .attr('stroke-width', isSel ? 0.7 : 0.4);
-    group.append('text')
-      .attr('x', centroid[0]).attr('y', centroid[1] + 2)
-      .attr('text-anchor','middle')
-      .attr('font-size','5').attr('font-weight','bold')
-      .attr('fill','rgba(255,255,255,0.80)').style('pointer-events','none')
-      .text(wines.length);
+    const marker = L.marker([lat, lng], { icon, zIndexOffset: hasWines ? 1000 : 0 });
 
-    group.on('mouseenter', (event) => {
-        showWinePointTooltip(event, key, region.label, wines);
-      })
-      .on('mousemove', updateTooltipPos)
-      .on('mouseleave', () => { d3.select('#carte-tooltip').style('display','none'); })
-      .on('click', () => { selectCarteRegion(key, region.label); });
+    // Popup au clic
+    marker.on('click', (e) => { L.DomEvent.stopPropagation(e); selectCarteRegion(key, region.label); });
+
+    // Tooltip : cépages + appellations phares + vins en cave
+    const appellationsPhares = {
+      'bourgogne':      'Gevrey-Chambertin · Chambolle-Musigny · Vosne-Romanée · Meursault · Puligny-Montrachet · Chablis · Pouilly-Fuissé',
+      'bordeaux':       'Pauillac · Saint-Émilion · Margaux · Saint-Julien · Pomerol · Pessac-Léognan · Sauternes',
+      'champagne':      'Montagne de Reims · Côte des Blancs · Vallée de la Marne · Côte des Bar',
+      'cotes-du-rhone': 'Côte-Rôtie · Hermitage · Châteauneuf-du-Pape · Condrieu · Gigondas · Tavel',
+      'alsace':         'Riesling Grand Cru · Gewurztraminer · Pinot Gris · Muscat · Rangen · Schlossberg',
+      'loire':          'Sancerre · Pouilly-Fumé · Chinon · Vouvray · Muscadet · Bonnezeaux · Quarts-de-Chaume',
+      'languedoc':      'Pic Saint-Loup · Faugères · Saint-Chinian · Minervois · Corbières · La Clape',
+      'roussillon':     'Banyuls · Maury · Collioure · Côtes du Roussillon Villages · Rivesaltes',
+      'provence':       'Bandol · Cassis · Côtes de Provence · Les Baux-de-Provence · Bellet',
+      'sud-ouest':      'Cahors · Jurançon · Madiran · Bergerac · Irouléguy · Gaillac',
+      'beaujolais':     'Moulin-à-Vent · Morgon · Fleurie · Juliénas · Brouilly · Côte de Brouilly',
+      'jura':           'Arbois · Château-Chalon · L\'Étoile · Côtes du Jura',
+      'savoie':         'Apremont · Chignin-Bergeron · Roussette de Savoie · Seyssel · Crépy',
+      'corse':          'Patrimonio · Ajaccio · Muscat du Cap Corse · Vin de Corse',
+    };
+    const phares = appellationsPhares[key] || (region.appellations || []).slice(0,6).join(' · ');
+    const wineInfo = hasWines
+      ? `<div style="color:#e8c870;font-weight:600;margin-top:6px;font-size:0.78rem;border-top:1px solid rgba(201,168,76,0.2);padding-top:5px">🍷 ${wines.length} bouteille${wines.length>1?'s':''} en cave</div>`
+      : '';
+
+    marker.bindTooltip(`
+      <div style="font-family:'Playfair Display',serif;min-width:200px;max-width:270px">
+        <div style="color:#c9a84c;font-size:0.95rem;font-weight:700;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid rgba(201,168,76,0.25)">${region.label}</div>
+        ${region.cepages ? (() => {
+          const RBLANCS = ['chardonnay','sauvignon blanc','sauvignon','sémillon','semillon','riesling','gewurztraminer','gewürztraminer','pinot gris','pinot blanc','aligoté','aligote','muscat','viognier','marsanne','roussanne','clairette','bourboulenc','ugni blanc','ugni','rolle','vermentino','grenache blanc','macabeu','macabeo','viura','malvasia','malvasía','palomino','palomino fino','pedro ximénez','pedro ximenez','moscatel','albariño','albarino','treixadura','loureira','verdejo','godello','arinto','alvarinho','loureiro','trajadura','azal','encruzado','bical','antão vaz','antao vaz','fernão pires','fernao pires','sercial','verdelho','bual','malmsey','terrantez','cortese','arneis','turbiana','garganega','glera','pinot grigio','friulano','tocai','ribolla gialla','müller-thurgau','muller-thurgau','savagnin','jacquère','jacquere','altesse','roussette','chasselas','gros manseng','petit manseng','melon de bourgogne','chenin blanc','chenin','hondarrabi zuri','xarel·lo','xarello','parellada','furmint','hárslevelű','harslevelü','harslevelu','assyrtiko','moschofilero'];
+          const RROUGES = ['cabernet sauvignon','merlot','cabernet franc','pinot noir','syrah','grenache','mourvèdre','mourvedre','carignan','cinsault','gamay','gamay noir','malbec','côt','cot','tannat','fer servadou','tempranillo','garnacha','mazuelo','graciano','mencía','mencia','tinto fino','cariñena','carinena','touriga nacional','touriga franca','tinta roriz','tinta barroca','tinta cão','tinta cao','aragonez','trincadeira','alicante bouschet','castelão','castelao','nebbiolo','barbera','dolcetto','corvina','molinara','rondinella','sangiovese','primitivo','aglianico','teroldego','lagrein','schiava','vernatsch','refosco','nielluccio','sciaccarello','poulsard','trousseau','mondeuse','hondarrabi beltza','blaufränkisch','zweigelt','pinot meunier','mavrud','tempranillo/tinto fino','xinomavro','agiorgitiko'];
+          const lst = region.cepages.split(',').map(s=>s.trim());
+          const r=[], b=[], a=[];
+          lst.forEach(c=>{const k=c.toLowerCase().trim();if(RROUGES.some(x=>k===x||k.startsWith(x)||k.includes(x)))r.push(c);else if(RBLANCS.some(x=>k===x||k.startsWith(x)||k.includes(x)))b.push(c);else a.push(c);});
+          let h='<div style="font-size:0.72rem;margin-bottom:6px">';
+          if(r.length)h+=`<span style="color:#c87080">🍷 ${r.join(', ')}</span>`;
+          if(r.length&&b.length)h+=' <span style="color:#555">·</span> ';
+          if(b.length)h+=`<span style="color:#b8a050">🥂 ${b.join(', ')}</span>`;
+          if(a.length)h+=`<span style="color:#908070"> · ${a.join(', ')}</span>`;
+          return h+'</div>';
+        })() : ''}
+        ${phares ? `<div style="color:#d4c4b0;font-size:0.70rem;line-height:1.65">${phares.split(' · ').map(a=>`<span style="display:inline-block;background:rgba(180,140,80,0.15);border-radius:2px;padding:0 3px;margin:1px 2px 1px 0">${a}</span>`).join('')}</div>` : ''}
+        ${wineInfo}
+      </div>
+    `, {
+      direction: 'top',
+      className: 'leaflet-wine-tooltip',
+      offset: [0, -radius - 4]
+    });
+
+    marker.addTo(leafletMap);
+    leafletMarkers[key] = marker;
   });
+
+  renderCarteLegend();
+  // Clic sur le fond de la carte (hors marqueur) → effacer les appellations
+  leafletMap.on('click', function(e) {
+    // Only clear if the click was not on a marker (markers stop propagation)
+    if (leafletMap._appelLayer) {
+      leafletMap.removeLayer(leafletMap._appelLayer);
+      leafletMap._appelLayer = null;
+      leafletMap._appelRegion = null;
+    }
+    carteSelectedRegion = null;
+    document.getElementById('carte-region-title').textContent = 'Cliquez sur un point pour voir les vins';
+    document.getElementById('carte-region-list').innerHTML = '';
+    updateZoomHint(null);
+    refreshCarteMarkers();
+  });
+  // Les appellations n'apparaissent qu'au clic sur une région
 }
 
-function showRegionTooltip(event, key, label) {
-  const wines = wineData.filter(w => getRegionKey(w) === key);
-  const region = WINE_REGION_POLYGONS[key] || {};
-  const apps = region.appellations || [];
-  const tt = d3.select('#carte-tooltip');
-  tt.style('display','block').style('max-width','280px')
-    .html(`
-      <div style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1rem;margin-bottom:6px;border-bottom:1px solid var(--border);padding-bottom:5px">
-        ${region.color ? `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${region.color};margin-right:5px;vertical-align:middle"></span>` : ''}${label}
-      </div>
-      ${region.cepages ? `<div style="color:var(--text2);font-size:0.72rem;margin-bottom:6px">🍇 <em>${region.cepages}</em></div>` : ''}
-      ${apps.length > 0 ? `
-        <div style="color:var(--text2);font-size:0.68rem;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:3px">Appellations</div>
-        <div style="color:var(--cream);font-size:0.75rem;line-height:1.6;margin-bottom:5px">${apps.slice(0,8).join(', ')}${apps.length>8?'…':''}</div>
-      ` : ''}
-      ${wines.length
-        ? `<div style="color:var(--gold2);font-size:0.82rem;margin-top:4px">🍷 ${wines.length} bouteille${wines.length>1?'s':''} en cave</div>`
-        : '<div style="color:var(--text2);font-size:0.78rem;font-style:italic">Aucun vin stocké</div>'}
-      <div style="color:var(--text2);font-size:0.68rem;margin-top:5px;font-style:italic">Cliquer pour explorer ↗</div>
-    `);
-  updateTooltipPos(event);
+// ── Calcule le centroïde d'un polygone GeoJSON (coordonnées [lng,lat]) ──
+function geoCentroid(geometry) {
+  let coords = [];
+  if (geometry.type === 'Polygon') {
+    coords = geometry.coordinates[0];
+  } else if (geometry.type === 'MultiPolygon') {
+    let best = [];
+    geometry.coordinates.forEach(poly => { if (poly[0].length > best.length) best = poly[0]; });
+    coords = best;
+  }
+  if (!coords.length) return null;
+  return [coords.reduce((s,c)=>s+c[1],0)/coords.length, coords.reduce((s,c)=>s+c[0],0)/coords.length];
 }
 
-function showWinePointTooltip(event, key, label, wines) {
-  const tc = {};
-  wines.forEach(w => { tc[w.type]=(tc[w.type]||0)+1; });
-  const region = WINE_REGION_POLYGONS[key] || {};
-  const apps = region.appellations || [];
-  const tt = d3.select('#carte-tooltip');
-  tt.style('display','block').style('max-width','280px')
-    .html(`
-      <div style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1rem;margin-bottom:5px">🍷 ${label}</div>
-      ${region.cepages ? `<div style="color:var(--text2);font-size:0.72rem;margin-bottom:5px">🍇 <em>${region.cepages}</em></div>` : ''}
-      <div style="color:var(--gold2);font-weight:600;margin-bottom:3px">${wines.length} bouteille${wines.length>1?'s':''}</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:5px">
-        ${Object.entries(tc).map(([t,n])=>`<span style="background:${TYPE_COLORS_CARTE[t]||'#555'}22;border:1px solid ${TYPE_COLORS_CARTE[t]||'#555'};color:${TYPE_COLORS_CARTE[t]||'#aaa'};padding:1px 6px;border-radius:10px;font-size:0.7rem">${n} ${t}</span>`).join('')}
-      </div>
-      ${apps.length > 0 ? `<div style="color:var(--text2);font-size:0.72rem">${apps.slice(0,5).join(' · ')}</div>` : ''}
-      <div style="color:var(--text2);font-size:0.68rem;margin-top:4px;font-style:italic">Cliquer pour voir les vins ↗</div>
-    `);
-  updateTooltipPos(event);
+// ── Ajoute un label+point sur la carte à partir d'un centroïde réel ──
+// ── Label+point selon le type : 'zone' | 'aoc' | 'cru' ──────
+// zone = grande aire géographique (nom en majuscules, sans point)
+// aoc  = appellation AOC/AOP officielle INAO (point bordeaux)
+// cru  = Grand Cru / cru classé, AOC distincte à part entière (point violet, italique)
+function addAppelLabel(group, lat, lng, nom, type) {
+  const S = {
+    zone: { dot:false, r:0,   stroke:'',        fill:'',        txtColor:'#4a8c5c', bg:'rgba(0,0,0,0.0)',    size:'0.60rem', weight:'800', italic:false, upper:true  },
+    aoc:  { dot:true,  r:5,   stroke:'#6b1020', fill:'#9b2030', txtColor:'#3a7a4e', bg:'rgba(0,0,0,0.0)',    size:'0.65rem', weight:'700', italic:false, upper:false },
+    cru:  { dot:true,  r:3.5, stroke:'#3a0868', fill:'#6a18b0', txtColor:'#5a9a6e', bg:'rgba(0,0,0,0.0)',    size:'0.60rem', weight:'600', italic:true,  upper:false },
+  }[type] || { dot:true, r:4, stroke:'#6b1020', fill:'#9b2030', txtColor:'#3a7a4e', bg:'rgba(0,0,0,0.0)', size:'0.62rem', weight:'600', italic:false, upper:false };
+
+  if (S.dot) {
+    const dot = L.circleMarker([lat, lng], {
+      radius: S.r, color: S.stroke, fillColor: S.fill,
+      fillOpacity: 0.88, weight: 1.5, opacity: 1
+    });
+    const badge = type === 'cru' ? ' <span style="color:#9b60d0;font-size:0.62rem">★ Cru</span>'
+                : type === 'aoc' ? ' <span style="color:#c08050;font-size:0.62rem">AOC</span>' : '';
+    dot.bindTooltip(
+      `<span style="font-family:'Playfair Display',serif;font-size:0.85rem;color:#c9a84c;font-weight:700">${nom}</span>${badge}`,
+      { direction:'top', className:'leaflet-wine-tooltip' }
+    );
+    group.addLayer(dot);
+  }
+
+  const lbl = L.marker([lat, lng], {
+    icon: L.divIcon({
+      className: 'appel-label-icon',
+      html: `<div style="
+        font-family:'Playfair Display',serif;
+        font-size:${S.size};font-weight:${S.weight};
+        color:${S.txtColor};
+        padding:1px 4px;
+        white-space:nowrap;pointer-events:none;
+        transform:translate(${S.dot ? '7px' : '-50%'},-50%);
+        text-shadow:0 1px 3px rgba(255,255,255,0.85),0 0 6px rgba(255,255,255,0.6);
+        ${S.upper ? 'text-transform:uppercase;letter-spacing:0.7px;' : ''}
+        ${S.italic ? 'font-style:italic;' : ''}
+      ">${nom}</div>`,
+      iconSize:[0,0], iconAnchor:[0,0]
+    }),
+    interactive: false,
+    zIndexOffset: type === 'zone' ? -300 : type === 'cru' ? -200 : -100
+  });
+  group.addLayer(lbl);
 }
 
-function updateTooltipPos(event) {
-  const wrap = document.getElementById('carte-wrap');
-  const rect = wrap.getBoundingClientRect();
-  const x = event.clientX - rect.left + 14;
-  const y = event.clientY - rect.top  - 10;
-  d3.select('#carte-tooltip')
-    .style('left', Math.min(x, rect.width - 200) + 'px')
-    .style('top',  Math.max(10, y) + 'px');
+// ── Requête WFS IGN INAO — centroïdes réels des appellations ──
+async function fetchInaoFeatures(bbox) {
+  const [minLat,minLng] = bbox[0], [maxLat,maxLng] = bbox[1];
+  const url = `https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature`
+    +`&TYPENAMES=AOC-VITICOLES:aire_parcellaire`
+    +`&OUTPUTFORMAT=application/json&SRSNAME=CRS:84&COUNT=500`
+    +`&BBOX=${minLng},${minLat},${maxLng},${maxLat},CRS:84`;
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) return null;
+    return await resp.json();
+  } catch(e) { return null; }
 }
 
-function updateCartePoints() {
-  // Redessiner les points si la carte est déjà initialisée
-  if(!carteSvg) return;
-  const g = d3.select('#carte-map-g');
-  g.select('#carte-points-g').remove();
-  g.select('#wine-labels-g').remove();
-  g.select('#wine-zones-g').remove();
-  drawWineRegionPolygons(g);
-  drawWinePoints(g);
+// ── Couche permanente : labels sur centroïdes embarqués ──
+function renderAppellationsLayer() {
+  if (!leafletMap) return;
+  if (leafletMap._allAppelLayer) { leafletMap.removeLayer(leafletMap._allAppelLayer); }
+  const group = L.layerGroup();
+
+  Object.values(APPELLATIONS).forEach(apps => {
+    apps.forEach(app => {
+      if (app.lat == null || app.lng == null) return;
+      addAppelLabel(group, app.lat, app.lng, app.nom, app.type || 'aoc');
+    });
+  });
+
+  group.addTo(leafletMap);
+  leafletMap._allAppelLayer = group;
+}
+
+function resetToEurope() {
+  if(!leafletMap) return;
+  leafletMap.setView([46.0, 10.0], 5, {animate: true, duration: 0.6});
+}
+
+function toggleInaoLayer() {
+  if(!leafletMap) return;
+  const btn = document.getElementById('btn-inao-toggle');
+  leafletMap._inaoVisible = !leafletMap._inaoVisible;
+  const on = leafletMap._inaoVisible;
+
+  // Tuiles WMTS parcellaires
+  if(leafletMap._inaoLayer) {
+    if(on) leafletMap.addLayer(leafletMap._inaoLayer);
+    else   leafletMap.removeLayer(leafletMap._inaoLayer);
+  }
+
+  // Couche appellations
+  if(leafletMap._appelLayer) {
+    if(on) leafletMap.addLayer(leafletMap._appelLayer);
+    else   leafletMap.removeLayer(leafletMap._appelLayer);
+  }
+
+  if(btn) {
+    btn.style.background   = on ? '#1a2e1a'  : 'var(--bg3)';
+    btn.style.borderColor  = on ? '#4a8a4a'  : '#3a2830';
+    btn.style.color        = on ? '#7aba7a'  : 'var(--text2)';
+  }
+
+  // Met à jour le hint
+  const hint = document.getElementById('carte-zoom-hint');
+  if(hint) {
+    hint.textContent = on
+      ? (leafletMap.getZoom() >= 10 ? '🏛️ Délimitations INAO actives' : '🔍 Zoomez (zoom 10+) pour les parcelles AOC')
+      : 'Couche AOC désactivée';
+  }
+}
+
+function carteZoomIn() {
+  if(!leafletMap) return;
+  leafletMap.zoomIn();
+}
+function carteZoomOut() {
+  if(!leafletMap) return;
+  leafletMap.zoomOut();
+}
+function carteReset() {
+  resetToEurope();
+  carteSelectedRegion = null;
+  // Effacer les appellations affichées
+  if (leafletMap?._appelLayer) {
+    leafletMap.removeLayer(leafletMap._appelLayer);
+    leafletMap._appelLayer = null;
+  }
+  updateZoomHint(null);
+  refreshCarteMarkers();
+}
+
+const PAYS_ZOOM = {
+  'France':    { center:[46.5,  2.3],  zoom:6 },
+  'Espagne':   { center:[40.2, -3.5],  zoom:6 },
+  'Portugal':  { center:[39.5, -8.1],  zoom:7 },
+  'Italie':    { center:[43.0, 12.5],  zoom:6 },
+  'Allemagne': { center:[49.5,  9.5],  zoom:6 },
+  'Autriche':  { center:[47.5, 15.8],  zoom:7 },
+  'Grèce':     { center:[37.8, 22.5],  zoom:7 },
+  'Hongrie':   { center:[47.5, 19.5],  zoom:7 },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// APPELLATIONS — centroïdes précis embarqués
+// type:'zone'   = grande zone géographique (pas une AOC en soi : Côte de Nuits, Médoc…)
+// type:'aoc'    = appellation AOC/AOP officielle reconnue par l'INAO
+// type:'cru'    = Grand Cru ou 1er Cru, lui-même AOC distincte (Chambertin, Musigny…)
+// ═══════════════════════════════════════════════════════════════
+const APPELLATIONS = {
+
+  // ─── BOURGOGNE ─────────────────────────────────────────────
+  'bourgogne': [
+    // Zones géographiques (pas des AOC seules)
+    { nom:'Chablis',                   type:'zone', lat:47.814, lng:3.796 },
+    { nom:'Côte de Nuits',             type:'zone', lat:47.190, lng:4.970 },
+    { nom:'Côte de Beaune',            type:'zone', lat:47.000, lng:4.830 },
+    { nom:'Côte Chalonnaise',          type:'zone', lat:46.750, lng:4.720 },
+    { nom:'Mâconnais',                 type:'zone', lat:46.380, lng:4.730 },
+    // AOC officielles — Chablisien
+    { nom:'Petit Chablis',             type:'aoc',  lat:47.830, lng:3.760 },
+    { nom:'Chablis AOC',               type:'aoc',  lat:47.814, lng:3.800 },
+    { nom:'Chablis 1er Cru',           type:'aoc',  lat:47.812, lng:3.812 },
+    { nom:'Chablis Grand Cru',         type:'aoc',  lat:47.820, lng:3.823 },
+    { nom:'Irancy',                    type:'aoc',  lat:47.758, lng:3.660 },
+    { nom:'Saint-Bris',                type:'aoc',  lat:47.742, lng:3.614 },
+    { nom:'Bourgogne Côte d\'Auxerre', type:'aoc',  lat:47.798, lng:3.572 },
+    // AOC — Côte de Nuits
+    { nom:'Marsannay',                 type:'aoc',  lat:47.280, lng:4.996 },
+    { nom:'Fixin',                     type:'aoc',  lat:47.262, lng:4.980 },
+    { nom:'Gevrey-Chambertin',         type:'aoc',  lat:47.228, lng:4.971 },
+    { nom:'Morey-Saint-Denis',         type:'aoc',  lat:47.188, lng:4.964 },
+    { nom:'Chambolle-Musigny',         type:'aoc',  lat:47.168, lng:4.964 },
+    { nom:'Vougeot',                   type:'aoc',  lat:47.162, lng:4.963 },
+    { nom:'Vosne-Romanée',             type:'aoc',  lat:47.149, lng:4.960 },
+    { nom:'Nuits-Saint-Georges',       type:'aoc',  lat:47.113, lng:4.953 },
+    { nom:'Côte de Nuits-Villages',    type:'aoc',  lat:47.090, lng:4.945 },
+    // Grands Crus Côte de Nuits (AOC à part entière)
+    { nom:'Chambertin',                type:'cru',  lat:47.219, lng:4.970 },
+    { nom:'Chambertin-Clos de Bèze',   type:'cru',  lat:47.222, lng:4.971 },
+    { nom:'Musigny',                   type:'cru',  lat:47.163, lng:4.966 },
+    { nom:'Bonnes-Mares',              type:'cru',  lat:47.175, lng:4.966 },
+    { nom:'Clos de Vougeot',           type:'cru',  lat:47.159, lng:4.965 },
+    { nom:'Échézeaux',                 type:'cru',  lat:47.152, lng:4.964 },
+    { nom:'Grands Échézeaux',          type:'cru',  lat:47.155, lng:4.965 },
+    { nom:'Romanée-Conti',             type:'cru',  lat:47.145, lng:4.962 },
+    { nom:'La Tâche',                  type:'cru',  lat:47.143, lng:4.961 },
+    { nom:'Richebourg',                type:'cru',  lat:47.147, lng:4.963 },
+    // AOC — Côte de Beaune
+    { nom:'Aloxe-Corton',              type:'aoc',  lat:47.064, lng:4.847 },
+    { nom:'Pernand-Vergelesses',       type:'aoc',  lat:47.072, lng:4.835 },
+    { nom:'Savigny-lès-Beaune',        type:'aoc',  lat:47.055, lng:4.823 },
+    { nom:'Chorey-lès-Beaune',         type:'aoc',  lat:47.042, lng:4.862 },
+    { nom:'Beaune',                    type:'aoc',  lat:47.023, lng:4.840 },
+    { nom:'Pommard',                   type:'aoc',  lat:46.990, lng:4.797 },
+    { nom:'Volnay',                    type:'aoc',  lat:46.975, lng:4.792 },
+    { nom:'Monthélie',                 type:'aoc',  lat:46.968, lng:4.783 },
+    { nom:'Auxey-Duresses',            type:'aoc',  lat:46.962, lng:4.771 },
+    { nom:'Saint-Romain',              type:'aoc',  lat:46.952, lng:4.754 },
+    { nom:'Meursault',                 type:'aoc',  lat:46.974, lng:4.769 },
+    { nom:'Puligny-Montrachet',        type:'aoc',  lat:46.951, lng:4.762 },
+    { nom:'Chassagne-Montrachet',      type:'aoc',  lat:46.940, lng:4.758 },
+    { nom:'Santenay',                  type:'aoc',  lat:46.912, lng:4.720 },
+    { nom:'Maranges',                  type:'aoc',  lat:46.896, lng:4.698 },
+    { nom:'Côte de Beaune-Villages',   type:'aoc',  lat:47.020, lng:4.840 },
+    // Grands Crus Côte de Beaune
+    { nom:'Corton',                    type:'cru',  lat:47.063, lng:4.850 },
+    { nom:'Corton-Charlemagne',        type:'cru',  lat:47.066, lng:4.843 },
+    { nom:'Montrachet',                type:'cru',  lat:46.947, lng:4.761 },
+    { nom:'Bâtard-Montrachet',         type:'cru',  lat:46.945, lng:4.759 },
+    { nom:'Chevalier-Montrachet',      type:'cru',  lat:46.949, lng:4.762 },
+    // AOC — Côte Chalonnaise
+    { nom:'Bouzeron',                  type:'aoc',  lat:46.884, lng:4.745 },
+    { nom:'Rully',                     type:'aoc',  lat:46.868, lng:4.742 },
+    { nom:'Mercurey',                  type:'aoc',  lat:46.839, lng:4.726 },
+    { nom:'Givry',                     type:'aoc',  lat:46.783, lng:4.748 },
+    { nom:'Montagny',                  type:'aoc',  lat:46.672, lng:4.742 },
+    // AOC — Mâconnais
+    { nom:'Mâcon-Villages',            type:'aoc',  lat:46.348, lng:4.840 },
+    { nom:'Viré-Clessé',               type:'aoc',  lat:46.428, lng:4.760 },
+    { nom:'Pouilly-Fuissé',            type:'aoc',  lat:46.288, lng:4.759 },
+    { nom:'Pouilly-Loché',             type:'aoc',  lat:46.282, lng:4.773 },
+    { nom:'Pouilly-Vinzelles',         type:'aoc',  lat:46.278, lng:4.770 },
+    { nom:'Saint-Véran',               type:'aoc',  lat:46.264, lng:4.750 },
+  ],
+
+  // ─── BORDEAUX ──────────────────────────────────────────────
+  'bordeaux': [
+    // Zones
+    { nom:'Médoc',                     type:'zone', lat:45.350, lng:-0.920 },
+    { nom:'Rive droite',               type:'zone', lat:44.940, lng:-0.180 },
+    { nom:'Graves & Sauternes',        type:'zone', lat:44.550, lng:-0.390 },
+    // AOC — Médoc
+    { nom:'Médoc AOC',                 type:'aoc',  lat:45.520, lng:-1.010 },
+    { nom:'Haut-Médoc',                type:'aoc',  lat:45.120, lng:-0.780 },
+    { nom:'Saint-Estèphe',             type:'aoc',  lat:45.363, lng:-0.765 },
+    { nom:'Pauillac',                  type:'aoc',  lat:45.197, lng:-0.746 },
+    { nom:'Saint-Julien',              type:'aoc',  lat:45.157, lng:-0.760 },
+    { nom:'Listrac-Médoc',             type:'aoc',  lat:45.073, lng:-0.821 },
+    { nom:'Moulis-en-Médoc',           type:'aoc',  lat:45.053, lng:-0.798 },
+    { nom:'Margaux',                   type:'aoc',  lat:45.040, lng:-0.740 },
+    // AOC — Graves
+    { nom:'Pessac-Léognan',            type:'aoc',  lat:44.760, lng:-0.586 },
+    { nom:'Graves',                    type:'aoc',  lat:44.540, lng:-0.420 },
+    { nom:'Graves Supérieures',        type:'aoc',  lat:44.530, lng:-0.350 },
+    { nom:'Sauternes',                 type:'aoc',  lat:44.548, lng:-0.340 },
+    { nom:'Barsac',                    type:'aoc',  lat:44.574, lng:-0.330 },
+    { nom:'Cérons',                    type:'aoc',  lat:44.620, lng:-0.321 },
+    { nom:'Loupiac',                   type:'aoc',  lat:44.625, lng:-0.278 },
+    { nom:'Sainte-Croix-du-Mont',      type:'aoc',  lat:44.618, lng:-0.275 },
+    // AOC — Rive droite
+    { nom:'Saint-Émilion',             type:'aoc',  lat:44.893, lng:-0.150 },
+    { nom:'Saint-Émilion Grand Cru',   type:'aoc',  lat:44.896, lng:-0.153 },
+    { nom:'Pomerol',                   type:'aoc',  lat:44.924, lng:-0.188 },
+    { nom:'Lalande-de-Pomerol',        type:'aoc',  lat:44.942, lng:-0.188 },
+    { nom:'Fronsac',                   type:'aoc',  lat:44.974, lng:-0.249 },
+    { nom:'Canon-Fronsac',             type:'aoc',  lat:44.966, lng:-0.256 },
+    { nom:'Castillon-Côtes de Bordeaux',type:'aoc', lat:44.859, lng:-0.063 },
+    { nom:'Francs-Côtes de Bordeaux',  type:'aoc',  lat:44.877, lng:-0.021 },
+    // AOC — Entre-deux-Mers & divers
+    { nom:'Entre-deux-Mers',           type:'aoc',  lat:44.710, lng:-0.200 },
+    { nom:'Blaye-Côtes de Bordeaux',   type:'aoc',  lat:45.127, lng:-0.654 },
+    { nom:'Bourg',                     type:'aoc',  lat:45.047, lng:-0.562 },
+    { nom:'Sainte-Foy-Bordeaux',       type:'aoc',  lat:44.834, lng: 0.219 },
+  ],
+
+  // ─── CHAMPAGNE ─────────────────────────────────────────────
+  'champagne': [
+    // Zones viticoles
+    { nom:'Montagne de Reims',         type:'zone', lat:49.175, lng:4.005 },
+    { nom:'Vallée de la Marne',        type:'zone', lat:49.048, lng:3.700 },
+    { nom:'Côte des Blancs',           type:'zone', lat:48.905, lng:3.995 },
+    { nom:'Côte de Sézanne',           type:'zone', lat:48.660, lng:3.740 },
+    { nom:'Côte des Bar',              type:'zone', lat:48.140, lng:4.490 },
+    // AOC (une seule : Champagne, déclinée par villages — crus classés)
+    { nom:'Champagne AOC',             type:'aoc',  lat:49.050, lng:3.950 },
+    { nom:'Coteaux Champenois',        type:'aoc',  lat:49.100, lng:3.980 },
+    { nom:'Rosé des Riceys',           type:'aoc',  lat:47.999, lng:4.371 },
+    // Crus (villages classés Grand Cru — terroirs reconnus)
+    { nom:'Mailly-Champagne',          type:'cru',  lat:49.215, lng:4.068 },
+    { nom:'Verzenay',                  type:'cru',  lat:49.187, lng:4.141 },
+    { nom:'Verzy',                     type:'cru',  lat:49.166, lng:4.155 },
+    { nom:'Bouzy',                     type:'cru',  lat:49.148, lng:4.209 },
+    { nom:'Ambonnay',                  type:'cru',  lat:49.143, lng:4.228 },
+    { nom:'Aÿ-Champagne',              type:'cru',  lat:49.058, lng:3.993 },
+    { nom:'Hautvillers',               type:'cru',  lat:49.075, lng:3.938 },
+    { nom:'Cramant',                   type:'cru',  lat:48.967, lng:3.993 },
+    { nom:'Avize',                     type:'cru',  lat:48.975, lng:4.002 },
+    { nom:'Oger',                      type:'cru',  lat:48.953, lng:4.016 },
+    { nom:'Le Mesnil-sur-Oger',        type:'cru',  lat:48.933, lng:4.020 },
+  ],
+
+  // ─── VALLÉE DU RHÔNE ───────────────────────────────────────
+  // ─── RHÔNE SEPTENTRIONAL (Nord) ────────────────────────────
+  'rhone_nord': [
+    { nom:'Rhône Septentrional',         type:'zone', lat:45.200, lng:4.820 },
+    // AOC propres au Nord
+    { nom:'Côte-Rôtie',                  type:'aoc',  lat:45.470, lng:4.796 },
+    { nom:'Condrieu',                    type:'aoc',  lat:45.382, lng:4.776 },
+    { nom:'Château-Grillet',             type:'cru',  lat:45.368, lng:4.769 },
+    { nom:'Saint-Joseph',                type:'aoc',  lat:45.100, lng:4.837 },
+    { nom:'Crozes-Hermitage',            type:'aoc',  lat:45.090, lng:4.897 },
+    { nom:'Hermitage',                   type:'cru',  lat:45.075, lng:4.836 },
+    { nom:'Cornas',                      type:'aoc',  lat:44.912, lng:4.840 },
+    { nom:'Saint-Péray',                 type:'aoc',  lat:44.896, lng:4.846 },
+    // AOC périphériques Nord (Drôme)
+    { nom:'Clairette de Die',            type:'aoc',  lat:44.750, lng:5.370 },
+    { nom:'Crémant de Die',              type:'aoc',  lat:44.745, lng:5.368 },
+    { nom:'Coteaux de Die',              type:'aoc',  lat:44.752, lng:5.375 },
+    { nom:'Châtillon-en-Diois',          type:'aoc',  lat:44.695, lng:5.480 },
+    { nom:'Côtes du Vivarais',           type:'aoc',  lat:44.510, lng:4.386 },
+  ],
+
+  // ─── RHÔNE MÉRIDIONAL (Sud) ─────────────────────────────────
+  'rhone_sud': [
+    { nom:'Rhône Méridional',            type:'zone', lat:44.100, lng:4.900 },
+    // Grands crus du Sud
+    { nom:'Châteauneuf-du-Pape',         type:'cru',  lat:44.057, lng:4.833 },
+    { nom:'Gigondas',                    type:'cru',  lat:44.172, lng:5.022 },
+    { nom:'Vacqueyras',                  type:'cru',  lat:44.117, lng:5.000 },
+    { nom:'Rasteau',                     type:'cru',  lat:44.193, lng:4.958 },
+    { nom:'Cairanne',                    type:'cru',  lat:44.226, lng:4.956 },
+    { nom:'Vinsobres',                   type:'cru',  lat:44.334, lng:5.025 },
+    // AOC du Sud
+    { nom:'Beaumes-de-Venise',           type:'aoc',  lat:44.123, lng:5.028 },
+    { nom:'Muscat de Beaumes-de-Venise', type:'aoc',  lat:44.118, lng:5.032 },
+    { nom:'Tavel',                       type:'aoc',  lat:44.009, lng:4.677 },
+    { nom:'Lirac',                       type:'aoc',  lat:44.041, lng:4.693 },
+    { nom:'Grignan-les-Adhémar',         type:'aoc',  lat:44.420, lng:4.905 },
+    { nom:'Ventoux',                     type:'aoc',  lat:44.136, lng:5.160 },
+    { nom:'Luberon',                     type:'aoc',  lat:43.830, lng:5.380 },
+    { nom:'Costières de Nîmes',          type:'aoc',  lat:43.722, lng:4.428 },
+    { nom:"Duché d'Uzès",               type:'aoc',  lat:43.998, lng:4.420 },
+    // Côtes du Rhône Villages avec dénomination géographique
+    { nom:'Roaix',                       type:'aoc',  lat:44.225, lng:4.975 },
+    { nom:'Séguret',                     type:'aoc',  lat:44.220, lng:5.005 },
+    { nom:'Sablet',                      type:'aoc',  lat:44.198, lng:5.005 },
+    { nom:'Chusclan',                    type:'aoc',  lat:44.108, lng:4.605 },
+    { nom:'Laudun',                      type:'aoc',  lat:44.093, lng:4.672 },
+    { nom:'Saint-Gervais',               type:'aoc',  lat:44.140, lng:4.623 },
+    { nom:'Visan',                       type:'aoc',  lat:44.308, lng:5.002 },
+    { nom:"Massif d'Uchaux",            type:'aoc',  lat:44.175, lng:4.748 },
+    { nom:'Plan de Dieu',                type:'aoc',  lat:44.220, lng:4.938 },
+    { nom:'Puyméras',                    type:'aoc',  lat:44.306, lng:5.058 },
+    { nom:'Rousset-les-Vignes',          type:'aoc',  lat:44.390, lng:5.058 },
+    { nom:'Saint-Pantaléon-les-Vignes',  type:'aoc',  lat:44.395, lng:5.066 },
+    { nom:'Valréas',                     type:'aoc',  lat:44.384, lng:4.992 },
+    // AOC génériques
+    { nom:'Côtes du Rhône Villages',     type:'aoc',  lat:44.300, lng:4.870 },
+    { nom:'Côtes du Rhône',              type:'aoc',  lat:44.100, lng:4.700 },
+  ],
+
+  // ─── ALSACE ────────────────────────────────────────────────
+  'alsace': [
+    // AOC principales
+    { nom:'Alsace AOC',                type:'aoc',  lat:48.200, lng:7.440 },
+    { nom:"Crémant d'Alsace",          type:'aoc',  lat:48.100, lng:7.390 },
+    // Grands Crus (51 AOC distinctes — chacun est une AOC à part entière)
+    { nom:'Rangen',                    type:'cru',  lat:47.806, lng:7.219 },
+    { nom:'Zinnkoepflé',               type:'cru',  lat:47.886, lng:7.249 },
+    { nom:'Pfingstberg',               type:'cru',  lat:47.856, lng:7.277 },
+    { nom:'Goldert',                   type:'cru',  lat:47.922, lng:7.285 },
+    { nom:'Hengst',                    type:'cru',  lat:47.947, lng:7.304 },
+    { nom:'Kessler',                   type:'cru',  lat:47.887, lng:7.258 },
+    { nom:'Kitterlé',                  type:'cru',  lat:47.885, lng:7.263 },
+    { nom:'Saering',                   type:'cru',  lat:47.891, lng:7.261 },
+    { nom:'Spiegel',                   type:'cru',  lat:47.899, lng:7.265 },
+    { nom:'Brand',                     type:'cru',  lat:47.985, lng:7.293 },
+    { nom:'Sommerberg',                type:'cru',  lat:48.090, lng:7.340 },
+    { nom:'Schlossberg',               type:'cru',  lat:48.111, lng:7.310 },
+    { nom:'Furstentum',                type:'cru',  lat:48.125, lng:7.322 },
+    { nom:'Mambourg',                  type:'cru',  lat:48.145, lng:7.349 },
+    { nom:'Marckrain',                 type:'cru',  lat:48.143, lng:7.358 },
+    { nom:'Altenberg de Bergheim',     type:'cru',  lat:48.200, lng:7.378 },
+    { nom:'Praelatenberg',             type:'cru',  lat:48.254, lng:7.394 },
+    { nom:'Kastelberg',                type:'cru',  lat:48.373, lng:7.421 },
+    { nom:'Wiebelsberg',               type:'cru',  lat:48.377, lng:7.426 },
+    { nom:'Moenchberg',                type:'cru',  lat:48.393, lng:7.439 },
+    { nom:'Muenchberg',                type:'cru',  lat:48.504, lng:7.492 },
+    { nom:'Zotzenberg',                type:'cru',  lat:48.572, lng:7.551 },
+    { nom:'Steinklotz',                type:'cru',  lat:48.690, lng:7.574 },
+  ],
+
+  // ─── VALLÉE DE LA LOIRE ────────────────────────────────────
+  'loire': [
+    // Zones
+    { nom:'Pays Nantais',              type:'zone', lat:47.200, lng:-1.550 },
+    { nom:'Anjou-Saumur',              type:'zone', lat:47.320, lng:-0.450 },
+    { nom:'Touraine',                  type:'zone', lat:47.350, lng: 0.700 },
+    { nom:'Centre-Loire',              type:'zone', lat:47.350, lng: 2.850 },
+    // AOC — Pays Nantais
+    { nom:'Muscadet',                  type:'aoc',  lat:47.171, lng:-1.350 },
+    { nom:'Muscadet-Sèvre et Maine',   type:'aoc',  lat:47.153, lng:-1.368 },
+    { nom:'Muscadet-Coteaux de la Loire',type:'aoc',lat:47.340, lng:-1.165 },
+    { nom:'Muscadet-Côtes de Grandlieu',type:'aoc', lat:47.062, lng:-1.696 },
+    { nom:'Gros Plant du Pays Nantais',type:'aoc',  lat:47.150, lng:-1.550 },
+    { nom:'Fiefs Vendéens',            type:'aoc',  lat:46.618, lng:-1.432 },
+    // AOC — Anjou-Saumur
+    { nom:'Anjou',                     type:'aoc',  lat:47.387, lng:-0.497 },
+    { nom:'Anjou-Villages',            type:'aoc',  lat:47.386, lng:-0.568 },
+    { nom:'Anjou-Villages Brissac',    type:'aoc',  lat:47.350, lng:-0.470 },
+    { nom:'Savennières',               type:'aoc',  lat:47.380, lng:-0.707 },
+    { nom:'Savennières-Roche aux Moines',type:'cru',lat:47.379, lng:-0.715 },
+    { nom:'Savennières-Coulée de Serrant',type:'cru',lat:47.381,lng:-0.720 },
+    { nom:'Coteaux du Layon',          type:'aoc',  lat:47.265, lng:-0.630 },
+    { nom:'Coteaux de l\'Aubance',     type:'aoc',  lat:47.340, lng:-0.520 },
+    { nom:'Bonnezeaux',                type:'aoc',  lat:47.249, lng:-0.558 },
+    { nom:'Quarts-de-Chaume',          type:'aoc',  lat:47.264, lng:-0.583 },
+    { nom:'Saumur',                    type:'aoc',  lat:47.261, lng:-0.074 },
+    { nom:'Saumur-Champigny',          type:'aoc',  lat:47.212, lng:-0.049 },
+    { nom:'Saumur Mousseux',           type:'aoc',  lat:47.255, lng:-0.082 },
+    { nom:'Crémant de Loire',          type:'aoc',  lat:47.300, lng:-0.100 },
+    // AOC — Touraine
+    { nom:'Touraine AOC',              type:'aoc',  lat:47.380, lng: 0.690 },
+    { nom:'Chinon',                    type:'aoc',  lat:47.165, lng: 0.240 },
+    { nom:'Bourgueil',                 type:'aoc',  lat:47.282, lng: 0.166 },
+    { nom:'Saint-Nicolas-de-Bourgueil',type:'aoc',  lat:47.280, lng: 0.122 },
+    { nom:'Vouvray',                   type:'aoc',  lat:47.408, lng: 0.803 },
+    { nom:'Montlouis-sur-Loire',       type:'aoc',  lat:47.387, lng: 0.860 },
+    { nom:'Cheverny',                  type:'aoc',  lat:47.500, lng: 1.455 },
+    { nom:'Cour-Cheverny',             type:'aoc',  lat:47.510, lng: 1.460 },
+    { nom:'Valençay',                  type:'aoc',  lat:47.161, lng: 1.565 },
+    { nom:'Touraine-Amboise',          type:'aoc',  lat:47.413, lng: 1.003 },
+    { nom:'Touraine-Azay-le-Rideau',   type:'aoc',  lat:47.258, lng: 0.466 },
+    { nom:'Touraine-Mesland',          type:'aoc',  lat:47.502, lng: 1.192 },
+    // AOC — Centre-Loire
+    { nom:'Sancerre',                  type:'aoc',  lat:47.327, lng: 2.839 },
+    { nom:'Pouilly-Fumé',              type:'aoc',  lat:47.300, lng: 2.954 },
+    { nom:'Pouilly-sur-Loire',         type:'aoc',  lat:47.291, lng: 2.954 },
+    { nom:'Menetou-Salon',             type:'aoc',  lat:47.239, lng: 2.489 },
+    { nom:'Quincy',                    type:'aoc',  lat:47.108, lng: 2.041 },
+    { nom:'Reuilly',                   type:'aoc',  lat:47.081, lng: 1.979 },
+    { nom:'Châteaumeillant',           type:'aoc',  lat:46.561, lng: 2.196 },
+    { nom:'Coteaux du Giennois',       type:'aoc',  lat:47.660, lng: 2.630 },
+    { nom:'Orléans',                   type:'aoc',  lat:47.892, lng: 1.908 },
+    { nom:'Orléans-Cléry',             type:'aoc',  lat:47.820, lng: 1.767 },
+  ],
+
+  // ─── LANGUEDOC ─────────────────────────────────────────────
+  'languedoc': [
+    // Zone générique
+    { nom:'Languedoc AOC',             type:'aoc',  lat:43.500, lng: 3.250 },
+    // AOC spécifiques
+    { nom:'Picpoul de Pinet',          type:'aoc',  lat:43.437, lng: 3.549 },
+    { nom:'Faugères',                  type:'aoc',  lat:43.520, lng: 3.272 },
+    { nom:'Saint-Chinian',             type:'aoc',  lat:43.464, lng: 2.952 },
+    { nom:'Minervois',                 type:'aoc',  lat:43.358, lng: 2.720 },
+    { nom:'Minervois-La Livinière',    type:'aoc',  lat:43.363, lng: 2.685 },
+    { nom:'Corbières',                 type:'aoc',  lat:43.019, lng: 2.680 },
+    { nom:'Corbières-Boutenac',        type:'aoc',  lat:43.094, lng: 2.758 },
+    { nom:'Fitou',                     type:'aoc',  lat:42.895, lng: 2.952 },
+    { nom:'Blanquette de Limoux',      type:'aoc',  lat:43.052, lng: 2.165 },
+    { nom:'Crémant de Limoux',         type:'aoc',  lat:43.062, lng: 2.165 },
+    { nom:'Limoux',                    type:'aoc',  lat:43.052, lng: 2.168 },
+    { nom:'Clairette du Languedoc',    type:'aoc',  lat:43.561, lng: 3.385 },
+    { nom:'Clairette de Bellegarde',   type:'aoc',  lat:43.762, lng: 4.532 },
+    // Dénominations géographiques du Languedoc AOC
+    { nom:'Terrasses du Larzac',       type:'cru',  lat:43.665, lng: 3.345 },
+    { nom:'Pic Saint-Loup',            type:'cru',  lat:43.746, lng: 3.759 },
+    { nom:'La Clape',                  type:'cru',  lat:43.172, lng: 3.128 },
+    { nom:'Grès de Montpellier',       type:'cru',  lat:43.590, lng: 3.780 },
+    { nom:'Pézenas',                   type:'cru',  lat:43.461, lng: 3.427 },
+    { nom:'Montpeyroux',               type:'cru',  lat:43.687, lng: 3.456 },
+    { nom:'Saint-Saturnin',            type:'cru',  lat:43.693, lng: 3.483 },
+    { nom:'Saint-Georges-d\'Orques',   type:'cru',  lat:43.573, lng: 3.778 },
+    { nom:'Cabrières',                 type:'cru',  lat:43.573, lng: 3.382 },
+    { nom:'Quatourze',                 type:'cru',  lat:43.198, lng: 2.942 },
+  ],
+
+  // ─── ROUSSILLON ────────────────────────────────────────────
+  'roussillon': [
+    // AOC
+    { nom:'Côtes du Roussillon',       type:'aoc',  lat:42.690, lng: 2.780 },
+    { nom:'Côtes du Roussillon Villages',type:'aoc',lat:42.760, lng: 2.760 },
+    { nom:'Maury',                     type:'aoc',  lat:42.810, lng: 2.648 },
+    { nom:'Maury Sec',                 type:'aoc',  lat:42.813, lng: 2.650 },
+    { nom:'Collioure',                 type:'aoc',  lat:42.524, lng: 3.083 },
+    { nom:'Banyuls',                   type:'aoc',  lat:42.489, lng: 3.127 },
+    { nom:'Banyuls Grand Cru',         type:'aoc',  lat:42.487, lng: 3.130 },
+    { nom:'Rivesaltes',                type:'aoc',  lat:42.771, lng: 2.878 },
+    { nom:'Muscat de Rivesaltes',      type:'aoc',  lat:42.775, lng: 2.880 },
+    // Dénominations Villages
+    { nom:'Lesquerde',                 type:'cru',  lat:42.780, lng: 2.673 },
+    { nom:'Tautavel',                  type:'cru',  lat:42.820, lng: 2.769 },
+    { nom:'Caramany',                  type:'cru',  lat:42.751, lng: 2.624 },
+    { nom:'Latour-de-France',          type:'cru',  lat:42.758, lng: 2.706 },
+  ],
+
+  // ─── PROVENCE ──────────────────────────────────────────────
+  'provence': [
+    // AOC
+    { nom:'Côtes de Provence',         type:'aoc',  lat:43.450, lng: 6.150 },
+    { nom:'Coteaux d\'Aix-en-Provence',type:'aoc',  lat:43.527, lng: 5.441 },
+    { nom:'Coteaux Varois en Provence',type:'aoc',  lat:43.440, lng: 5.990 },
+    { nom:'Bandol',                    type:'aoc',  lat:43.130, lng: 5.755 },
+    { nom:'Cassis',                    type:'aoc',  lat:43.214, lng: 5.548 },
+    { nom:'Bellet',                    type:'aoc',  lat:43.747, lng: 7.189 },
+    { nom:'Palette',                   type:'aoc',  lat:43.520, lng: 5.474 },
+    { nom:'Pierrevert',                type:'aoc',  lat:43.807, lng: 5.897 },
+    { nom:'Les Baux-de-Provence',      type:'aoc',  lat:43.742, lng: 4.797 },
+    // Dénominations Côtes de Provence
+    { nom:'Côtes de Provence Sainte-Victoire',type:'cru',lat:43.530,lng:5.620 },
+    { nom:'Côtes de Provence Fréjus',  type:'cru',  lat:43.437, lng: 6.733 },
+    { nom:'Côtes de Provence La Londe',type:'cru',  lat:43.143, lng: 6.239 },
+    { nom:'Côtes de Provence Pierrefeu',type:'cru', lat:43.250, lng: 6.145 },
+  ],
+
+  // ─── SUD-OUEST ─────────────────────────────────────────────
+  'sud-ouest': [
+    // ── Zone ──
+    { nom:'Sud-Ouest',                 type:'zone', lat:44.100, lng: 0.600 },
+    // ── Périgord / Bergerac ──
+    { nom:'Bergerac',                  type:'aoc',  lat:44.855, lng: 0.487 },
+    { nom:'Côtes de Bergerac',         type:'aoc',  lat:44.830, lng: 0.420 },
+    { nom:'Pécharmant',                type:'aoc',  lat:44.876, lng: 0.555 },
+    { nom:'Monbazillac',               type:'aoc',  lat:44.773, lng: 0.521 },
+    { nom:'Saussignac',                type:'aoc',  lat:44.793, lng: 0.361 },
+    { nom:'Rosette',                   type:'aoc',  lat:44.872, lng: 0.471 },
+    { nom:'Montravel',                 type:'aoc',  lat:44.841, lng: 0.204 },
+    { nom:'Haut-Montravel',            type:'aoc',  lat:44.845, lng: 0.196 },
+    { nom:'Côtes de Montravel',        type:'aoc',  lat:44.840, lng: 0.200 },
+    // ── Vallée du Lot ──
+    { nom:'Cahors',                    type:'aoc',  lat:44.449, lng: 1.441 },
+    { nom:'Entraygues-Le Fel',         type:'aoc',  lat:44.638, lng: 2.568 },
+    { nom:'Estaing',                   type:'aoc',  lat:44.578, lng: 2.679 },
+    { nom:'Marcillac',                 type:'aoc',  lat:44.457, lng: 2.448 },
+    { nom:'Côtes du Marmandais',       type:'aoc',  lat:44.505, lng: 0.160 },
+    { nom:'Buzet',                     type:'aoc',  lat:44.262, lng: 0.302 },
+    { nom:'Côtes de Duras',            type:'aoc',  lat:44.670, lng: 0.178 },
+    // ── Garonne / Tarn ──
+    { nom:'Fronton',                   type:'aoc',  lat:43.861, lng: 1.386 },
+    { nom:'Gaillac',                   type:'aoc',  lat:43.901, lng: 1.893 },
+    { nom:'Gaillac Premières Côtes',   type:'aoc',  lat:43.870, lng: 1.850 },
+    { nom:'Saint-Sardos',              type:'aoc',  lat:44.001, lng: 0.851 },
+    { nom:'Brulhois',                  type:'aoc',  lat:44.065, lng: 0.752 },
+    // ── Pyrénées / Béarn ──
+    { nom:'Madiran',                   type:'aoc',  lat:43.569, lng:-0.086 },
+    { nom:'Pacherenc du Vic-Bilh',     type:'aoc',  lat:43.574, lng:-0.090 },
+    { nom:'Saint-Mont',                type:'aoc',  lat:43.630, lng:-0.165 },
+    { nom:'Tursan',                    type:'aoc',  lat:43.718, lng:-0.527 },
+    { nom:'Béarn',                     type:'aoc',  lat:43.380, lng:-0.605 },
+    { nom:'Jurançon',                  type:'aoc',  lat:43.315, lng:-0.292 },
+    { nom:'Jurançon Sec',              type:'aoc',  lat:43.312, lng:-0.297 },
+    // ── Pays Basque ──
+    { nom:'Irouléguy',                 type:'aoc',  lat:43.234, lng:-1.281 },
+  ],
+
+  // ─── BEAUJOLAIS ────────────────────────────────────────────
+  'beaujolais': [
+    // AOC génériques
+    { nom:'Beaujolais',                type:'aoc',  lat:46.068, lng: 4.678 },
+    { nom:'Beaujolais-Villages',       type:'aoc',  lat:46.148, lng: 4.633 },
+    // Crus du Beaujolais (10 AOC distinctes)
+    { nom:'Saint-Amour',               type:'cru',  lat:46.306, lng: 4.700 },
+    { nom:'Juliénas',                  type:'cru',  lat:46.254, lng: 4.698 },
+    { nom:'Chénas',                    type:'cru',  lat:46.196, lng: 4.707 },
+    { nom:'Moulin-à-Vent',             type:'cru',  lat:46.155, lng: 4.716 },
+    { nom:'Fleurie',                   type:'cru',  lat:46.192, lng: 4.698 },
+    { nom:'Chiroubles',                type:'cru',  lat:46.167, lng: 4.669 },
+    { nom:'Morgon',                    type:'cru',  lat:46.116, lng: 4.685 },
+    { nom:'Régnié',                    type:'cru',  lat:46.131, lng: 4.659 },
+    { nom:'Côte de Brouilly',          type:'cru',  lat:46.100, lng: 4.654 },
+    { nom:'Brouilly',                  type:'cru',  lat:46.088, lng: 4.661 },
+  ],
+
+  // ─── JURA ──────────────────────────────────────────────────
+  'jura': [
+    // AOC
+    { nom:'Arbois',                    type:'aoc',  lat:46.903, lng: 5.775 },
+    { nom:'Arbois Pupillin',           type:'aoc',  lat:46.888, lng: 5.785 },
+    // AOC à part entière
+    { nom:'Château-Chalon',            type:'aoc',  lat:46.762, lng: 5.629 },
+    { nom:"L'Étoile",                  type:'aoc',  lat:46.724, lng: 5.582 },
+  ],
+
+  // ─── SAVOIE ────────────────────────────────────────────────
+  'savoie': [
+    // AOC
+    { nom:'Vin de Savoie',             type:'aoc',  lat:45.688, lng: 5.934 },
+    { nom:'Roussette de Savoie',       type:'aoc',  lat:45.743, lng: 5.882 },
+    { nom:'Seyssel',                   type:'aoc',  lat:45.949, lng: 5.836 },
+    { nom:'Crépy',                     type:'aoc',  lat:46.310, lng: 6.332 },
+    { nom:'Bugey',                     type:'aoc',  lat:45.880, lng: 5.450 },
+    { nom:'Roussette du Bugey',        type:'aoc',  lat:45.870, lng: 5.410 },
+    { nom:'Cerdon',                    type:'aoc',  lat:46.063, lng: 5.479 },
+    // Crus (dénominations Vin de Savoie)
+    { nom:'Apremont',                  type:'cru',  lat:45.526, lng: 5.988 },
+    { nom:'Abymes',                    type:'cru',  lat:45.512, lng: 6.002 },
+    { nom:'Chignin',                   type:'cru',  lat:45.544, lng: 5.980 },
+    { nom:'Chignin-Bergeron',          type:'cru',  lat:45.540, lng: 5.982 },
+    { nom:'Ripaille',                  type:'cru',  lat:46.363, lng: 6.418 },
+    { nom:'Marignan',                  type:'cru',  lat:46.355, lng: 6.390 },
+  ],
+
+  // ─── CORSE ─────────────────────────────────────────────────
+  'corse': [
+    // AOC
+    { nom:'Vin de Corse',              type:'aoc',  lat:42.050, lng: 9.100 },
+    { nom:'Patrimonio',                type:'aoc',  lat:42.700, lng: 9.369 },
+    { nom:'Ajaccio',                   type:'aoc',  lat:41.950, lng: 8.758 },
+    { nom:'Muscat du Cap Corse',       type:'aoc',  lat:42.980, lng: 9.420 },
+    // Dénominations Vin de Corse
+    { nom:'Corse Calvi',               type:'cru',  lat:42.570, lng: 8.760 },
+    { nom:'Corse Sartène',             type:'cru',  lat:41.623, lng: 8.974 },
+    { nom:'Corse Figari',              type:'cru',  lat:41.504, lng: 9.148 },
+    { nom:'Corse Porto-Vecchio',       type:'cru',  lat:41.594, lng: 9.279 },
+    { nom:'Corse Coteaux du Cap Corse',type:'cru',  lat:43.007, lng: 9.420 },
+  ],
+};
+
+// Fonction pour afficher les appellations d'une région sur la carte — centroïdes réels WFS
+function showAppellations(regionKey, niveauMax) {
+  if (!leafletMap) return;
+  if (leafletMap._appelLayer) {
+    leafletMap.removeLayer(leafletMap._appelLayer);
+    leafletMap._appelLayer = null;
+  }
+  if (!regionKey) return;
+
+  // Mapping clés WINE_REGION_POLYGONS → clés APPELLATIONS
+  const KEY_MAP = {
+    'val_de_loire': 'loire',
+    'sud_ouest':    'sud-ouest',
+  };
+  const appelKey = KEY_MAP[regionKey] || regionKey;
+  const apps = APPELLATIONS[appelKey];
+  if (!apps || !apps.length) return;
+
+  leafletMap._appelRegion = regionKey;
+  const group = L.layerGroup();
+
+  apps.forEach(app => {
+    if (app.lat == null || app.lng == null) return;
+    addAppelLabel(group, app.lat, app.lng, app.nom, app.type || 'aoc');
+  });
+
+  group.addTo(leafletMap);
+  leafletMap._appelLayer = group;
+
+  const hint = document.getElementById('carte-zoom-hint');
+  if (hint) {
+    const region = WINE_REGION_POLYGONS[regionKey];
+    const nAoc = apps.filter(a => a.type === 'aoc').length;
+    const nCru = apps.filter(a => a.type === 'cru').length;
+    hint.innerHTML = `🏛️ <b style="color:#e8c870">${region?.label||regionKey}</b>`
+      + ` — <span style="color:#c08050">${nAoc} AOC</span>`
+      + (nCru ? ` · <span style="color:#9b60d0">${nCru} cru${nCru>1?'s':''}</span>` : '');
+    hint.style.color = 'rgba(220,200,120,0.9)';
+  }
+}
+
+const REGION_BBOX = {
+  // France
+  'alsace':         [[47.45, 7.08], [48.97, 7.80]],
+  'bordeaux':       [[44.30,-1.28], [45.78, 0.22]],
+  'bourgogne':      [[45.85, 3.48], [47.82, 5.10]],
+  'champagne':      [[48.40, 3.30], [49.40, 4.85]],
+  'rhone_nord':     [[44.80, 4.60], [45.60, 5.50]],
+  'rhone_sud':      [[43.60, 4.35], [44.55, 5.45]],
+  'val_de_loire':   [[46.80,-2.30], [48.10, 3.10]],
+  'languedoc':      [[42.90, 2.40], [43.90, 4.50]],
+  'roussillon':     [[42.40, 2.45], [42.90, 3.15]],
+  'provence':       [[43.10, 5.00], [43.90, 6.80]],
+  'jura':           [[46.50, 5.40], [47.00, 5.90]],
+  'savoie':         [[45.40, 5.80], [46.00, 6.80]],
+  'sud_ouest':      [[43.20,-0.80], [44.70, 2.00]],
+  'corse':          [[41.35, 8.55], [43.00, 9.55]],
+  // Espagne
+  'rioja':          [[42.20,-2.80], [42.70,-1.95]],
+  'ribera-del-duero':[[41.25,-4.00],[41.80,-2.80]],
+  'priorat':        [[41.05, 0.70], [41.30, 1.00]],
+  'rias-baixas':    [[42.05,-8.90], [42.60,-8.20]],
+  'penedes':        [[41.15, 1.30], [41.60, 1.90]],
+  'jerez':          [[36.65,-6.20], [36.95,-5.85]],
+  // Italie
+  'barolo-barbaresco':[[44.55, 7.85],[44.80, 8.15]],
+  'chianti':        [[43.30,11.10], [43.90,11.80]],
+  'toscane':        [[42.60,10.50], [44.20,12.40]],
+  'valpolicella':   [[45.40,10.80], [45.75,11.20]],
+  'piemonte':       [[44.35, 7.40], [45.05, 8.90]],
+  'sicile':         [[36.65,12.35], [38.20,15.60]],
+  // Allemagne
+  'moselle':        [[49.65, 6.55], [50.40, 7.40]],
+  'rheingau':       [[49.95, 7.80], [50.15, 8.45]],
+  'pfalz':          [[49.10, 7.75], [49.65, 8.35]],
+  // Portugal
+  'douro':          [[41.00,-7.75], [41.50,-6.90]],
+  'alentejo':       [[37.50,-8.20], [38.80,-6.80]],
+  'vinho-verde':    [[41.30,-8.75], [42.20,-7.80]],
+  // Autriche
+  'wachau':         [[48.25,15.35], [48.45,15.65]],
+  'burgenland':     [[47.20,16.40], [47.95,16.95]],
+  // Grèce
+  'santorini':      [[36.33,25.35], [36.48,25.48]],
+  'naoussa':        [[40.55,22.00], [40.75,22.20]],
+  // Hongrie
+  'tokaj':          [[48.10,21.30], [48.45,21.80]],
+};
+
+function carteZoomPays(pays) {
+  if(!leafletMap) { renderCarte(); setTimeout(() => carteZoomPays(pays), 400); return; }
+  const cfg = PAYS_ZOOM[pays];
+  if(!cfg) return;
+  leafletMap.setView(cfg.center, cfg.zoom, {animate: true, duration: 0.7});
+}
+
+// Zoom sur une région viticole précise (appelé depuis marker click)
+function zoomRegion(key) {
+  if(!leafletMap) return;
+  const bbox = REGION_BBOX[key];
+  if(bbox) {
+    leafletMap.fitBounds(bbox, { animate: true, duration: 0.7, padding: [20, 20] });
+  } else {
+    // Fallback : centroïde de la géométrie
+    const region = WINE_REGION_POLYGONS[key];
+    if(!region) return;
+    try {
+      const geom   = region.geometry || { type:'Polygon', coordinates:[region.coords] };
+      const coords = geom.type === 'MultiPolygon' ? geom.coordinates.flat(2) : geom.coordinates[0];
+      const lats   = coords.map(c => c[1]), lngs = coords.map(c => c[0]);
+      leafletMap.fitBounds(
+        [[Math.min(...lats), Math.min(...lngs)], [Math.max(...lats), Math.max(...lngs)]],
+        { animate: true, duration: 0.7, padding: [20, 20] }
+      );
+    } catch(e) {}
+  }
 }
 
 function renderCarteLegend() {
-  const types = [...new Set(wineData.map(w=>w.type).filter(Boolean))];
-  document.getElementById('carte-legend').innerHTML = types.map(t => `
-    <div style="display:flex;align-items:center;gap:5px">
-      <span style="width:10px;height:10px;border-radius:50%;background:${TYPE_COLORS_CARTE[t]||'#888'};display:inline-block"></span>
-      <span style="text-transform:capitalize">${t}</span>
-    </div>`).join('');
+  // Légende masquée
+  document.getElementById('carte-legend').innerHTML = '';
+}
+
+
+// ── Listes de cépages pour la classification rouge/blanc ──────────────────
+const CEPAGES_BLANCS_LIST = ['chardonnay','sauvignon blanc','sauvignon','sémillon','semillon',
+  'riesling','gewurztraminer','gewürztraminer','pinot gris','pinot blanc','aligoté','aligote',
+  'muscat','viognier','marsanne','roussanne','clairette','bourboulenc','ugni blanc','ugni',
+  'rolle','vermentino','grenache blanc','macabeu','macabeo','viura','malvasia','malvasía',
+  'palomino','palomino fino','pedro ximénez','pedro ximenez','moscatel','albariño','albarino',
+  'treixadura','loureira','verdejo','godello','arinto','alvarinho','loureiro','trajadura','azal',
+  'encruzado','bical','antão vaz','antao vaz','fernão pires','fernao pires','sercial','verdelho',
+  'bual','malmsey','terrantez','cortese','arneis','turbiana','garganega','glera','pinot grigio',
+  'friulano','tocai','ribolla gialla','müller-thurgau','muller-thurgau','savagnin','jacquère',
+  'jacquere','altesse','roussette','chasselas','gros manseng','petit manseng','melon de bourgogne',
+  'chenin blanc','chenin','hondarrabi zuri','xarel·lo','xarello','parellada','furmint',
+  'hárslevelű','harslevelü','harslevelu','assyrtiko','moschofilero'];
+const CEPAGES_ROUGES_LIST = ['cabernet sauvignon','merlot','cabernet franc','pinot noir','syrah',
+  'grenache','mourvèdre','mourvedre','carignan','cinsault','gamay','gamay noir','malbec','côt','cot',
+  'tannat','fer servadou','tempranillo','garnacha','mazuelo','graciano','mencía','mencia',
+  'tinto fino','cariñena','carinena','touriga nacional','touriga franca','tinta roriz',
+  'tinta barroca','tinta cão','tinta cao','aragonez','trincadeira','alicante bouschet',
+  'castelão','castelao','nebbiolo','barbera','dolcetto','corvina','molinara','rondinella',
+  'sangiovese','primitivo','aglianico','teroldego','lagrein','schiava','vernatsch','refosco',
+  'nielluccio','sciaccarello','poulsard','trousseau','mondeuse','hondarrabi beltza',
+  'blaufränkisch','zweigelt','pinot meunier','mavrud','tempranillo/tinto fino','xinomavro','agiorgitiko'];
+
+// Classe un cépage : retourne 'rouge', 'blanc', ou 'autre'
+function classifyCepage(c) {
+  const k = c.toLowerCase().trim();
+  if (CEPAGES_ROUGES_LIST.some(r => k === r || k.startsWith(r) || k.includes(r))) return 'rouge';
+  if (CEPAGES_BLANCS_LIST.some(b => k === b || k.startsWith(b) || k.includes(b))) return 'blanc';
+  return 'autre';
+}
+
+// Construit le HTML des cépages séparés rouge/blanc pour un affichage donné
+function buildCepagesHtml(cepagesStr, style) {
+  // style: 'hint' = compact inline, 'panel' = affiché dans le panneau région
+  if (!cepagesStr) return '';
+  const rawList = cepagesStr.split(',').map(s => s.trim());
+  const rouges = [], blancs = [], autres = [];
+  rawList.forEach(c => {
+    const cat = classifyCepage(c);
+    if (cat === 'rouge') rouges.push(c);
+    else if (cat === 'blanc') blancs.push(c);
+    else autres.push(c);
+  });
+  if (style === 'hint') {
+    if (!rouges.length && !blancs.length) return ` — <span style="color:#a09080;font-style:italic">🍇 ${cepagesStr}</span>`;
+    let h = ' — <span style="font-style:italic;font-size:0.88em">';
+    if (rouges.length) h += `<span style="color:#c87080">🍷 ${rouges.join(', ')}</span>`;
+    if (rouges.length && blancs.length) h += ' · ';
+    if (blancs.length) h += `<span style="color:#b8a050">🥂 ${blancs.join(', ')}</span>`;
+    if (autres.length) h += `<span style="color:#908070"> · ${autres.join(', ')}</span>`;
+    return h + '</span>';
+  } else {
+    // panneau : affichage structuré, plus lisible
+    let h = '<div style="margin-bottom:14px;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:4px">';
+    h += '<div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">Cépages</div>';
+    if (rouges.length) {
+      h += `<div style="margin-bottom:6px"><span style="font-size:0.7rem;color:#c87080;letter-spacing:1px;text-transform:uppercase;margin-right:8px">🍷 Rouges</span>`;
+      h += `<span style="color:var(--text);font-size:0.88rem">${rouges.join(', ')}</span></div>`;
+    }
+    if (blancs.length) {
+      h += `<div style="margin-bottom:${autres.length?'6px':'0'}"><span style="font-size:0.7rem;color:#b8a050;letter-spacing:1px;text-transform:uppercase;margin-right:8px">🥂 Blancs</span>`;
+      h += `<span style="color:var(--text);font-size:0.88rem">${blancs.join(', ')}</span></div>`;
+    }
+    if (autres.length) {
+      h += `<div><span style="font-size:0.7rem;color:#908070;letter-spacing:1px;text-transform:uppercase;margin-right:8px">🍇 Autres</span>`;
+      h += `<span style="color:var(--text);font-size:0.88rem">${autres.join(', ')}</span></div>`;
+    }
+    if (!rouges.length && !blancs.length && !autres.length) {
+      h += `<span style="color:var(--text2);font-style:italic">${cepagesStr}</span>`;
+    }
+    return h + '</div>';
+  }
 }
 
 function selectCarteRegion(key, label) {
   carteSelectedRegion = key;
   const wines = wineData.filter(w => getRegionKey(w) === key);
+  const region = WINE_REGION_POLYGONS[key];
+  const _appelKeyMap = {'val_de_loire':'loire','sud_ouest':'sud-ouest'};
+  const allApps = APPELLATIONS[_appelKeyMap[key] || key] || [];
+  const nbAoc = allApps.filter(a=>a.type==='aoc').length;
+  const nbCru  = allApps.filter(a=>a.type==='cru').length;
+  const nbApp  = region?.appellations ? region.appellations.length : nbAoc;
+
   document.getElementById('carte-region-title').textContent = `${label} — ${wines.length} bouteille${wines.length!==1?'s':''}`;
+
+  // Zoom précis sur la bbox de la région
+  zoomRegion(key);
+
+  // Effacer les appellations précédentes puis afficher celles de cette région
+  showAppellations(key, 2);
+
+  // Mettre à jour le hint avec infos région (compact)
+  const hint = document.getElementById('carte-zoom-hint');
+  if (hint) {
+    hint.innerHTML = `🏛️ <b style="color:#e8c870">${label}</b>`
+      + buildCepagesHtml(region?.cepages, 'hint')
+      + (nbAoc ? ` — <span style="color:#c08050">${nbAoc} AOC</span>` : '')
+      + (nbCru  ? ` · <span style="color:#9b60d0">${nbCru} cru${nbCru>1?'s':''}</span>` : '');
+    hint.style.color = 'rgba(220,200,120,0.9)';
+  }
 
   if(!wines.length) {
     document.getElementById('carte-region-list').innerHTML = '<div style="color:var(--text2);font-style:italic">Aucun vin de cette région</div>';
-    updateCartePoints(); return;
+    refreshCarteMarkers(); return;
   }
 
   const byApp = {};
@@ -5103,7 +6341,8 @@ function selectCarteRegion(key, label) {
     byApp[app].push(w);
   });
 
-  document.getElementById('carte-region-list').innerHTML = Object.entries(byApp)
+  document.getElementById('carte-region-list').innerHTML =
+    Object.entries(byApp)
     .sort((a,b) => b[1].length - a[1].length)
     .map(([app, ws]) => `
       <div style="margin-bottom:14px">
@@ -5114,14 +6353,51 @@ function selectCarteRegion(key, label) {
               style="display:flex;gap:8px;align-items:center;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;cursor:pointer;min-width:180px;flex:1;max-width:260px">
               ${w.image?`<img src="${w.image}" style="width:28px;height:40px;object-fit:contain;border-radius:2px;flex-shrink:0">`:`<span style="font-size:1rem;flex-shrink:0">🍷</span>`}
               <div style="min-width:0">
-                <div style="color:var(--cream);font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${w.nom||'—'}</div>
+                <div style="color:var(--text);font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${w.nom||'—'}</div>
                 <div style="color:var(--text2);font-size:0.75rem">${w.annee||''} ${w.domaine?'· '+w.domaine:''}</div>
               </div>
             </div>`).join('')}
         </div>
       </div>`).join('');
 
-  updateCartePoints();
+  refreshCarteMarkers();
+}
+
+function refreshCarteMarkers() {
+  // Mettre en surbrillance le marqueur sélectionné
+  Object.entries(leafletMarkers).forEach(([key, marker]) => {
+    const isSel = key === carteSelectedRegion;
+    const wines = wineData.filter(w => getRegionKey(w) === key);
+    const typeCount = {};
+    wines.forEach(w => { typeCount[w.type] = (typeCount[w.type]||0)+1; });
+    const domType = Object.entries(typeCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'rouge';
+    const radius = wines.length > 0 ? Math.max(10, Math.min(22, 10 + wines.length * 0.8)) : 7;
+    const r = isSel ? radius + 4 : radius;
+    const newIcon = L.divIcon({
+      className: '',
+      html: `<div style="
+        width:${r*2}px;height:${r*2}px;
+        border-radius:50%;
+        background:${isSel ? 'rgba(160,80,240,0.70)' : wines.length > 0 ? 'rgba(110,40,180,0.45)' : 'rgba(110,40,180,0.15)'};
+        border:${isSel ? '3px solid rgba(220,180,255,0.95)' : wines.length > 0 ? '2px solid rgba(160,80,220,0.80)' : '2px solid rgba(130,60,200,0.35)'};
+        box-shadow:${isSel ? '0 0 14px rgba(160,80,240,0.70)' : '0 2px 10px rgba(80,20,140,0.40)'};
+        display:flex;align-items:center;justify-content:center;
+        font-size:${r > 12 ? '11' : '9'}px;
+        font-weight:bold;color:rgba(255,255,255,0.95);
+        cursor:pointer;
+      ">${wines.length > 0 ? wines.length : ''}</div>`,
+      iconSize: [r*2, r*2],
+      iconAnchor: [r, r],
+      popupAnchor: [0, -r]
+    });
+    marker.setIcon(newIcon);
+  });
+}
+
+function updateCartePoints() {
+  // Refresh marqueurs
+  refreshCarteMarkers();
+  // WMTS+WFS : pas de mise à jour de style nécessaire
 }
 
 </script>
