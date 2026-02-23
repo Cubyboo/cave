@@ -543,11 +543,11 @@
   .cave-unit {
     display: flex;
     flex-direction: column;
-    width: 460px;
-    flex-shrink: 0;
+    width: 100%;
+    max-width: 460px;
   }
 
-  /* Panneau supérieur — métal brossé avec nom + temp */
+  /* Panneau supérieur — intégré SUR la cave */
   .cave-header-panel {
     background: linear-gradient(180deg, var(--bg3) 0%, var(--bg2) 100%);
     border: 1px solid var(--border2);
@@ -567,13 +567,13 @@
     text-transform: uppercase;
   }
 
-  /* Afficheur température style LED */
+  /* Afficheur température style LED — rouge */
   .cave-temp {
     display: flex;
     align-items: center;
     gap: 5px;
     background: #050304;
-    border: 1px solid #2a2028;
+    border: 1px solid #2a1010;
     border-radius: 3px;
     padding: 4px 9px;
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.8);
@@ -581,9 +581,9 @@
   .cave-temp-val {
     font-family: 'Courier New', monospace;
     font-size: 1rem;
-    color: #a8d8ea;
+    color: #ff4444;
     letter-spacing: 2px;
-    text-shadow: 0 0 8px rgba(168,216,234,0.7);
+    text-shadow: 0 0 8px rgba(255,60,60,0.8);
   }
   .cave-temp-icon { font-size: 0.75rem; opacity: 0.5; }
 
