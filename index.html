@@ -1675,10 +1675,10 @@ function renderCave2D() {
         const isFront = floor.double && layer === 1 ? !p.isFront : p.isFront;
         const r       = isFront ? R_BIG : R_SMALL;
 
-        // Anneau doré Magnum (dessiné AVANT le cercle principal pour rester derrière)
+        // Anneau Magnum couleur du type (dessiné AVANT le cercle principal pour rester derrière)
         if(isMagnumBottle && isFront) {
           html += `<circle cx="${cx}" cy="${cy}" r="${r+3}"
-            fill="none" stroke="#c9a84c" stroke-width="2"
+            fill="none" stroke="${col.stroke}" stroke-width="2"
             opacity="0.85" style="pointer-events:none"
             filter="url(#softglow)"/>`;
         }
@@ -1708,7 +1708,7 @@ function renderCave2D() {
           // Petite étiquette "M" pour Magnum
           if(isMagnumBottle) {
             html += `<text x="${cx}" y="${cy+r*0.55}" text-anchor="middle" font-size="${r*0.55}"
-              fill="#f5dfa0" opacity="0.9" font-family="serif" font-weight="bold"
+              fill="${col.stroke}" opacity="0.95" font-family="serif" font-weight="bold"
               style="pointer-events:none">M</text>`;
           }
         } else {
