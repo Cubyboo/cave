@@ -532,7 +532,84 @@
     /* Cartes à la place du tableau */
     .wine-table { display: none; }
     .wine-cards { display: flex; }
-    #cave-svg-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg2); }
+    #cave-svg-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* ── Armoire à vin ── */
+  .cave-unit { display:flex; flex-direction:column; }
+
+  .cave-header-panel {
+    background: linear-gradient(135deg, #1a1a1e 0%, #111114 100%);
+    border: 1px solid #333340;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    padding: 14px 18px;
+  }
+  .cave-header-inner { display:flex; align-items:center; justify-content:space-between; }
+  .cave-title { font-family:'Playfair Display',serif; font-size:1rem; color:var(--cream); letter-spacing:2px; text-transform:uppercase; }
+  .cave-subtitle { font-size:0.72rem; color:var(--text3); letter-spacing:1px; text-transform:uppercase; margin-top:3px; }
+
+  .cave-temp { display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .cave-temp-icon { font-size:1.1rem; }
+  .cave-temp-val { font-family:'Playfair Display',serif; font-size:1.1rem; color:#7ec8e3; letter-spacing:1px; }
+  .cave-temp-lbl { font-size:0.6rem; color:var(--text3); text-transform:uppercase; letter-spacing:1.5px; }
+
+  .cave-frame {
+    position: relative;
+    background: linear-gradient(180deg, #0d0d10 0%, #090909 100%);
+    border: 2px solid #2a2a2e;
+    border-top: 3px solid #3a3a40;
+    border-radius: 0 0 4px 4px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.7), inset 0 0 60px rgba(0,0,0,0.5);
+    transition: border-color 0.3s;
+  }
+  .cave-frame:hover { border-color: #4a4a52; }
+  .cave-frame.focused { border-color: var(--gold); box-shadow: 0 8px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(201,168,76,0.3), inset 0 0 60px rgba(0,0,0,0.5); }
+
+  /* Reflet vitré */
+  .cave-glass-reflection {
+    position:absolute; top:0; left:0; right:0; bottom:0; z-index:10;
+    background: linear-gradient(135deg,
+      rgba(255,255,255,0.04) 0%,
+      rgba(255,255,255,0.01) 40%,
+      transparent 60%,
+      rgba(255,255,255,0.02) 100%);
+    pointer-events:none;
+  }
+
+  /* Montants latéraux inox brossé */
+  .cave-side {
+    position:absolute; top:0; bottom:0; width:12px; z-index:5;
+    background: linear-gradient(90deg, #1a1a1e, #2a2a30, #1a1a1e);
+    pointer-events:none;
+  }
+  .cave-side-left  { left:0; }
+  .cave-side-right { right:0; }
+
+  /* Poignée */
+  .cave-handle {
+    position:absolute; top:50%; left:8px; transform:translateY(-50%);
+    width:4px; height:60px; z-index:6;
+    background: linear-gradient(180deg, #3a3a40, #555560, #3a3a40);
+    border-radius:2px;
+    box-shadow: 1px 0 3px rgba(0,0,0,0.6);
+    pointer-events:none;
+  }
+  .cave-handle-right { left:auto; right:8px; }
+
+  .cave-inner-wrap { padding: 16px 20px; }
+
+  /* Mobile : une cave à la fois */
+  @media (max-width: 900px) {
+    #caves-container { flex-direction:column; }
+    #cave-unit-2 { display:none; }
+    #cave-unit-1 { display:flex; }
+    #cave-mobile-selector { display:flex !important; }
+  }
+  @media (min-width: 901px) {
+    #cave-mobile-selector { display:none !important; }
+  }
     .cave-selector { flex-wrap: wrap; gap: 8px; }
     .cave-legend { flex-wrap: wrap; gap: 6px; }
 
@@ -671,25 +748,80 @@
 
 <!-- ===== 2D CAVE VIEW ===== -->
 <div id="view2d" class="content active">
-  <div class="cave-selector">
-    <button class="cave-btn active" onclick="selectCave(1,this)">Cave 1 — 156 empl.</button>
-    <button class="cave-btn" onclick="selectCave(2,this)">Cave 2 — 110 empl.</button>
-    <div class="cave-legend">
-      <div class="legend-item"><div class="legend-big" style="background:#8a1828"></div> <span style="color:#e06878">Rouge</span></div>
-      <div class="legend-item"><div class="legend-big" style="background:#a88018"></div> <span style="color:#e8c870">Blanc</span></div>
-      <div class="legend-item"><div class="legend-big" style="background:#b84068"></div> <span style="color:#e8a0b0">Rosé</span></div>
-      <div class="legend-item"><div class="legend-big" style="background:#1e4870"></div> <span style="color:#90c8f0">Effervescent</span></div>
-      <div class="legend-item"><div class="legend-big" style="background:#b8901a"></div> <span style="color:#f5d97a">VDN Blanc</span></div>
-      <div class="legend-item"><div class="legend-big" style="background:#6a2010"></div> <span style="color:#d08060">VDN Rouge</span></div>
-      <div class="legend-item"><div class="legend-big" style="background:#c06020"></div> <span style="color:#f0a850">Liquoreux</span></div>
-      <div class="legend-item"><div class="legend-big" style="background:#1a1014;border:1.5px solid #4a3040"></div> <span style="color:#6a5a50">Vide</span></div>
-      <div class="legend-item"><div class="legend-small" style="background:#4a4a4a"></div> <span style="color:#6a5a50">Goulot arrière</span></div>
-      <div class="legend-item"><div style="width:16px;height:16px;border-radius:50%;background:transparent;border:2.5px solid #c9a84c;box-shadow:0 0 6px rgba(201,168,76,0.6)"></div> <span style="color:#c9a84c">Magnum</span></div>
+
+  <!-- Légende commune -->
+  <div class="cave-legend" style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:18px;padding:10px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:0.75rem">
+    <span style="color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;font-size:0.65rem;margin-right:4px">Légende</span>
+    <div class="legend-item"><div class="legend-big" style="background:#8a1828"></div> <span style="color:#e06878">Rouge</span></div>
+    <div class="legend-item"><div class="legend-big" style="background:#a88018"></div> <span style="color:#e8c870">Blanc</span></div>
+    <div class="legend-item"><div class="legend-big" style="background:#b84068"></div> <span style="color:#e8a0b0">Rosé</span></div>
+    <div class="legend-item"><div class="legend-big" style="background:#1e4870"></div> <span style="color:#90c8f0">Effervescent</span></div>
+    <div class="legend-item"><div class="legend-big" style="background:#b8901a"></div> <span style="color:#f5d97a">VDN</span></div>
+    <div class="legend-item"><div class="legend-big" style="background:#c06020"></div> <span style="color:#f0a850">Liquoreux</span></div>
+    <div class="legend-item"><div class="legend-big" style="background:#1a1014;border:1.5px solid #4a3040"></div> <span style="color:#6a5a50">Vide</span></div>
+    <div class="legend-item"><div style="width:16px;height:16px;border-radius:50%;background:transparent;border:2.5px solid #c9a84c;box-shadow:0 0 6px rgba(201,168,76,0.6)"></div> <span style="color:#c9a84c">Magnum</span></div>
+    <!-- Bouton mobile -->
+    <div class="cave-selector" style="margin-left:auto;display:flex;gap:8px" id="cave-mobile-selector">
+      <button class="cave-btn active" onclick="selectCave(1,this)" id="cave-btn-1">Cave 1</button>
+      <button class="cave-btn" onclick="selectCave(2,this)" id="cave-btn-2">Cave 2</button>
     </div>
   </div>
-  <div class="cave-2d-wrap" id="cave2dWrap">
-    <div id="cave-svg-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch"><svg id="caveSvg" style="display:block;"></svg></div>
+
+  <!-- Vue double cave (desktop) / simple (mobile) -->
+  <div id="caves-container" style="display:flex;gap:24px;align-items:flex-start;width:100%">
+    <!-- Cave 1 -->
+    <div class="cave-unit" id="cave-unit-1" style="flex:1;min-width:0">
+      <div class="cave-header-panel">
+        <div class="cave-header-inner">
+          <div>
+            <div class="cave-title">Cave Climatisée <span style="color:var(--gold)">№ 1</span></div>
+            <div class="cave-subtitle" id="cave1-stats">— bouteilles</div>
+          </div>
+          <div class="cave-temp">
+            <span class="cave-temp-icon">🌡</span>
+            <span class="cave-temp-val">12°C</span>
+            <span class="cave-temp-lbl">Température</span>
+          </div>
+        </div>
+      </div>
+      <div class="cave-frame" onclick="focusCave(1)">
+        <div class="cave-glass-reflection"></div>
+        <div class="cave-inner-wrap">
+          <svg id="caveSvg" style="display:block;width:100%;height:auto"></svg>
+        </div>
+        <div class="cave-side cave-side-left"></div>
+        <div class="cave-side cave-side-right"></div>
+        <div class="cave-handle"></div>
+      </div>
+    </div>
+
+    <!-- Cave 2 -->
+    <div class="cave-unit" id="cave-unit-2" style="flex:1;min-width:0">
+      <div class="cave-header-panel">
+        <div class="cave-header-inner">
+          <div>
+            <div class="cave-title">Cave Climatisée <span style="color:var(--gold)">№ 2</span></div>
+            <div class="cave-subtitle" id="cave2-stats">— bouteilles</div>
+          </div>
+          <div class="cave-temp">
+            <span class="cave-temp-icon">🌡</span>
+            <span class="cave-temp-val">12°C</span>
+            <span class="cave-temp-lbl">Température</span>
+          </div>
+        </div>
+      </div>
+      <div class="cave-frame" onclick="focusCave(2)">
+        <div class="cave-glass-reflection"></div>
+        <div class="cave-inner-wrap">
+          <svg id="caveSvg2" style="display:block;width:100%;height:auto"></svg>
+        </div>
+        <div class="cave-side cave-side-left"></div>
+        <div class="cave-side cave-side-right"></div>
+        <div class="cave-handle cave-handle-right"></div>
+      </div>
+    </div>
   </div>
+
 </div>
 
 <!-- ===== LIST VIEW ===== -->
@@ -1328,7 +1460,7 @@ function wineImg(w)    { return imgGet('wine_' + w.id)    || w.image    || ''; }
 function histImg(h)    { return imgGet('hist_' + h.id)    || h.image    || ''; }
 function degImg(d)     { return imgGet('deg_'  + d.id)    || d.image    || ''; }
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz5jU2YbiPNRvDEI1BTGDthJNDtP75hryUhBef3EjmLQwVJUTjJXXQH_4YFN3rVBZFnWQ/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_GkA2thpGf_tCdgMtoVYt5-xANAztBu6Rmks9SE5-9yF8_jdbBu7iXbgS13_5iqH_6Q/exec';
 
 let wineData = JSON.parse(localStorage.getItem('caveData') || '[]');
 let currentCave = 1;
@@ -1547,9 +1679,19 @@ window.addEventListener('load', function() {
 
 function selectCave(n, btn) {
   currentCave = n;
+  // Sur mobile : montrer/cacher les unités
+  document.getElementById('cave-unit-1').style.display = (n===1||window.innerWidth>900) ? 'flex' : 'none';
+  document.getElementById('cave-unit-2').style.display = (n===2||window.innerWidth>900) ? 'flex' : 'none';
   document.querySelectorAll('.cave-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+  if(btn) btn.classList.add('active');
   renderCave2D();
+}
+
+function focusCave(n) {
+  currentCave = n;
+  document.querySelectorAll('.cave-frame').forEach(f=>f.classList.remove('focused'));
+  const unit = document.getElementById('cave-unit-' + n);
+  if(unit) unit.querySelector('.cave-frame').classList.add('focused');
 }
 
 // =====================================================================
@@ -1594,9 +1736,10 @@ const FLOOR_GAP = 18; // espace entre étages
   On intercale visuellement mais on conserve l'encodage d'origine.
 */
 
-function renderCave2D() {
-  const svg    = document.getElementById('caveSvg');
-  const floors = CAVE_CONFIG[currentCave].floors;
+function renderCaveToSvg(svgId, caveNum) {
+  const svg    = document.getElementById(svgId);
+  if(!svg) return;
+  const floors = CAVE_CONFIG[caveNum].floors;
   const GAP    = 7; // espace bord-à-bord entre deux cercles consécutifs
 
   // ── Pré-calcul : positions X de chaque cercle dans une couche ──
@@ -1666,16 +1809,36 @@ function renderCave2D() {
         <feGaussianBlur stdDeviation="1.8" result="blur"/>
         <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
+      <!-- Gradient bois clair chêne vernis -->
+      <linearGradient id="woodGrain" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#c8a45a"/>
+        <stop offset="30%"  stop-color="#b8923e"/>
+        <stop offset="60%"  stop-color="#c09848"/>
+        <stop offset="100%" stop-color="#a07828"/>
+      </linearGradient>
+      <!-- Gradient montants inox -->
+      <linearGradient id="inoxSide" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%"   stop-color="#1a1a1e"/>
+        <stop offset="50%"  stop-color="#2e2e34"/>
+        <stop offset="100%" stop-color="#1a1a1e"/>
+      </linearGradient>
     </defs>
-    <rect width="${totalW}" height="${totalH}" fill="#080406" rx="4"/>
-    <rect x="1" y="1" width="${totalW-2}" height="${totalH-2}"
-      fill="none" stroke="#3a2830" stroke-width="1" rx="3"/>
+    <!-- Fond inox noir mat -->
+    <rect width="${totalW}" height="${totalH}" fill="#0a0a0c"/>
+    <!-- Grille subtile fond -->
+    <pattern id="gridPat" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="0.5"/>
+    </pattern>
+    <rect width="${totalW}" height="${totalH}" fill="url(#gridPat)"/>
   `;
 
-  // Bords latéraux bois
+  // Montants latéraux inox brossé
   const sideH = totalH - PAD_V * 2;
-  html += `<rect x="${PAD_H-14}" y="${PAD_V}" width="6" height="${sideH}" fill="#1c0a04" rx="2"/>`;
-  html += `<rect x="${PAD_H+maxLayerW+8}" y="${PAD_V}" width="6" height="${sideH}" fill="#1c0a04" rx="2"/>`;
+  html += `<rect x="${PAD_H-14}" y="${PAD_V}" width="8" height="${sideH}" fill="url(#inoxSide)" rx="1"/>`;
+  html += `<rect x="${PAD_H+maxLayerW+6}" y="${PAD_V}" width="8" height="${sideH}" fill="url(#inoxSide)" rx="1"/>`;
+  // Ligne lumineuse sur les montants
+  html += `<rect x="${PAD_H-12}" y="${PAD_V}" width="1" height="${sideH}" fill="rgba(255,255,255,0.08)" rx="1"/>`;
+  html += `<rect x="${PAD_H+maxLayerW+11}" y="${PAD_V}" width="1" height="${sideH}" fill="rgba(255,255,255,0.08)" rx="1"/>`;
 
   let yTop = PAD_V;
 
@@ -1687,7 +1850,7 @@ function renderCave2D() {
     // Fond de l'étage
     html += `<rect x="${PAD_H-6}" y="${yTop-3}"
       width="${maxLayerW+12}" height="${fH - FLOOR_GAP + 3}"
-      fill="${floor.double ? '#0f0a0c' : '#0b0709'}" rx="2"/>`;
+      fill="${floor.double ? '#0a0a0c' : '#080809'}" rx="2"/>`;
 
     for(let layer = 0; layer < layers; layer++) {
       const yCenter    = yTop + layer * (layerH + ROW_GAP) + R_BIG;
@@ -1695,7 +1858,7 @@ function renderCave2D() {
 
       pos.forEach(p => {
         const slot  = slotOffset + (p.isFront ? p.li + 1 : floor.front + p.li + 1);
-        const wine  = getWineAtSlot(currentCave, floor.id, slot);
+        const wine  = getWineAtSlot(caveNum, floor.id, slot);
         const col   = wine ? (WINE_COLORS[wine.type] || WINE_COLORS.empty) : WINE_COLORS.empty;
         const empty = !wine;
         const isMagnumBottle = !empty && (wine.format === '150cl' || wine.format === '300cl');
@@ -1720,8 +1883,8 @@ function renderCave2D() {
           opacity="${empty ? 0.45 : 1}"
           ${(!empty) ? 'filter="url(#softglow)"' : ''}
           style="cursor:pointer"
-          onclick="handleBottleClick(event,${currentCave},${floor.id},${slot})"
-          data-cave="${currentCave}" data-floor="${floor.id}" data-slot="${slot}"/>`;
+          onclick="handleBottleClick(event,${caveNum},${floor.id},${slot})"
+          data-cave="${caveNum}" data-floor="${floor.id}" data-slot="${slot}"/>`;
 
         if(isFront) {
           // Creux central du cul
@@ -1751,12 +1914,20 @@ function renderCave2D() {
       });
     }
 
-    // Planche
+    // Clayette bois clair vernis
     const shelfY = yTop + fH - FLOOR_GAP - SHELF_H;
-    html += `<rect x="${PAD_H-8}" y="${shelfY}" width="${maxLayerW+16}" height="${SHELF_H}"
-      fill="#200e08" rx="1"/>`;
-    html += `<rect x="${PAD_H-8}" y="${shelfY+SHELF_H}" width="${maxLayerW+16}" height="3"
-      fill="rgba(0,0,0,0.45)" rx="1"/>`;
+    // Corps de la clayette — bois clair chêne
+    html += `<rect x="${PAD_H-10}" y="${shelfY}" width="${maxLayerW+20}" height="${SHELF_H+2}"
+      fill="url(#woodGrain)" rx="1"/>`;
+    // Reflet vernis
+    html += `<rect x="${PAD_H-10}" y="${shelfY}" width="${maxLayerW+20}" height="2"
+      fill="rgba(255,240,200,0.18)" rx="1"/>`;
+    // Ombre portée sous la clayette
+    html += `<rect x="${PAD_H-10}" y="${shelfY+SHELF_H+2}" width="${maxLayerW+20}" height="4"
+      fill="rgba(0,0,0,0.55)" rx="1"/>`;
+    // Label étage sur la clayette
+    html += `<text x="${PAD_H-2}" y="${shelfY-3}" font-size="7" fill="rgba(180,160,100,0.5)"
+      font-family="'Cormorant Garamond',serif" letter-spacing="1">${floor.label}</text>`;
 
     // Séparateur couche double
     if(floor.double) {
@@ -1770,7 +1941,14 @@ function renderCave2D() {
 
   svg.innerHTML = html;
 
+  // Mise à jour stats dans le header de la cave
+  const count = wineData.filter(w=>w.cave==caveNum).length;
+  const cap = CAVE_CONFIG[caveNum].floors.reduce((s,f)=>s+f.slots,0);
+  const statsEl = document.getElementById('cave'+caveNum+'-stats');
+  if(statsEl) statsEl.textContent = count + ' / ' + cap + ' bouteilles';
+
   // ── Tooltip au survol ────────────────────────────────────
+  // Tooltip
   svg.querySelectorAll('circle[data-cave]').forEach(el => {
     el.addEventListener('mouseenter', (e) => {
       const cave  = parseInt(el.dataset.cave);
@@ -1812,6 +1990,25 @@ function renderCave2D() {
       document.getElementById('tooltip').style.display = 'none';
     });
   });
+}
+
+// renderCave2D — appelle renderCaveToSvg pour les 2 caves
+function renderCave2D() {
+  const isDesktop = window.innerWidth > 900;
+  // Cave 1 toujours rendue
+  renderCaveToSvg('caveSvg', 1);
+  // Cave 2 rendue seulement si visible
+  if(isDesktop || currentCave === 2) {
+    renderCaveToSvg('caveSvg2', 2);
+  }
+  // Sur mobile, afficher uniquement la cave sélectionnée
+  if(!isDesktop) {
+    document.getElementById('cave-unit-1').style.display = currentCave===1 ? 'flex' : 'none';
+    document.getElementById('cave-unit-2').style.display = currentCave===2 ? 'flex' : 'none';
+  } else {
+    document.getElementById('cave-unit-1').style.display = 'flex';
+    document.getElementById('cave-unit-2').style.display = 'flex';
+  }
 }
 
 // =====================================================================
