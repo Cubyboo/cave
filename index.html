@@ -532,104 +532,7 @@
     /* Cartes à la place du tableau */
     .wine-table { display: none; }
     .wine-cards { display: flex; }
-    /* ── Cave de vieillissement vitrée ─────────────────────────── */
 
-  #caves-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-  }
-
-  .cave-unit {
-    width: 460px;
-    max-width: 100%;
-    flex-shrink: 0;
-  }
-
-  /* Panneau supérieur — métal brossé avec nom + temp */
-  .cave-header-panel {
-    background: linear-gradient(180deg, var(--bg3) 0%, var(--bg2) 100%);
-    border: 1px solid var(--border2);
-    border-bottom: 2px solid var(--gold);
-    border-radius: var(--radius) var(--radius) 0 0;
-    padding: 10px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .cave-label {
-    font-family: 'Playfair Display', serif;
-    font-size: 0.8rem;
-    color: var(--gold);
-    letter-spacing: 3px;
-    text-transform: uppercase;
-  }
-
-  /* Afficheur température style LED */
-  .cave-temp {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    background: #050304;
-    border: 1px solid #2a2028;
-    border-radius: 3px;
-    padding: 4px 9px;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.8);
-  }
-  .cave-temp-val {
-    font-family: 'Courier New', monospace;
-    font-size: 1rem;
-    color: #ff4444;
-    letter-spacing: 2px;
-    text-shadow: 0 0 8px rgba(255,60,60,0.8);
-  }
-  .cave-temp-icon { font-size: 0.75rem; opacity: 0.5; }
-
-  /* Corps de la cave — effet vitrine */
-  .cave-frame {
-    position: relative;
-    border: 2px solid var(--border2);
-    border-top: none;
-    border-radius: 0 0 4px 4px;
-    overflow: hidden;
-    background: var(--bg);
-    box-shadow:
-      var(--shadow),
-      inset 0 0 40px rgba(0,0,0,0.6);
-  }
-
-  /* Vitre — reflet diagonal façon porte vitrée */
-  .cave-glass-reflection {
-    position: absolute; inset: 0; z-index: 20; pointer-events: none;
-    background:
-      linear-gradient(
-        118deg,
-        rgba(255,255,255,0.055) 0%,
-        rgba(255,255,255,0.02)  18%,
-        transparent             35%,
-        transparent             65%,
-        rgba(0,0,0,0.06)        100%
-      );
-  }
-  /* Reflet secondaire haut-gauche */
-  .cave-glass-reflection::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 35%; height: 100%;
-    background: linear-gradient(90deg,
-      rgba(255,255,255,0.03) 0%,
-      transparent 100%
-    );
-  }
-
-  .cave-inner-wrap { padding: 0; }
-
-  @media (max-width: 768px) {
-    .cave-unit { width: 100%; }
-  }
     .cave-selector { flex-wrap: wrap; gap: 8px; }
     .cave-legend { flex-wrap: wrap; gap: 6px; }
 
@@ -785,43 +688,14 @@
     </div>
   </div>
 
-  <!-- Caves — centrées -->
-  <div id="caves-container">
-
-    <!-- Cave 1 -->
-    <div class="cave-unit" id="cave-unit-1">
-      <div class="cave-header-panel">
-        <span class="cave-label">Cave de Vieillissement &thinsp;№&thinsp;1</span>
-        <div class="cave-temp">
-          <span class="cave-temp-icon">❄</span>
-          <span class="cave-temp-val">12°C</span>
-        </div>
-      </div>
-      <div class="cave-frame">
-        <div class="cave-glass-reflection"></div>
-        <div class="cave-inner-wrap">
-          <svg id="caveSvg" style="display:block;width:100%;height:auto"></svg>
-        </div>
-      </div>
+  <!-- Caves -->
+  <div class="cave-2d-wrap" id="cave2dWrap">
+    <div id="cave-unit-1">
+      <svg id="caveSvg" style="display:block;"></svg>
     </div>
-
-    <!-- Cave 2 -->
-    <div class="cave-unit" id="cave-unit-2" style="display:none">
-      <div class="cave-header-panel">
-        <span class="cave-label">Cave de Vieillissement &thinsp;№&thinsp;2</span>
-        <div class="cave-temp">
-          <span class="cave-temp-icon">❄</span>
-          <span class="cave-temp-val">12°C</span>
-        </div>
-      </div>
-      <div class="cave-frame">
-        <div class="cave-glass-reflection"></div>
-        <div class="cave-inner-wrap">
-          <svg id="caveSvg2" style="display:block;width:100%;height:auto"></svg>
-        </div>
-      </div>
+    <div id="cave-unit-2" style="display:none">
+      <svg id="caveSvg2" style="display:block;"></svg>
     </div>
-
   </div>
 </div>
 
@@ -1685,8 +1559,8 @@ function selectCaveView(v, btn) {
   currentCave = v;
   document.querySelectorAll('.cave-btn').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
-  document.getElementById('cave-unit-1').style.display = v === 1 ? '' : 'none';
-  document.getElementById('cave-unit-2').style.display = v === 2 ? '' : 'none';
+  document.getElementById('cave-unit-1').style.display = v === 1 ? 'block' : 'none';
+  document.getElementById('cave-unit-2').style.display = v === 2 ? 'block' : 'none';
   renderCave2D();
 }
 
