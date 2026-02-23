@@ -2305,15 +2305,15 @@ function confirmerDuplication() {
     // ID unique pour chaque copie
     const newId = Date.now().toString() + '_dup' + i + '_' + Math.random().toString(36).slice(2,6);
     // Ne pas propager _prixEstime (champ calculé, sera ré-estimé)
-    const { _prixEstime: _ignored, ...wineBase } = wine;
-    const copy = {
-      ...wineBase,
+    const wineBase = Object.assign({}, wine);
+    delete wineBase._prixEstime;
+    const copy = Object.assign({}, wineBase, {
       id:        newId,
-      cave,
-      floor,
-      slot,
+      cave:      cave,
+      floor:     floor,
+      slot:      slot,
       dateAjout: new Date().toISOString().split('T')[0]
-    };
+    });
     wineData.push(copy);
     if(imageUrl) imgSave('wine_' + newId, imageUrl);
     created++;
