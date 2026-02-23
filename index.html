@@ -532,98 +532,89 @@
     /* Cartes à la place du tableau */
     .wine-table { display: none; }
     .wine-cards { display: flex; }
-    #cave-svg-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-
-  /* ── Caves réfrigérées ── */
+    /* ── Caves réfrigérées ─────────────────────────────────────── */
   .cave-unit { display:flex; flex-direction:column; }
 
-  /* Panneau température au-dessus de la cave */
+  /* Bandeau température */
   .cave-header-panel {
     background: var(--bg2);
     border: 1px solid var(--border2);
     border-bottom: none;
     border-radius: var(--radius) var(--radius) 0 0;
-    padding: 12px 18px;
+    padding: 10px 16px;
   }
   .cave-header-inner { display:flex; align-items:center; justify-content:space-between; }
   .cave-title {
-    font-family:'Playfair Display',serif; font-size:0.95rem;
+    font-family:'Playfair Display',serif; font-size:0.85rem;
     color:var(--gold); letter-spacing:2px; text-transform:uppercase;
   }
-  .cave-subtitle { font-size:0.7rem; color:var(--text3); letter-spacing:1px; margin-top:2px; }
 
-  /* Affichage température style thermostat */
+  /* Thermostat */
   .cave-temp {
-    display:flex; align-items:center; gap:10px;
+    display:flex; align-items:center; gap:8px;
     background:var(--bg3); border:1px solid var(--border);
-    border-radius:var(--radius-sm); padding:6px 12px;
+    border-radius:var(--radius-sm); padding:5px 10px;
   }
   .cave-temp-display { display:flex; flex-direction:column; align-items:flex-end; }
   .cave-temp-val {
-    font-family:'Playfair Display',serif; font-size:1.4rem;
+    font-family:'Playfair Display',serif; font-size:1.3rem;
     color:#a8d8ea; line-height:1; letter-spacing:1px;
   }
-  .cave-temp-lbl { font-size:0.58rem; color:var(--text3); text-transform:uppercase; letter-spacing:1.5px; margin-top:1px; }
-  .cave-temp-icon { font-size:1.3rem; opacity:0.7; }
+  .cave-temp-icon { font-size:1rem; opacity:0.65; }
 
-  /* Cadre cave réfrigérée — s'intègre dans le site */
+  /* Cadre cave */
   .cave-frame {
-    position: relative;
-    background: var(--bg);
-    border: 1px solid var(--border2);
-    border-top: 2px solid var(--border2);
-    border-radius: 0 0 var(--radius) var(--radius);
-    overflow: hidden;
-    cursor: pointer;
-    box-shadow: var(--shadow), inset 0 0 80px rgba(0,0,0,0.4);
+    position:relative;
+    background:var(--bg);
+    border:1px solid var(--border2);
+    border-top:none;
+    border-radius:0 0 var(--radius) var(--radius);
+    overflow:hidden;
+    box-shadow: var(--shadow), inset 0 0 60px rgba(0,0,0,0.35);
     transition: border-color 0.25s;
   }
-  .cave-frame:hover { border-color: var(--gold); }
-  .cave-frame.focused {
-    border-color: var(--gold);
-    box-shadow: var(--shadow), 0 0 0 1px rgba(201,168,76,0.2);
-  }
+  .cave-frame:hover { border-color:rgba(201,168,76,0.4); }
+  .cave-frame.focused { border-color:var(--gold); }
 
-  /* Reflet vitré discret */
+  /* Reflet vitre */
   .cave-glass-reflection {
-    position:absolute; top:0; left:0; right:0; height:40%; z-index:10;
-    background: linear-gradient(180deg, rgba(201,168,76,0.025) 0%, transparent 100%);
+    position:absolute; top:0; left:0; right:0; height:35%; z-index:10;
+    background: linear-gradient(180deg, rgba(201,168,76,0.02) 0%, transparent 100%);
     pointer-events:none;
   }
 
-  /* Montants latéraux — reprennent la couleur du site */
+  /* Montants */
   .cave-side {
-    position:absolute; top:0; bottom:0; width:10px; z-index:5;
-    background: linear-gradient(90deg, var(--bg3), var(--bg4), var(--bg3));
-    border-right: 1px solid var(--border);
+    position:absolute; top:0; bottom:0; width:8px; z-index:5;
+    background: var(--bg3);
     pointer-events:none;
   }
-  .cave-side-left  { left:0; border-right:1px solid var(--border); }
-  .cave-side-right { right:0; border-right:none; border-left:1px solid var(--border); }
+  .cave-side-left  { left:0;  border-right:1px solid var(--border2); }
+  .cave-side-right { right:0; border-left: 1px solid var(--border2); }
 
-  /* Poignée dorée */
+  /* Poignée */
   .cave-handle {
-    position:absolute; top:50%; left:6px; transform:translateY(-50%);
-    width:3px; height:50px; z-index:6;
-    background: linear-gradient(180deg, var(--border2), var(--gold3), var(--border2));
-    border-radius:2px; opacity:0.6;
+    position:absolute; top:50%; left:4px; transform:translateY(-50%);
+    width:2px; height:40px; z-index:6;
+    background: linear-gradient(180deg, transparent, rgba(201,168,76,0.4), transparent);
+    border-radius:2px;
     pointer-events:none;
   }
-  .cave-handle-right { left:auto; right:6px; }
+  .cave-handle-right { left:auto; right:4px; }
 
-  .cave-inner-wrap { padding: 14px 18px; }
+  .cave-inner-wrap { padding:0; }
 
-  /* Sélecteur de cave */
-  .cave-view-selector { display:flex; gap:8px; }
+  /* Les 2 caves — alignement bas */
+  #caves-container.view-both { align-items:flex-end; }
+  #caves-container.view-both .cave-unit { justify-content:flex-end; }
 
-  /* Mobile */
-  @media (max-width: 900px) {
-    #caves-container { flex-direction:column; }
-    #cave-unit-2 { display:none; }
-    #cave-unit-1 { display:flex; }
-  }
-  @media (min-width: 901px) {
-    #cave-mobile-btns { display:none !important; }
+  /* Vue unique — centré */
+  #caves-container.view-single { justify-content:center; }
+  #caves-container.view-single .cave-unit { max-width:480px; width:100%; }
+
+  @media (max-width:900px) {
+    #caves-container { flex-direction:column !important; }
+    #caves-container.view-single .cave-unit { max-width:100%; }
   }
     .cave-selector { flex-wrap: wrap; gap: 8px; }
     .cave-legend { flex-wrap: wrap; gap: 6px; }
@@ -764,12 +755,12 @@
 <!-- ===== 2D CAVE VIEW ===== -->
 <div id="view2d" class="content active">
 
-  <!-- Barre de contrôle -->
-  <div class="cave-selector" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px">
-    <button class="cave-btn active" id="cave-btn-1" onclick="selectCaveView(1,this)">Cave 1</button>
-    <button class="cave-btn" id="cave-btn-2" onclick="selectCaveView(2,this)">Cave 2</button>
-    <button class="cave-btn" id="cave-btn-both" onclick="selectCaveView('both',this)">Les 2 caves</button>
-    <div class="cave-legend" style="margin-left:auto;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+  <!-- Sélecteur + légende -->
+  <div class="cave-selector" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px">
+    <button class="cave-btn active" id="cave-btn-1"    onclick="selectCaveView(1,this)">Cave 1</button>
+    <button class="cave-btn"        id="cave-btn-2"    onclick="selectCaveView(2,this)">Cave 2</button>
+    <button class="cave-btn"        id="cave-btn-both" onclick="selectCaveView('both',this)">Les 2 caves</button>
+    <div class="cave-legend" style="margin-left:auto;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
       <div class="legend-item"><div class="legend-big" style="background:#8a1828"></div><span style="color:#e06878">Rouge</span></div>
       <div class="legend-item"><div class="legend-big" style="background:#a88018"></div><span style="color:#e8c870">Blanc</span></div>
       <div class="legend-item"><div class="legend-big" style="background:#b84068"></div><span style="color:#e8a0b0">Rosé</span></div>
@@ -782,26 +773,22 @@
   </div>
 
   <!-- Caves -->
-  <div id="caves-container" style="display:flex;gap:20px;align-items:flex-start;width:100%">
+  <div id="caves-container" class="view-single" style="display:flex;gap:20px;align-items:flex-end;width:100%">
 
     <!-- Cave 1 -->
-    <div class="cave-unit" id="cave-unit-1" style="flex:1;min-width:0">
+    <div class="cave-unit" id="cave-unit-1" style="flex:1;min-width:0;display:flex">
       <div class="cave-header-panel">
         <div class="cave-header-inner">
-          <div>
-            <div class="cave-title">Cave Réfrigérée &nbsp;<span style="color:var(--cream);font-style:italic">№ 1</span></div>
-            <div class="cave-subtitle" id="cave1-stats">chargement…</div>
-          </div>
+          <div class="cave-title">Cave Réfrigérée &thinsp;№&thinsp;1</div>
           <div class="cave-temp">
-            <span class="cave-temp-icon">❄️</span>
+            <span class="cave-temp-icon">❄</span>
             <div class="cave-temp-display">
               <span class="cave-temp-val">12°C</span>
-              <span class="cave-temp-lbl">Température</span>
             </div>
           </div>
         </div>
       </div>
-      <div class="cave-frame" onclick="focusCave(1)">
+      <div class="cave-frame">
         <div class="cave-glass-reflection"></div>
         <div class="cave-inner-wrap">
           <svg id="caveSvg" style="display:block;width:100%;height:auto"></svg>
@@ -816,20 +803,16 @@
     <div class="cave-unit" id="cave-unit-2" style="flex:1;min-width:0;display:none">
       <div class="cave-header-panel">
         <div class="cave-header-inner">
-          <div>
-            <div class="cave-title">Cave Réfrigérée &nbsp;<span style="color:var(--cream);font-style:italic">№ 2</span></div>
-            <div class="cave-subtitle" id="cave2-stats">chargement…</div>
-          </div>
+          <div class="cave-title">Cave Réfrigérée &thinsp;№&thinsp;2</div>
           <div class="cave-temp">
-            <span class="cave-temp-icon">❄️</span>
+            <span class="cave-temp-icon">❄</span>
             <div class="cave-temp-display">
               <span class="cave-temp-val">12°C</span>
-              <span class="cave-temp-lbl">Température</span>
             </div>
           </div>
         </div>
       </div>
-      <div class="cave-frame" onclick="focusCave(2)">
+      <div class="cave-frame">
         <div class="cave-glass-reflection"></div>
         <div class="cave-inner-wrap">
           <svg id="caveSvg2" style="display:block;width:100%;height:auto"></svg>
@@ -1703,23 +1686,25 @@ function selectCaveView(v, btn) {
   currentCave = (v === 'both') ? 1 : v;
   document.querySelectorAll('.cave-btn').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
-  const u1 = document.getElementById('cave-unit-1');
-  const u2 = document.getElementById('cave-unit-2');
-  if(v === 1)      { u1.style.display='flex'; u2.style.display='none'; }
-  else if(v === 2) { u1.style.display='none'; u2.style.display='flex'; }
-  else             { u1.style.display='flex'; u2.style.display='flex'; }
+  const u1  = document.getElementById('cave-unit-1');
+  const u2  = document.getElementById('cave-unit-2');
+  const ctn = document.getElementById('caves-container');
+  if(v === 1) {
+    u1.style.display='flex'; u2.style.display='none';
+    ctn.className='view-single';
+  } else if(v === 2) {
+    u1.style.display='none'; u2.style.display='flex';
+    ctn.className='view-single';
+  } else {
+    u1.style.display='flex'; u2.style.display='flex';
+    ctn.className='view-both';
+  }
   renderCave2D();
 }
 
-// Compatibilité avec les appels existants à selectCave
 function selectCave(n, btn) { selectCaveView(n, btn); }
 
-function focusCave(n) {
-  currentCave = n;
-  document.querySelectorAll('.cave-frame').forEach(f => f.classList.remove('focused'));
-  const unit = document.getElementById('cave-unit-' + n);
-  if(unit) unit.querySelector('.cave-frame').classList.add('focused');
-}
+function focusCave(n) { currentCave = n; }
 
 // =====================================================================
 // 2D SVG CAVE RENDERER
@@ -1767,93 +1752,87 @@ function renderCaveToSvg(svgId, caveNum) {
   const svg    = document.getElementById(svgId);
   if(!svg) return;
   const floors = CAVE_CONFIG[caveNum].floors;
-  const GAP    = 7; // espace bord-à-bord entre deux cercles consécutifs
+  const GAP    = 6;
 
-  // ── Pré-calcul : positions X de chaque cercle dans une couche ──
-  // On alterne big / small en les centrant bord-à-bord avec GAP constant.
-  // Retourne un tableau [{cx, r, isFront, localIdx}]
   function layerPositions(front, back) {
     const seq = [];
     let f = 0, b = 0;
-    // Intercalage : on alterne tant qu'il reste des deux côtés,
-    // puis on finit avec ce qui reste.
     while(f < front || b < back) {
-      if(f < front)  { seq.push({isFront:true,  li:f});  f++; }
-      if(b < back)   { seq.push({isFront:false, li:b});  b++; }
+      if(f < front) { seq.push({isFront:true,  li:f}); f++; }
+      if(b < back)  { seq.push({isFront:false, li:b}); b++; }
     }
-    // Calcul des X
-    const positions = [];
     let x = 0;
-    seq.forEach((s, i) => {
+    return seq.map((s, i) => {
       const r = s.isFront ? R_BIG : R_SMALL;
       if(i === 0) x = r;
-      else {
-        const rPrev = seq[i-1].isFront ? R_BIG : R_SMALL;
-        x += rPrev + GAP + r;
-      }
-      positions.push({cx: x, r, isFront: s.isFront, li: s.li});
+      else { const rP = seq[i-1].isFront ? R_BIG : R_SMALL; x += rP + GAP + r; }
+      return {cx: x, r, isFront: s.isFront, li: s.li};
     });
-    return positions;
   }
 
-  // ── Largeur max de toutes les couches ─────────────────────
   let maxLayerW = 0;
   floors.forEach(f => {
     const pos = layerPositions(f.front, f.back);
-    if(pos.length) {
-      const last = pos[pos.length-1];
-      const w = last.cx + last.r;
-      if(w > maxLayerW) maxLayerW = w;
-    }
+    if(pos.length) { const last = pos[pos.length-1]; if(last.cx+last.r > maxLayerW) maxLayerW = last.cx+last.r; }
   });
 
-  const layerH    = R_BIG * 2;
-  const floorH    = f => f.double
-    ? layerH + ROW_GAP + layerH + SHELF_H + FLOOR_GAP
-    : layerH + SHELF_H + FLOOR_GAP;
+  const layerH  = R_BIG * 2;
+  const floorH  = f => f.double ? layerH + ROW_GAP + layerH + SHELF_H + FLOOR_GAP : layerH + SHELF_H + FLOOR_GAP;
+  const totalW  = PAD_H + maxLayerW + PAD_H;
+  const totalH  = PAD_V + floors.reduce((s,f) => s + floorH(f), 0) + PAD_V;
 
-  const totalW = PAD_H + maxLayerW + PAD_H;
-  const totalH = PAD_V + floors.reduce((s,f) => s + floorH(f), 0) + PAD_V;
-
-  // SVG responsive : viewBox fixe, width s'adapte au conteneur
+  // Toujours responsive — width 100%, height proportionnelle via viewBox
   svg.setAttribute('viewBox', `0 0 ${totalW} ${totalH}`);
-  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-  // Sur mobile, limiter à la largeur du conteneur
-  const isMobile = window.innerWidth <= 768;
-  if(isMobile) {
-    svg.setAttribute('width', '100%');
-    svg.setAttribute('height', 'auto');
-    svg.style.maxWidth = '100%';
-  } else {
-    svg.setAttribute('width', totalW);
-    svg.setAttribute('height', totalH);
-    svg.style.maxWidth = '';
-  }
+  svg.setAttribute('preserveAspectRatio', 'xMidYMin meet');
+  svg.style.width  = '100%';
+  svg.style.height = 'auto';
+  svg.style.display = 'block';
+  // Stocker la hauteur intrinsèque pour l'alignement bas des 2 caves
+  svg.dataset.intrinsicH = totalH;
+  svg.dataset.intrinsicW = totalW;
+
+  // ID unique par cave pour les defs (évite conflits quand les 2 caves sont affichées)
+  const uid = 'c' + caveNum;
 
   let html = `
     <defs>
-      <filter id="softglow" x="-20%" y="-20%" width="140%" height="140%">
-        <feGaussianBlur stdDeviation="1.8" result="blur"/>
+      <filter id="sg${uid}" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="1.6" result="blur"/>
         <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
-      <!-- Gradient clayette bois clair vernis -->
-      <linearGradient id="woodGrain" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%"   stop-color="#d4a85c"/>
-        <stop offset="25%"  stop-color="#c09040"/>
-        <stop offset="65%"  stop-color="#b8883a"/>
-        <stop offset="100%" stop-color="#a07030"/>
+      <linearGradient id="wood${uid}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#c8a050"/>
+        <stop offset="40%"  stop-color="#b08838"/>
+        <stop offset="100%" stop-color="#9a7028"/>
+      </linearGradient>
+      <linearGradient id="glassFade${uid}" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%"   stop-color="rgba(255,255,255,0.04)"/>
+        <stop offset="50%"  stop-color="rgba(255,255,255,0.00)"/>
+        <stop offset="100%" stop-color="rgba(255,255,255,0.02)"/>
       </linearGradient>
     </defs>
-    <!-- Fond dans les tons du site -->
+    <!-- Fond cave -->
     <rect width="${totalW}" height="${totalH}" fill="#0e0a0b"/>
+    <!-- Reflet vitre -->
+    <rect width="${totalW}" height="${totalH}" fill="url(#glassFade${uid})" style="pointer-events:none"/>
+    <!-- Montants verticaux -->
+    <rect x="0"             y="0" width="${PAD_H-8}" height="${totalH}" fill="#16100f"/>
+    <rect x="${totalW-PAD_H+8}" y="0" width="${PAD_H-8}" height="${totalH}" fill="#16100f"/>
+    <!-- Filet doré montants -->
+    <line x1="${PAD_H-9}" y1="0" x2="${PAD_H-9}" y2="${totalH}" stroke="rgba(201,168,76,0.15)" stroke-width="1"/>
+    <line x1="${totalW-PAD_H+8}" y1="0" x2="${totalW-PAD_H+8}" y2="${totalH}" stroke="rgba(201,168,76,0.15)" stroke-width="1"/>
   `;
 
-  // Montants latéraux dans les tons bordeaux/bois du site
-  const sideH = totalH - PAD_V * 2;
-  html += `<rect x="${PAD_H-14}" y="${PAD_V}" width="8" height="${sideH}" fill="#1a1014" rx="1"/>
-           <rect x="${PAD_H+maxLayerW+6}" y="${PAD_V}" width="8" height="${sideH}" fill="#1a1014" rx="1"/>
-           <rect x="${PAD_H-13}" y="${PAD_V}" width="1" height="${sideH}" fill="rgba(201,168,76,0.08)"/>
-           <rect x="${PAD_H+maxLayerW+12}" y="${PAD_V}" width="1" height="${sideH}" fill="rgba(201,168,76,0.08)"/>`;
+  // Numéros d'étages — côté gauche, centrés sur chaque étage
+  let yLbl = PAD_V;
+  floors.forEach((floor, idx) => {
+    const fH = floorH(floor);
+    const midY = yLbl + fH/2 - FLOOR_GAP/2;
+    const etageNum = idx + 1;
+    html += `<text x="${PAD_H/2-1}" y="${midY+5}" text-anchor="middle" font-size="9"
+      fill="rgba(201,168,76,0.45)" font-family="'Cormorant Garamond',serif">${etageNum}</text>`;
+    yLbl += fH;
+  });
 
   let yTop = PAD_V;
 
@@ -1862,107 +1841,78 @@ function renderCaveToSvg(svgId, caveNum) {
     const fH     = floorH(floor);
     const pos    = layerPositions(floor.front, floor.back);
 
-    // Fond de l'étage
-    html += `<rect x="${PAD_H-6}" y="${yTop-3}"
-      width="${maxLayerW+12}" height="${fH - FLOOR_GAP + 3}"
-      fill="${floor.double ? '#0a0a0c' : '#080809'}" rx="2"/>`;
+    // Fond de l'espace bouteilles
+    html += `<rect x="${PAD_H-4}" y="${yTop-2}" width="${maxLayerW+8}" height="${fH-FLOOR_GAP+2}"
+      fill="${floor.double ? '#0c090b' : '#0a0709'}" rx="1"/>`;
 
     for(let layer = 0; layer < layers; layer++) {
-      const yCenter    = yTop + layer * (layerH + ROW_GAP) + R_BIG;
-      const slotOffset = layer * (floor.front + floor.back);
+      const yCenter    = yTop + layer*(layerH+ROW_GAP) + R_BIG;
+      const slotOffset = layer*(floor.front+floor.back);
 
       pos.forEach(p => {
-        const slot  = slotOffset + (p.isFront ? p.li + 1 : floor.front + p.li + 1);
+        const slot  = slotOffset + (p.isFront ? p.li+1 : floor.front+p.li+1);
         const wine  = getWineAtSlot(caveNum, floor.id, slot);
         const col   = wine ? (WINE_COLORS[wine.type] || WINE_COLORS.empty) : WINE_COLORS.empty;
         const empty = !wine;
-        const isMagnumBottle = !empty && (wine.format === '150cl' || wine.format === '300cl');
+        const isMagnumBottle = !empty && (wine.format==='150cl'||wine.format==='300cl');
         const cx      = PAD_H + p.cx;
         const cy      = yCenter;
-        // Couche supérieure (layer=1) : on inverse cul/goulot pour l'imbrication
-        const isFront = floor.double && layer === 1 ? !p.isFront : p.isFront;
+        const isFront = floor.double && layer===1 ? !p.isFront : p.isFront;
         const r       = isFront ? R_BIG : R_SMALL;
 
-        // Anneau Magnum couleur du type (dessiné AVANT le cercle principal pour rester derrière)
-        if(isMagnumBottle && isFront) {
-          html += `<circle cx="${cx}" cy="${cy}" r="${r+3}"
-            fill="none" stroke="${col.stroke}" stroke-width="2"
-            opacity="0.85" style="pointer-events:none"
-            filter="url(#softglow)"/>`;
-        }
+        if(isMagnumBottle && isFront)
+          html += `<circle cx="${cx}" cy="${cy}" r="${r+3}" fill="none" stroke="${col.stroke}"
+            stroke-width="1.5" opacity="0.7" style="pointer-events:none" filter="url(#sg${uid})"/>`;
 
-        // Cercle principal
         html += `<circle cx="${cx}" cy="${cy}" r="${r}"
           fill="${col.fill}" stroke="${col.stroke}"
-          stroke-width="${empty ? 0.7 : (isFront ? 1.5 : 1.1)}"
-          opacity="${empty ? 0.45 : 1}"
-          ${(!empty) ? 'filter="url(#softglow)"' : ''}
+          stroke-width="${empty?0.6:(isFront?1.4:1)}"
+          opacity="${empty?0.4:1}"
+          ${!empty?`filter="url(#sg${uid})"`:''}
           style="cursor:pointer"
           onclick="handleBottleClick(event,${caveNum},${floor.id},${slot})"
           data-cave="${caveNum}" data-floor="${floor.id}" data-slot="${slot}"/>`;
 
         if(isFront) {
-          // Creux central du cul
-          html += `<circle cx="${cx}" cy="${cy}" r="${r*0.28}"
-            fill="${empty ? '#100a0e' : col.small}"
-            opacity="${empty ? 0.35 : 0.88}"
+          html += `<circle cx="${cx}" cy="${cy}" r="${r*0.27}"
+            fill="${empty?'#100a0e':col.small}" opacity="${empty?0.3:0.85}"
             style="pointer-events:none"/>`;
-          // Reflet
-          if(!empty) {
-            html += `<path d="M ${cx-r*0.52} ${cy-r*0.42} A ${r*0.6} ${r*0.6} 0 0 1 ${cx+r*0.28} ${cy-r*0.68}"
-              stroke="rgba(255,255,255,0.20)" stroke-width="2.2" fill="none" stroke-linecap="round"
+          if(!empty)
+            html += `<path d="M ${cx-r*0.5} ${cy-r*0.4} A ${r*0.6} ${r*0.6} 0 0 1 ${cx+r*0.26} ${cy-r*0.66}"
+              stroke="rgba(255,255,255,0.18)" stroke-width="2" fill="none" stroke-linecap="round"
               style="pointer-events:none"/>`;
-          }
-          // Petite étiquette "M" pour Magnum
-          if(isMagnumBottle) {
-            html += `<text x="${cx}" y="${cy+r*0.55}" text-anchor="middle" font-size="${r*0.55}"
-              fill="${col.stroke}" opacity="0.95" font-family="serif" font-weight="bold"
+          if(isMagnumBottle)
+            html += `<text x="${cx}" y="${cy+r*0.5}" text-anchor="middle" font-size="${r*0.52}"
+              fill="${col.stroke}" opacity="0.9" font-family="serif" font-weight="bold"
               style="pointer-events:none">M</text>`;
-          }
         } else {
-          // Petit reflet sur goulot
-          if(!empty) {
-            html += `<circle cx="${cx-r*0.32}" cy="${cy-r*0.35}" r="${r*0.25}"
-              fill="rgba(255,255,255,0.15)" style="pointer-events:none"/>`;
-          }
+          if(!empty)
+            html += `<circle cx="${cx-r*0.3}" cy="${cy-r*0.33}" r="${r*0.22}"
+              fill="rgba(255,255,255,0.13)" style="pointer-events:none"/>`;
         }
       });
     }
 
     // Clayette bois clair vernis
     const shelfY = yTop + fH - FLOOR_GAP - SHELF_H;
-    // Corps de la clayette — bois clair chêne
-    html += `<rect x="${PAD_H-10}" y="${shelfY}" width="${maxLayerW+20}" height="${SHELF_H+2}"
-      fill="url(#woodGrain)" rx="1"/>`;
-    // Reflet vernis
-    html += `<rect x="${PAD_H-10}" y="${shelfY}" width="${maxLayerW+20}" height="2"
-      fill="rgba(255,240,200,0.18)" rx="1"/>`;
-    // Ombre portée sous la clayette
-    html += `<rect x="${PAD_H-10}" y="${shelfY+SHELF_H+2}" width="${maxLayerW+20}" height="4"
-      fill="rgba(0,0,0,0.55)" rx="1"/>`;
-    // Label étage sur la clayette
-    html += `<text x="${PAD_H-2}" y="${shelfY-3}" font-size="7" fill="rgba(180,160,100,0.5)"
-      font-family="'Cormorant Garamond',serif" letter-spacing="1">${floor.label}</text>`;
-
-    // Séparateur couche double
-    if(floor.double) {
-      const midY = yTop + layerH + ROW_GAP * 0.5;
-      html += `<line x1="${PAD_H}" y1="${midY}" x2="${PAD_H+maxLayerW}" y2="${midY}"
-        stroke="#1e1018" stroke-width="0.5" stroke-dasharray="4,7"/>`;
-    }
+    html += `<rect x="${PAD_H-8}" y="${shelfY}" width="${maxLayerW+16}" height="${SHELF_H+2}"
+      fill="url(#wood${uid})" rx="1"/>`;
+    html += `<rect x="${PAD_H-8}" y="${shelfY}" width="${maxLayerW+16}" height="1.5"
+      fill="rgba(255,240,190,0.22)" rx="1" style="pointer-events:none"/>`;
+    html += `<rect x="${PAD_H-8}" y="${shelfY+SHELF_H+2}" width="${maxLayerW+16}" height="3"
+      fill="rgba(0,0,0,0.5)" rx="1" style="pointer-events:none"/>`;
 
     yTop += fH;
   });
 
   svg.innerHTML = html;
 
-  // Mise à jour stats dans le header de la cave
+  // Stats dans le header
   const count = wineData.filter(w=>w.cave==caveNum).length;
-  const cap = CAVE_CONFIG[caveNum].floors.reduce((s,f)=>s+f.slots,0);
+  const cap   = CAVE_CONFIG[caveNum].floors.reduce((s,f)=>s+f.slots,0);
   const statsEl = document.getElementById('cave'+caveNum+'-stats');
-  if(statsEl) statsEl.textContent = count + ' / ' + cap + ' bouteilles';
+  if(statsEl) statsEl.textContent = count + ' / ' + cap + ' bouteilles';
 
-  // ── Tooltip au survol ────────────────────────────────────
   // Tooltip
   svg.querySelectorAll('circle[data-cave]').forEach(el => {
     el.addEventListener('mouseenter', (e) => {
@@ -1973,37 +1923,34 @@ function renderCaveToSvg(svgId, caveNum) {
       const tt    = document.getElementById('tooltip');
       const floorData = CAVE_CONFIG[cave].floors.find(f=>f.id===floor);
       if(wine) {
-        document.getElementById('tt-name').innerHTML = wine.nom + (wine.annee ? ` <span style="color:var(--text2);font-size:0.82rem;font-weight:normal">${wine.annee}</span>` : '');
+        document.getElementById('tt-name').innerHTML = wine.nom + (wine.annee ? ` <span style="color:var(--text2);font-size:0.82rem">${wine.annee}</span>` : '');
         document.getElementById('tt-info').innerHTML =
           `<span class="type-badge badge-${wine.type}" style="font-size:0.7rem">${TYPE_LABELS[wine.type]||wine.type}</span>
-          ${wine.domaine ? `<br><i style="color:var(--cream)">${wine.domaine}</i>` : ''}
+          ${wine.domaine?`<br><i style="color:var(--cream)">${wine.domaine}</i>`:''}
           <br>${wine.region||'—'}
-          ${wine.prix ? `<br>${wine.prix} €` : ''}
-          ${wine.note ? `<br>${'★'.repeat(parseInt(wine.note))}` : ''}
-          <br><small style="color:#4a3840">Ét.${floor} · #${slot}</small>`;
+          ${wine.prix?`<br>${wine.prix} €`:''}
+          ${wine.note?`<br>${'★'.repeat(parseInt(wine.note))}`:''}
+          <br><small style="color:#4a3840">Ét.${floor}·#${slot}</small>`;
         const imgWrap = document.getElementById('tt-img-wrap');
         const imgEl   = document.getElementById('tt-img');
-        const _mbImg = imgGet('wine_' + wine.id) || wine.image || '';
-  if(_mbImg) { imgEl.src = _mbImg; imgWrap.style.display = 'block'; }
-        else { imgWrap.style.display = 'none'; }
+        const img = imgGet('wine_'+wine.id)||wine.image||'';
+        if(img){imgEl.src=img;imgWrap.style.display='block';}
+        else imgWrap.style.display='none';
       } else {
-        document.getElementById('tt-img-wrap').style.display = 'none';
-        document.getElementById('tt-name').innerHTML = '<span class="tt-empty">Emplacement vide</span>';
-        document.getElementById('tt-info').innerHTML =
-          `${floorData?.label} · #${slot}<br><small style="color:#5a4050">Cliquer pour ajouter</small>`;
+        document.getElementById('tt-img-wrap').style.display='none';
+        document.getElementById('tt-name').innerHTML='<span class="tt-empty">Emplacement vide</span>';
+        document.getElementById('tt-info').innerHTML=`Étage ${floor}·#${slot}<br><small style="color:#5a4050">Cliquer pour ajouter</small>`;
       }
-      tt.style.display = 'block';
-      tt.style.left = (e.clientX + 16) + 'px';
-      tt.style.top  = (e.clientY - 12) + 'px';
+      tt.style.display='block';
+      tt.style.left=(e.clientX+16)+'px';
+      tt.style.top=(e.clientY-12)+'px';
     });
-    el.addEventListener('mousemove', (e) => {
-      const tt = document.getElementById('tooltip');
-      tt.style.left = (e.clientX + 16) + 'px';
-      tt.style.top  = (e.clientY - 12) + 'px';
+    el.addEventListener('mousemove', e => {
+      const tt=document.getElementById('tooltip');
+      tt.style.left=(e.clientX+16)+'px';
+      tt.style.top=(e.clientY-12)+'px';
     });
-    el.addEventListener('mouseleave', () => {
-      document.getElementById('tooltip').style.display = 'none';
-    });
+    el.addEventListener('mouseleave', () => { document.getElementById('tooltip').style.display='none'; });
   });
 }
 
