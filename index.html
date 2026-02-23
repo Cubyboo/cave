@@ -532,89 +532,85 @@
     /* Cartes à la place du tableau */
     .wine-table { display: none; }
     .wine-cards { display: flex; }
-    /* ── Caves réfrigérées ─────────────────────────────────────── */
-  .cave-unit { display:flex; flex-direction:column; }
+    /* ── Caves de vieillissement vitrées ───────────────────────── */
 
-  /* Bandeau température */
+  /* Conteneur centré en vue unique */
+  #caves-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  /* Unité cave — colonne unique, largeur fixe sur PC */
+  .cave-unit {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 520px;
+  }
+
+  /* Bandeau température — intégré AU-DESSUS dans le cadre de la cave */
   .cave-header-panel {
     background: var(--bg2);
     border: 1px solid var(--border2);
     border-bottom: none;
     border-radius: var(--radius) var(--radius) 0 0;
-    padding: 10px 16px;
-  }
-  .cave-header-inner { display:flex; align-items:center; justify-content:space-between; }
-  .cave-title {
-    font-family:'Playfair Display',serif; font-size:0.85rem;
-    color:var(--gold); letter-spacing:2px; text-transform:uppercase;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
-  /* Thermostat */
+  /* Numéro de cave discret */
+  .cave-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.75rem;
+    color: var(--text3);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* Thermostat style afficheur numérique */
   .cave-temp {
-    display:flex; align-items:center; gap:8px;
-    background:var(--bg3); border:1px solid var(--border);
-    border-radius:var(--radius-sm); padding:5px 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
-  .cave-temp-display { display:flex; flex-direction:column; align-items:flex-end; }
   .cave-temp-val {
-    font-family:'Playfair Display',serif; font-size:1.3rem;
-    color:#a8d8ea; line-height:1; letter-spacing:1px;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: #a8d8ea;
+    letter-spacing: 1px;
+    line-height: 1;
   }
-  .cave-temp-icon { font-size:1rem; opacity:0.65; }
+  .cave-temp-icon { font-size: 0.85rem; opacity: 0.55; }
 
-  /* Cadre cave */
+  /* Cadre cave vitré — s'intègre dans la palette bordeaux/noir du site */
   .cave-frame {
-    position:relative;
-    background:var(--bg);
-    border:1px solid var(--border2);
-    border-top:none;
-    border-radius:0 0 var(--radius) var(--radius);
-    overflow:hidden;
-    box-shadow: var(--shadow), inset 0 0 60px rgba(0,0,0,0.35);
-    transition: border-color 0.25s;
+    position: relative;
+    border: 1px solid var(--border2);
+    border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    background: var(--bg);
   }
-  .cave-frame:hover { border-color:rgba(201,168,76,0.4); }
-  .cave-frame.focused { border-color:var(--gold); }
 
-  /* Reflet vitre */
+  /* Voile vitré sur la cave */
   .cave-glass-reflection {
-    position:absolute; top:0; left:0; right:0; height:35%; z-index:10;
-    background: linear-gradient(180deg, rgba(201,168,76,0.02) 0%, transparent 100%);
-    pointer-events:none;
+    position: absolute; inset: 0; z-index: 10; pointer-events: none;
+    background: linear-gradient(
+      135deg,
+      rgba(255,255,255,0.03) 0%,
+      transparent 50%,
+      rgba(0,0,0,0.08) 100%
+    );
   }
 
-  /* Montants */
-  .cave-side {
-    position:absolute; top:0; bottom:0; width:8px; z-index:5;
-    background: var(--bg3);
-    pointer-events:none;
-  }
-  .cave-side-left  { left:0;  border-right:1px solid var(--border2); }
-  .cave-side-right { right:0; border-left: 1px solid var(--border2); }
+  .cave-inner-wrap { padding: 0; }
 
-  /* Poignée */
-  .cave-handle {
-    position:absolute; top:50%; left:4px; transform:translateY(-50%);
-    width:2px; height:40px; z-index:6;
-    background: linear-gradient(180deg, transparent, rgba(201,168,76,0.4), transparent);
-    border-radius:2px;
-    pointer-events:none;
-  }
-  .cave-handle-right { left:auto; right:4px; }
-
-  .cave-inner-wrap { padding:0; }
-
-  /* Les 2 caves — alignement bas */
-  #caves-container.view-both { align-items:flex-end; }
-  #caves-container.view-both .cave-unit { justify-content:flex-end; }
-
-  /* Vue unique — centré */
-  #caves-container.view-single { justify-content:center; }
-  #caves-container.view-single .cave-unit { max-width:480px; width:100%; }
-
-  @media (max-width:900px) {
-    #caves-container { flex-direction:column !important; }
-    #caves-container.view-single .cave-unit { max-width:100%; }
+  @media (max-width: 768px) {
+    .cave-unit { max-width: 100%; }
   }
     .cave-selector { flex-wrap: wrap; gap: 8px; }
     .cave-legend { flex-wrap: wrap; gap: 6px; }
@@ -756,10 +752,9 @@
 <div id="view2d" class="content active">
 
   <!-- Sélecteur + légende -->
-  <div class="cave-selector" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px">
-    <button class="cave-btn active" id="cave-btn-1"    onclick="selectCaveView(1,this)">Cave 1</button>
-    <button class="cave-btn"        id="cave-btn-2"    onclick="selectCaveView(2,this)">Cave 2</button>
-    <button class="cave-btn"        id="cave-btn-both" onclick="selectCaveView('both',this)">Les 2 caves</button>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px">
+    <button class="cave-btn active" id="cave-btn-1" onclick="selectCaveView(1,this)">Cave 1</button>
+    <button class="cave-btn"        id="cave-btn-2" onclick="selectCaveView(2,this)">Cave 2</button>
     <div class="cave-legend" style="margin-left:auto;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
       <div class="legend-item"><div class="legend-big" style="background:#8a1828"></div><span style="color:#e06878">Rouge</span></div>
       <div class="legend-item"><div class="legend-big" style="background:#a88018"></div><span style="color:#e8c870">Blanc</span></div>
@@ -772,20 +767,16 @@
     </div>
   </div>
 
-  <!-- Caves -->
-  <div id="caves-container" class="view-single" style="display:flex;gap:20px;align-items:flex-end;width:100%">
+  <!-- Caves — centrées -->
+  <div id="caves-container">
 
     <!-- Cave 1 -->
-    <div class="cave-unit" id="cave-unit-1" style="flex:1;min-width:0;display:flex">
+    <div class="cave-unit" id="cave-unit-1">
       <div class="cave-header-panel">
-        <div class="cave-header-inner">
-          <div class="cave-title">Cave Réfrigérée &thinsp;№&thinsp;1</div>
-          <div class="cave-temp">
-            <span class="cave-temp-icon">❄</span>
-            <div class="cave-temp-display">
-              <span class="cave-temp-val">12°C</span>
-            </div>
-          </div>
+        <span class="cave-num">Cave de vieillissement &thinsp;№&thinsp;1</span>
+        <div class="cave-temp">
+          <span class="cave-temp-icon">❄</span>
+          <span class="cave-temp-val">12°C</span>
         </div>
       </div>
       <div class="cave-frame">
@@ -793,23 +784,16 @@
         <div class="cave-inner-wrap">
           <svg id="caveSvg" style="display:block;width:100%;height:auto"></svg>
         </div>
-        <div class="cave-side cave-side-left"></div>
-        <div class="cave-side cave-side-right"></div>
-        <div class="cave-handle"></div>
       </div>
     </div>
 
     <!-- Cave 2 -->
-    <div class="cave-unit" id="cave-unit-2" style="flex:1;min-width:0;display:none">
+    <div class="cave-unit" id="cave-unit-2" style="display:none">
       <div class="cave-header-panel">
-        <div class="cave-header-inner">
-          <div class="cave-title">Cave Réfrigérée &thinsp;№&thinsp;2</div>
-          <div class="cave-temp">
-            <span class="cave-temp-icon">❄</span>
-            <div class="cave-temp-display">
-              <span class="cave-temp-val">12°C</span>
-            </div>
-          </div>
+        <span class="cave-num">Cave de vieillissement &thinsp;№&thinsp;2</span>
+        <div class="cave-temp">
+          <span class="cave-temp-icon">❄</span>
+          <span class="cave-temp-val">12°C</span>
         </div>
       </div>
       <div class="cave-frame">
@@ -817,9 +801,6 @@
         <div class="cave-inner-wrap">
           <svg id="caveSvg2" style="display:block;width:100%;height:auto"></svg>
         </div>
-        <div class="cave-side cave-side-left"></div>
-        <div class="cave-side cave-side-right"></div>
-        <div class="cave-handle cave-handle-right"></div>
       </div>
     </div>
 
@@ -1679,26 +1660,15 @@ window.addEventListener('load', function() {
   } catch(e) {}
 });
 
-let caveView = 1; // 1, 2, ou 'both'
+let caveView = 1; // 1 ou 2
 
 function selectCaveView(v, btn) {
   caveView = v;
-  currentCave = (v === 'both') ? 1 : v;
+  currentCave = v;
   document.querySelectorAll('.cave-btn').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
-  const u1  = document.getElementById('cave-unit-1');
-  const u2  = document.getElementById('cave-unit-2');
-  const ctn = document.getElementById('caves-container');
-  if(v === 1) {
-    u1.style.display='flex'; u2.style.display='none';
-    ctn.className='view-single';
-  } else if(v === 2) {
-    u1.style.display='none'; u2.style.display='flex';
-    ctn.className='view-single';
-  } else {
-    u1.style.display='flex'; u2.style.display='flex';
-    ctn.className='view-both';
-  }
+  document.getElementById('cave-unit-1').style.display = v === 1 ? 'flex' : 'none';
+  document.getElementById('cave-unit-2').style.display = v === 2 ? 'flex' : 'none';
   renderCave2D();
 }
 
@@ -1954,11 +1924,11 @@ function renderCaveToSvg(svgId, caveNum) {
   });
 }
 
-// renderCave2D — appelle renderCaveToSvg selon la vue active
+// renderCave2D
 function renderCave2D() {
   const v = typeof caveView !== 'undefined' ? caveView : 1;
-  if(v === 1 || v === 'both') renderCaveToSvg('caveSvg', 1);
-  if(v === 2 || v === 'both') renderCaveToSvg('caveSvg2', 2);
+  if(v === 1) renderCaveToSvg('caveSvg',  1);
+  if(v === 2) renderCaveToSvg('caveSvg2', 2);
 }
 
 // =====================================================================
