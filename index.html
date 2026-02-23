@@ -615,7 +615,7 @@
 </div>
 
 <header>
-  <div class="logo"><span style="font-style:normal;font-size:1.6rem">🍷️</span> Cave à Vin MMM<div class="logo-dot"></div></div>
+  <div class="logo"><span style="font-style:normal;font-size:1.6rem">🗺️</span> Cave à Vin<div class="logo-dot"></div></div>
   <div class="stats-bar">
     <div class="stat-item"><b id="hdr-total">0</b>bouteilles</div>
     <div class="stat-item"><b id="hdr-c1">0</b>cave 1</div>
@@ -628,7 +628,7 @@
 <div class="search-results-panel" id="search-panel" style="display:none"></div>
 
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('view2d',this)"><span class="tab-icon">️🗺</span><span class="tab-label">Cave</span></div>
+  <div class="tab active" onclick="switchTab('view2d',this)"><span class="tab-icon">🗺️</span><span class="tab-label">Cave</span></div>
   <div class="tab" onclick="switchTab('list',this)"><span class="tab-icon">📋</span><span class="tab-label">Liste</span></div>
   <div class="tab" onclick="switchTab('historique',this)"><span class="tab-icon">🥂</span><span class="tab-label">Dégustation</span></div>
   <div class="tab" onclick="switchTab('carte',this)"><span class="tab-icon">🌍</span><span class="tab-label">Carte</span></div>
@@ -4930,25 +4930,21 @@ function renderCarte() {
     const typeCount = {};
     wines.forEach(w => { typeCount[w.type] = (typeCount[w.type]||0)+1; });
     const domType = Object.entries(typeCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'rouge';
-    const color = hasWines ? (TYPE_COLORS_CARTE[domType] || '#9e2a3f') : 'rgba(255,255,255,0.18)';
-    const borderColor = hasWines ? color : 'rgba(255,255,255,0.35)';
     const radius = hasWines ? Math.max(10, Math.min(22, 10 + wines.length * 0.8)) : 7;
-    const opacity = hasWines ? 0.88 : 0.45;
 
     const icon = L.divIcon({
       className: '',
       html: `<div style="
         width:${radius*2}px;height:${radius*2}px;
         border-radius:50%;
-        background:${color};
-        border:2px solid ${borderColor};
-        box-shadow:0 2px 8px rgba(0,0,0,0.6);
+        background:${hasWines ? 'rgba(110,40,180,0.45)' : 'rgba(110,40,180,0.15)'};
+        border:2px solid ${hasWines ? 'rgba(160,80,220,0.80)' : 'rgba(130,60,200,0.35)'};
+        box-shadow:0 2px 10px rgba(80,20,140,0.40);
         display:flex;align-items:center;justify-content:center;
         font-size:${radius > 12 ? '11' : '9'}px;
         font-weight:bold;color:rgba(255,255,255,0.95);
-        opacity:${opacity};
         cursor:pointer;
-        transition:transform 0.15s ease;
+        transition:transform 0.15s ease, background 0.2s ease;
       ">${hasWines ? wines.length : ''}</div>`,
       iconSize: [radius*2, radius*2],
       iconAnchor: [radius, radius],
@@ -5051,9 +5047,9 @@ function geoCentroid(geometry) {
 function addAppelLabel(group, lat, lng, nom, type) {
   const S = {
     zone: { dot:false, r:0,   stroke:'',        fill:'',        txtColor:'#4a8c5c', bg:'rgba(0,0,0,0.0)',    size:'0.60rem', weight:'800', italic:false, upper:true  },
-    aoc:  { dot:true,  r:5,   stroke:'#5a1090', fill:'#8030c0', txtColor:'#3a7a4e', bg:'rgba(0,0,0,0.0)',    size:'0.65rem', weight:'700', italic:false, upper:false },
-    cru:  { dot:true,  r:3.5, stroke:'#3a0868', fill:'#6010a8', txtColor:'#5a9a6e', bg:'rgba(0,0,0,0.0)',    size:'0.60rem', weight:'600', italic:true,  upper:false },
-  }[type] || { dot:true, r:4, stroke:'#5a1090', fill:'#8030c0', txtColor:'#3a7a4e', bg:'rgba(0,0,0,0.0)', size:'0.62rem', weight:'600', italic:false, upper:false };
+    aoc:  { dot:true,  r:5,   stroke:'#6b1020', fill:'#9b2030', txtColor:'#3a7a4e', bg:'rgba(0,0,0,0.0)',    size:'0.65rem', weight:'700', italic:false, upper:false },
+    cru:  { dot:true,  r:3.5, stroke:'#3a0868', fill:'#6a18b0', txtColor:'#5a9a6e', bg:'rgba(0,0,0,0.0)',    size:'0.60rem', weight:'600', italic:true,  upper:false },
+  }[type] || { dot:true, r:4, stroke:'#6b1020', fill:'#9b2030', txtColor:'#3a7a4e', bg:'rgba(0,0,0,0.0)', size:'0.62rem', weight:'600', italic:false, upper:false };
 
   if (S.dot) {
     const dot = L.circleMarker([lat, lng], {
@@ -5926,7 +5922,6 @@ function refreshCarteMarkers() {
     const typeCount = {};
     wines.forEach(w => { typeCount[w.type] = (typeCount[w.type]||0)+1; });
     const domType = Object.entries(typeCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'rouge';
-    const color = wines.length > 0 ? (TYPE_COLORS_CARTE[domType] || '#9e2a3f') : 'rgba(255,255,255,0.18)';
     const radius = wines.length > 0 ? Math.max(10, Math.min(22, 10 + wines.length * 0.8)) : 7;
     const r = isSel ? radius + 4 : radius;
     const newIcon = L.divIcon({
@@ -5934,13 +5929,12 @@ function refreshCarteMarkers() {
       html: `<div style="
         width:${r*2}px;height:${r*2}px;
         border-radius:50%;
-        background:${color};
-        border:${isSel ? '3px solid white' : '2px solid ' + color};
-        box-shadow:${isSel ? '0 0 12px '+color : '0 2px 8px rgba(0,0,0,0.6)'};
+        background:${isSel ? 'rgba(160,80,240,0.70)' : wines.length > 0 ? 'rgba(110,40,180,0.45)' : 'rgba(110,40,180,0.15)'};
+        border:${isSel ? '3px solid rgba(220,180,255,0.95)' : wines.length > 0 ? '2px solid rgba(160,80,220,0.80)' : '2px solid rgba(130,60,200,0.35)'};
+        box-shadow:${isSel ? '0 0 14px rgba(160,80,240,0.70)' : '0 2px 10px rgba(80,20,140,0.40)'};
         display:flex;align-items:center;justify-content:center;
         font-size:${r > 12 ? '11' : '9'}px;
         font-weight:bold;color:rgba(255,255,255,0.95);
-        opacity:${wines.length > 0 ? 0.95 : 0.45};
         cursor:pointer;
       ">${wines.length > 0 ? wines.length : ''}</div>`,
       iconSize: [r*2, r*2],
