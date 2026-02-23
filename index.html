@@ -1509,8 +1509,14 @@ function setSyncIndicator(state) {
 // ── File d'attente pour les sauvegardes échouées ──────────────────────
 let _pendingSave = false;
 let _saveDebounceTimer = null;
+// Horodatage de la dernière modification locale — pour détecter les conflits avec le Sheet
+let _localDataTs = parseInt(localStorage.getItem('_localDataTs') || '0');
 
+// ── saveData : persiste localement + déclenche sync Sheet après debounce ─────
 function saveData() {
+  // Horodater la modification locale
+  _localDataTs = Date.now();
+  localStorage.setItem('_localDataTs', String(_localDataTs));
   localStorage.setItem('caveData', JSON.stringify(wineData));
   updateHeader();
   // Debounce : n'envoyer qu'une seule fois après 1.5s d'inactivité
@@ -1518,27 +1524,53 @@ function saveData() {
   _saveDebounceTimer = setTimeout(() => _doSyncToSheets(), 1500);
 }
 
+// ── _doSyncToSheets : envoie l'état complet de wineData vers Google Sheets ───
 function _doSyncToSheets() {
   setSyncIndicator('saving');
   _pendingSave = true;
+  // Inclure l'horodatage pour que le Sheet sache quelle version est la plus récente
   fetch(SCRIPT_URL, {
     method: 'POST',
-    body: JSON.stringify({ action: 'save', data: wineData })
+    body: JSON.stringify({ action: 'save', data: wineData, clientTs: _localDataTs })
   })
   .then(r => {
     if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.text();
+  })
+  .then(() => {
     _pendingSave = false;
     setSyncIndicator('ok');
   })
   .catch(e => {
     console.warn('Sync Google Sheets échouée', e);
+    _pendingSave = false;
     setSyncIndicator('error');
     showNotif('⚠ Sauvegarde non synchronisée — sera retentée à la prochaine connexion', true);
-    // Stocker un flag pour retenter au prochain chargement
     localStorage.setItem('_pendingSync', '1');
   });
 }
 
+// ── Normaliser les noms de champs Sheet → camelCase JS ───────────────────────
+// Google Sheets peut renvoyer les colonnes en camelCase ou snake_case selon la version
+// Cette fonction unifie les deux formes pour éviter les champs manquants après rechargement
+function _normalizeWineFields(w) {
+  const n = Object.assign({}, w);
+  // apogeeDebut / apogee_debut → toujours apogeeDebut
+  if(n.apogee_debut !== undefined && n.apogeeDebut === undefined) { n.apogeeDebut = n.apogee_debut; delete n.apogee_debut; }
+  if(n.apogee_fin !== undefined && n.apogeeFin === undefined)     { n.apogeeFin   = n.apogee_fin;   delete n.apogee_fin;   }
+  // dateAjout / date_ajout
+  if(n.date_ajout !== undefined && n.dateAjout === undefined)     { n.dateAjout   = n.date_ajout;   delete n.date_ajout;   }
+  // S'assurer que l'ID est toujours une string non vide
+  if(n.id !== undefined) n.id = String(n.id).trim();
+  return n;
+}
+
+// ── loadFromSheets : récupère le Sheet et fusionne intelligemment ─────────────
+// Stratégie "client gagne si plus récent" :
+//   • Si un save est en attente (debounce actif ou fetch en cours), ne PAS écraser wineData
+//   • Sinon, le Sheet fait autorité SAUF pour les images (toujours résolues par ID)
+//   • Les positions cave/floor/slot du Sheet remplacent toujours localStorage
+//     → garantit que les déplacements effectués sur un autre appareil sont bien pris en compte
 function loadFromSheets() {
   // Afficher le spinner de synchronisation
   const overlay = document.getElementById('sync-loading-overlay');
@@ -1552,70 +1584,94 @@ function loadFromSheets() {
     const s = document.getElementById('jsonp-script');
     if(s) s.remove();
   }, 8000);
-  window[cbName] = function(data) {
+  window[cbName] = function(sheetData) {
     clearTimeout(timeout);
     if(overlay) overlay.classList.add('hidden');
     try {
-      if(Array.isArray(data) && data.length > 0) {
-        // Récupérer les images depuis imageStore (par ID) et localStorage (par ID ou cave_floor_slot)
+      if(Array.isArray(sheetData) && sheetData.length > 0) {
+
+        // ── GUARD : Si un save local est en attente, le client est plus récent ───
+        // Ne pas écraser les positions fraîchement modifiées avec une version périmée du Sheet
+        if(_pendingSave || _saveDebounceTimer) {
+          showNotif('Sync ignorée — sauvegarde locale en attente ✓');
+          loadHistoriqueFromSheets();
+          return;
+        }
+
+        // ── Images : résolution par ID (priorité absolue) ─────────────────────
+        // IMPORTANT : on n'utilise PLUS localImageBySlot pour les vins (slot a pu changer)
+        // On résout uniquement par wine_<id> pour éviter les confusions après déplacement
         const localData = JSON.parse(localStorage.getItem('caveData') || '[]');
         const localImageById = {};
-        const localImageBySlot = {};
         localData.forEach(w => {
-          if(w.image) {
-            if(w.id) localImageById[String(w.id)] = w.image;
-            const key = `${w.cave}_${w.floor}_${w.slot}`;
-            localImageBySlot[key] = w.image;
+          if(w.id && (w.image || imgGet('wine_' + String(w.id)))) {
+            localImageById[String(w.id)] = imgGet('wine_' + String(w.id)) || w.image || '';
           }
         });
-        // Récupérer les prix marché depuis localStorage (non stockés dans Sheet si nouveaux)
+
+        // ── Prix marché : préservés depuis localStorage par ID ────────────────
         const localPrixMarche = {};
         localData.forEach(w => {
           if(w.id && (w.prix_marche || w.prix_marche_manuel)) {
             localPrixMarche[String(w.id)] = {
-              prix_marche:          w.prix_marche,
-              prix_marche_manuel:   w.prix_marche_manuel,
-              prix_marche_min:      w.prix_marche_min,
-              prix_marche_max:      w.prix_marche_max,
-              prix_marche_tendance: w.prix_marche_tendance,
-              prix_marche_date:     w.prix_marche_date
+              prix_marche:          w.prix_marche          || '',
+              prix_marche_manuel:   w.prix_marche_manuel   || '',
+              prix_marche_min:      w.prix_marche_min      || '',
+              prix_marche_max:      w.prix_marche_max      || '',
+              prix_marche_tendance: w.prix_marche_tendance || '',
+              prix_marche_date:     w.prix_marche_date     || ''
             };
           }
         });
-        wineData = data.map(w => {
+
+        // ── Construire wineData depuis Sheet (source de vérité pour cave/floor/slot) ──
+        wineData = sheetData.map(raw => {
+          const w   = _normalizeWineFields(raw);
           const cave  = parseInt(w.cave)  || 1;
           const floor = parseInt(w.floor) || 1;
           const slot  = parseInt(w.slot)  || 1;
-          const key   = `${cave}_${floor}_${slot}`;
           const id    = String(w.id || '');
-          const resolvedImage = imgGet('wine_' + id) || w.image || localImageById[id] || localImageBySlot[key] || '';
+
+          // Image : ID d'abord (imageStore), puis champ du Sheet, jamais par slot
+          const resolvedImage = (id ? imgGet('wine_' + id) : '') || w.image || (id ? localImageById[id] : '') || '';
           if(resolvedImage && id) imgSave('wine_' + id, resolvedImage);
-          // Préserver prix marché depuis Sheet OU localStorage
-          const pm = localPrixMarche[id] || {};
+
+          const pm = (id ? localPrixMarche[id] : null) || {};
           return {
             ...w,
             cave,
             floor,
             slot,
-            annee: parseInt(w.annee) || '',
-            prix:  parseFloat(w.prix) || '',
-            note:  w.note || '',
-            image: resolvedImage,
-            _prixEstime: parseFloat(w.prix_marche || w._prixEstime || pm.prix_marche || '') || ''
+            annee:  parseInt(w.annee)  || '',
+            prix:   parseFloat(w.prix) || '',
+            note:   w.note || '',
+            image:  resolvedImage,
+            _prixEstime: parseFloat(w.prix_marche || w._prixEstime || pm.prix_marche || '') || '',
+            // Préserver les prix marché détaillés depuis localStorage si absents du Sheet
+            prix_marche:          w.prix_marche          || pm.prix_marche          || '',
+            prix_marche_manuel:   w.prix_marche_manuel   || pm.prix_marche_manuel   || '',
+            prix_marche_min:      w.prix_marche_min      || pm.prix_marche_min      || '',
+            prix_marche_max:      w.prix_marche_max      || pm.prix_marche_max      || '',
+            prix_marche_tendance: w.prix_marche_tendance || pm.prix_marche_tendance || '',
+            prix_marche_date:     w.prix_marche_date     || pm.prix_marche_date     || ''
           };
         });
+
+        // Mettre à jour l'horodatage local pour correspondre à ce que le Sheet a
+        _localDataTs = Date.now();
+        localStorage.setItem('_localDataTs', String(_localDataTs));
         localStorage.setItem('caveData', JSON.stringify(wineData));
         updateHeader();
         renderCave2D();
         showNotif('Cave synchronisée ✓');
         loadHistoriqueFromSheets();
-        // Estimation automatique des vins sans prix marché (en arrière-plan)
         setTimeout(() => estimerTousLesVinsAuto(), 2000);
       } else {
         showNotif('Sheet vide — données locales conservées');
       }
     } catch(e) {
-      showNotif('Erreur de données', true);
+      console.error('loadFromSheets error:', e);
+      showNotif('Erreur de données — données locales conservées', true);
     } finally {
       delete window[cbName];
       const s = document.getElementById('jsonp-script');
@@ -2333,6 +2389,17 @@ function renderCave2D() {
           dstWine.cave  = _drag.cave;
           dstWine.floor = _drag.floor;
           dstWine.slot  = _drag.slot;
+          // Réindexer l'image de l'occupant échangé par son ID
+          if(dstWine.id) {
+            const _img = imgGet('wine_' + String(dstWine.id)) || dstWine.image || '';
+            if(_img) imgSave('wine_' + String(dstWine.id), _img);
+          }
+        }
+
+        // Réindexer l'image du vin déplacé par son ID (pas par slot)
+        if(srcWine.id) {
+          const _img = imgGet('wine_' + String(srcWine.id)) || srcWine.image || '';
+          if(_img) imgSave('wine_' + String(srcWine.id), _img);
         }
 
         saveData();
@@ -4644,22 +4711,37 @@ function confirmerDeplacement() {
   const newSlot  = parseInt(document.getElementById('dep-slot').value);
   if(!newSlot) { showNotif('Choisissez un emplacement', true); return; }
 
+  // Sauvegarder les positions avant déplacement pour le log
+  const oldPos = `Cave ${wine.cave} Ét.${wine.floor} #${wine.slot}`;
+
   // Vérifier si emplacement occupé → échange
   const occupant = getWineAtSlot(newCave, newFloor, newSlot);
   if(occupant && String(occupant.id) !== String(wine.id)) {
     // Échange : mettre l'occupant à l'ancienne place du vin déplacé
-    occupant.cave  = wine.cave;
-    occupant.floor = wine.floor;
-    occupant.slot  = wine.slot;
+    const oldCave = wine.cave, oldFloor = wine.floor, oldSlot = wine.slot;
+    occupant.cave  = oldCave;
+    occupant.floor = oldFloor;
+    occupant.slot  = oldSlot;
+    // Réassurer que les images sont bien indexées par ID (pas par slot) après l'échange
+    if(occupant.id) {
+      const imgOcc = imgGet('wine_' + String(occupant.id)) || occupant.image || '';
+      if(imgOcc) imgSave('wine_' + String(occupant.id), imgOcc);
+    }
     showNotif('Échange effectué : ' + (occupant.nom||'vin') + ' ↔ ' + (wine.nom||'vin') + ' ✓');
   } else {
-    showNotif('Bouteille déplacée ✓');
+    showNotif('Bouteille déplacée : ' + (wine.nom||'vin') + ' ' + oldPos + ' → Cave ' + newCave + ' Ét.' + newFloor + ' #' + newSlot + ' ✓');
   }
 
   // Déplacer le vin
   wine.cave  = newCave;
   wine.floor = newFloor;
   wine.slot  = newSlot;
+
+  // Réassurer que l'image du vin déplacé est bien indexée par son ID
+  if(wine.id) {
+    const imgWine = imgGet('wine_' + String(wine.id)) || wine.image || '';
+    if(imgWine) imgSave('wine_' + String(wine.id), imgWine);
+  }
 
   saveData();
   closeModal('modalDeplacer');
