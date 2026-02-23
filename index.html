@@ -148,6 +148,8 @@
   }
   .tab:hover { color: var(--cream); }
   .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+  /* Sur desktop : tab-icon = inline normal, tab-icon-mobile = caché */
+  .tab .tab-icon-mobile { display: none; }
   .tab.active::after {
     content: '';
     position: absolute;
@@ -503,6 +505,10 @@
     .tab.active::after { display: none; }
     /* Icônes plus grandes sur mobile */
     .tab .tab-icon { font-size: 1.3rem; display: block; }
+    .tab .tab-icon-desktop { display: none; }
+    .tab .tab-icon-mobile  { display: block; }
+    /* Si un tab a une icône mobile custom, cacher l'emoji par défaut */
+    .tab:has(.tab-icon-mobile) .tab-icon { display: none; }
     /* Icône cave custom sur mobile — remplace l'emoji 🗺 */
     .tab-icon-cave { display:flex; align-items:center; justify-content:center; height:1.3rem; }
     .tab .tab-label { display: block; font-size: 0.58rem; }
@@ -615,7 +621,7 @@
 </div>
 
 <header>
-  <div class="logo"><span style="font-style:normal;font-size:1.6rem">🍷️</span> Cave à Vin MMM<div class="logo-dot"></div></div>
+  <div class="logo"><span style="font-style:normal;font-size:1.6rem">🗺️</span> Cave à Vin<div class="logo-dot"></div></div>
   <div class="stats-bar">
     <div class="stat-item"><b id="hdr-total">0</b>bouteilles</div>
     <div class="stat-item"><b id="hdr-c1">0</b>cave 1</div>
@@ -628,7 +634,7 @@
 <div class="search-results-panel" id="search-panel" style="display:none"></div>
 
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('view2d',this)"><span class="tab-icon">🗺</span><span class="tab-label">Cave</span></div>
+  <div class="tab active" onclick="switchTab('view2d',this)"><span class="tab-icon">🗺️</span><span class="tab-icon-mobile"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI0IiBoZWlnaHQ9IjEyNCIgdmlld0JveD0iMCAwIDEyNCAxMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMyQzMxMzYiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMTcxQTFEIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJnbGFzcyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTgpIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDUpIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0icmdiYSgyNTUsMjU1LDI1NSwwLjEyKSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iYm90dGxlIiBjeD0iMzUlIiBjeT0iMzUlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzRBNEY1NSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMxRTIyMjYiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHg9IjIiIHk9IjIiIHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiByeD0iMTYiCiAgICAgICAgZmlsbD0idXJsKCNiZykiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLW9wYWNpdHk9IjAuNSIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPHRleHQgeD0iNjIiIHk9IjE2IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjEwIgogICAgICAgIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM3RUQ2RkYiIG9wYWNpdHk9IjAuOSI+MTTCsDwvdGV4dD4KICA8ZyBzdHJva2U9IiNGRkZGRkYiIHN0cm9rZS1vcGFjaXR5PSIwLjA4IiBzdHJva2Utd2lkdGg9IjEiPgogICAgPGxpbmUgeDE9IjEyIiB5MT0iMzAiIHgyPSIxMTIiIHkyPSIzMCIvPgogICAgPGxpbmUgeDE9IjEyIiB5MT0iNDgiIHgyPSIxMTIiIHkyPSI0OCIvPgogICAgPGxpbmUgeDE9IjEyIiB5MT0iNjYiIHgyPSIxMTIiIHkyPSI2NiIvPgogICAgPGxpbmUgeDE9IjEyIiB5MT0iODQiIHgyPSIxMTIiIHkyPSI4NCIvPgogIDwvZz4KICA8Zz4KICAgIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjIiIHI9IjYiIGZpbGw9InVybCgjYm90dGxlKSIvPgogICAgPGNpcmNsZSBjeD0iNTIiIGN5PSIyMiIgcj0iNiIgZmlsbD0idXJsKCNib3R0bGUpIi8+CiAgICA8Y2lyY2xlIGN4PSI3OCIgY3k9IjIyIiByPSI2IiBmaWxsPSJ1cmwoI2JvdHRsZSkiLz4KICAgIDxjaXJjbGUgY3g9IjEwNCIgY3k9IjIyIiByPSI2IiBmaWxsPSJ1cmwoI2JvdHRsZSkiLz4KICAgIDxjaXJjbGUgY3g9IjI2IiBjeT0iNDAiIHI9IjYiIGZpbGw9InVybCgjYm90dGxlKSIvPgogICAgPGNpcmNsZSBjeD0iNTIiIGN5PSI0MCIgcj0iNiIgZmlsbD0idXJsKCNib3R0bGUpIi8+CiAgICA8Y2lyY2xlIGN4PSI3OCIgY3k9IjQwIiByPSI2IiBmaWxsPSJ1cmwoI2JvdHRsZSkiLz4KICAgIDxjaXJjbGUgY3g9IjEwNCIgY3k9IjQwIiByPSI2IiBmaWxsPSJ1cmwoI2JvdHRsZSkiLz4KICAgIDxjaXJjbGUgY3g9IjI2IiBjeT0iNTgiIHI9IjYiIGZpbGw9InVybCgjYm90dGxlKSIvPgogICAgPGNpcmNsZSBjeD0iNTIiIGN5PSI1OCIgcj0iNiIgZmlsbD0idXJsKCNib3R0bGUpIi8+CiAgICA8Y2lyY2xlIGN4PSI3OCIgY3k9IjU4IiByPSI2IiBmaWxsPSJ1cmwoI2JvdHRsZSkiLz4KICAgIDxjaXJjbGUgY3g9IjEwNCIgY3k9IjU4IiByPSI2IiBmaWxsPSJ1cmwoI2JvdHRsZSkiLz4KICAgIDxjaXJjbGUgY3g9IjI2IiBjeT0iNzYiIHI9IjYiIGZpbGw9InVybCgjYm90dGxlKSIvPgogICAgPGNpcmNsZSBjeD0iNTIiIGN5PSI3NiIgcj0iNiIgZmlsbD0idXJsKCNib3R0bGUpIi8+CiAgICA8Y2lyY2xlIGN4PSI3OCIgY3k9Ijc2IiByPSI2IiBmaWxsPSJ1cmwoI2JvdHRsZSkiLz4KICAgIDxjaXJjbGUgY3g9IjEwNCIgY3k9Ijc2IiByPSI2IiBmaWxsPSJ1cmwoI2JvdHRsZSkiLz4KICAgIDxjaXJjbGUgY3g9IjI2IiBjeT0iOTQiIHI9IjYiIGZpbGw9InVybCgjYm90dGxlKSIvPgogICAgPGNpcmNsZSBjeD0iNTIiIGN5PSI5NCIgcj0iNiIgZmlsbD0idXJsKCNib3R0bGUpIi8+CiAgICA8Y2lyY2xlIGN4PSI3OCIgY3k9Ijk0IiByPSI2IiBmaWxsPSJ1cmwoI2JvdHRsZSkiLz4KICAgIDxjaXJjbGUgY3g9IjEwNCIgY3k9Ijk0IiByPSI2IiBmaWxsPSJ1cmwoI2JvdHRsZSkiLz4KICA8L2c+CiAgPHJlY3QgeD0iNCIgeT0iNCIgd2lkdGg9IjExNiIgaGVpZ2h0PSIxMTYiIHJ4PSIxNCIKICAgICAgICBmaWxsPSJ1cmwoI2dsYXNzKSIgcG9pbnRlci1ldmVudHM9Im5vbmUiLz4KICA8cmVjdCB4PSIxMCIgeT0iNCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjExNiIKICAgICAgICBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDYpIiByeD0iMTAiLz4KPC9zdmc+" style="width:1.3rem;height:1.3rem;display:block;border-radius:3px" alt="cave"/></span><span class="tab-label">Cave</span></div>
   <div class="tab" onclick="switchTab('list',this)"><span class="tab-icon">📋</span><span class="tab-label">Liste</span></div>
   <div class="tab" onclick="switchTab('historique',this)"><span class="tab-icon">🥂</span><span class="tab-label">Dégustation</span></div>
   <div class="tab" onclick="switchTab('carte',this)"><span class="tab-icon">🌍</span><span class="tab-label">Carte</span></div>
@@ -936,7 +942,7 @@
 <div id="carte" class="content" style="padding:16px 20px">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
     <div>
-      <h2 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem">🌍️ Carte des vignobles</h2>
+      <h2 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem">🗺️ Carte des vignobles</h2>
       <div style="color:var(--text2);font-size:0.75rem;margin-top:2px">102 régions · couches WMS officielles INAO + frontières pays</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -4819,30 +4825,29 @@ function renderCarte() {
       attribution: '© CartoDB © OpenStreetMap contributors'
     }).addTo(leafletMap);
 
-    // ── Frontières des pays viticoles européens (GeoJSON naturalearth) ──
-    fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries_lakes.geojson')
+    // ── Frontières terrestres entre pays viticoles (lignes inter-pays uniquement) ──
+    fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_boundary_lines_land.geojson')
       .then(r => r.ok ? r.json() : null)
       .catch(() => null)
       .then(data => {
         if(!data || !leafletMap) return;
-        const WINE_COUNTRIES = ['France','Spain','Italy','Germany','Portugal','Austria','Greece','Hungary',
-                                'Switzerland','Croatia','Slovenia','Bulgaria','Romania','Czech Republic',
-                                'Slovakia','Luxembourg','United Kingdom','Georgia','Armenia','Moldova'];
+        const WINE_COUNTRIES = new Set(['France','Spain','Italy','Germany','Portugal','Austria','Greece',
+          'Hungary','Switzerland','Croatia','Slovenia','Bulgaria','Romania','Czech Republic',
+          'Slovakia','Luxembourg','Georgia','Armenia','Moldova','Serbia','Montenegro',
+          'Bosnia and Herzegovina','Albania','North Macedonia']);
         L.geoJSON(data, {
-          filter: f => WINE_COUNTRIES.includes(f.properties.ADMIN || f.properties.NAME),
+          // Garder uniquement les segments dont les deux côtés sont des pays viticoles
+          filter: f => {
+            const a = f.properties.adm0_left  || f.properties.ADM0_LEFT  || '';
+            const b = f.properties.adm0_right || f.properties.ADM0_RIGHT || '';
+            return WINE_COUNTRIES.has(a) && WINE_COUNTRIES.has(b);
+          },
           style: {
             color: '#7a3a1e',
             weight: 1.5,
             fillOpacity: 0,
-            opacity: 0.5,
+            opacity: 0.55,
             dashArray: '4,3'
-          },
-          onEachFeature: (feature, layer) => {
-            layer.bindTooltip(feature.properties.ADMIN || feature.properties.NAME, {
-              permanent: false,
-              className: 'leaflet-country-tooltip',
-              direction: 'center'
-            });
           }
         }).addTo(leafletMap);
       });
