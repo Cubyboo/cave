@@ -536,18 +536,22 @@
 
   #caves-container {
     width: 100%;
-    text-align: center;
   }
 
   .cave-unit {
-    display: inline-flex;
-    flex-direction: column;
+    display: block;
     width: 460px;
     max-width: 100%;
-    text-align: left;
+    margin: 0 auto;
+  }
+  /* Les enfants directs reprennent le comportement colonne via block normal */
+  .cave-unit .cave-header-panel,
+  .cave-unit .cave-frame {
+    display: block;
+    width: 100%;
   }
 
-  /* Panneau supérieur — intégré SUR la cave */
+  /* Panneau supérieur — métal brossé avec nom + temp */
   .cave-header-panel {
     background: linear-gradient(180deg, var(--bg3) 0%, var(--bg2) 100%);
     border: 1px solid var(--border2);
@@ -567,13 +571,13 @@
     text-transform: uppercase;
   }
 
-  /* Afficheur température style LED — rouge */
+  /* Afficheur température style LED */
   .cave-temp {
     display: flex;
     align-items: center;
     gap: 5px;
     background: #050304;
-    border: 1px solid #2a1010;
+    border: 1px solid #2a2028;
     border-radius: 3px;
     padding: 4px 9px;
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.8);
@@ -1685,8 +1689,8 @@ function selectCaveView(v, btn) {
   currentCave = v;
   document.querySelectorAll('.cave-btn').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
-  document.getElementById('cave-unit-1').style.display = v === 1 ? 'flex' : 'none';
-  document.getElementById('cave-unit-2').style.display = v === 2 ? 'flex' : 'none';
+  document.getElementById('cave-unit-1').style.display = v === 1 ? 'block' : 'none';
+  document.getElementById('cave-unit-2').style.display = v === 2 ? 'block' : 'none';
   renderCave2D();
 }
 
@@ -2305,15 +2309,15 @@ function confirmerDuplication() {
     // ID unique pour chaque copie
     const newId = Date.now().toString() + '_dup' + i + '_' + Math.random().toString(36).slice(2,6);
     // Ne pas propager _prixEstime (champ calculé, sera ré-estimé)
-    const wineBase = Object.assign({}, wine);
-    delete wineBase._prixEstime;
-    const copy = Object.assign({}, wineBase, {
+    const { _prixEstime: _ignored, ...wineBase } = wine;
+    const copy = {
+      ...wineBase,
       id:        newId,
-      cave:      cave,
-      floor:     floor,
-      slot:      slot,
+      cave,
+      floor,
+      slot,
       dateAjout: new Date().toISOString().split('T')[0]
-    });
+    };
     wineData.push(copy);
     if(imageUrl) imgSave('wine_' + newId, imageUrl);
     created++;
