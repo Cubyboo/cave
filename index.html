@@ -1345,6 +1345,7 @@ const WINE_COLORS = {
 
 function saveData() {
   localStorage.setItem('caveData', JSON.stringify(wineData));
+  localStorage.setItem('caveDataTs', Date.now()); // horodatage pour protéger contre la synchro
   updateHeader();
   fetch(SCRIPT_URL, {
     method: 'POST',
@@ -1364,6 +1365,18 @@ function loadFromSheets() {
   window[cbName] = function(data) {
     clearTimeout(timeout);
     try {
+      // Protection race condition : si une sauvegarde locale date de moins de 45s,
+      // le sheet distant n'est peut-être pas encore à jour — on conserve le localStorage
+      const localTs = parseInt(localStorage.getItem('caveDataTs') || '0');
+      const ageSec = (Date.now() - localTs) / 1000;
+      if (ageSec < 45 && localStorage.getItem('caveData')) {
+        showNotif('Données locales récentes conservées ✓');
+        updateHeader();
+        renderCave2D();
+        loadHistoriqueFromSheets();
+        return;
+      }
+
       if(Array.isArray(data) && data.length > 0) {
         // Récupérer les images depuis imageStore (par ID) et localStorage (par ID ou cave_floor_slot)
         const localData = JSON.parse(localStorage.getItem('caveData') || '[]');
@@ -2098,13 +2111,14 @@ function confirmerDuplication() {
 
     // ID unique pour chaque copie
     const newId = Date.now().toString() + '_dup' + i + '_' + Math.random().toString(36).slice(2,6);
+    // Ne pas propager _prixEstime dans la copie (champ calculé, sera ré-estimé)
+    const { _prixEstime: _ignored, ...wineBase } = wine;
     const copy = {
-      ...wine,
+      ...wineBase,
       id:        newId,
       cave,
       floor,
       slot,
-      _prixEstime: wine._prixEstime || '',
       dateAjout: new Date().toISOString().split('T')[0]
     };
     wineData.push(copy);
@@ -2174,13 +2188,19 @@ function addWine() {
   if(!nom)  { showNotif('Le nom est requis', true); return; }
   if(!slot) { showNotif('Aucun emplacement disponible', true); return; }
   const editingId = addingToSlot?.editing;
+  // Vérifier que l'emplacement cible n'est pas déjà occupé par un autre vin
+  const occupant = getWineAtSlot(parseInt(cave), parseInt(floor), parseInt(slot));
+  if(occupant && String(occupant.id) !== String(editingId)) {
+    showNotif('Emplacement déjà occupé par : ' + (occupant.nom || '?'), true);
+    return;
+  }
   // Préserver les champs prix_marche et autres champs non présents dans le formulaire
   const existingWine = editingId ? wineData.find(w => String(w.id) === String(editingId)) : null;
   if(editingId) wineData = wineData.filter(w=>String(w.id)!==String(editingId));
   wineData.push({
     // Préserver tous les champs existants d'abord
     ...(existingWine || {}),
-    id: editingId || Date.now().toString(),
+    id: editingId || Date.now().toString() + '_' + Math.random().toString(36).slice(2, 6),
     nom,
     appellation: document.getElementById('f-appellation').value.trim(),
     domaine:     document.getElementById('f-domaine').value.trim(),
