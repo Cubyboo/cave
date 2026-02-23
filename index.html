@@ -615,7 +615,7 @@
 </div>
 
 <header>
-  <div class="logo"><span style="font-style:normal;font-size:1.6rem">🗺️</span> Cave à Vin<div class="logo-dot"></div></div>
+  <div class="logo"><span style="font-style:normal;font-size:1.6rem">🍷️</span> Cave à Vin MMM<div class="logo-dot"></div></div>
   <div class="stats-bar">
     <div class="stat-item"><b id="hdr-total">0</b>bouteilles</div>
     <div class="stat-item"><b id="hdr-c1">0</b>cave 1</div>
@@ -628,7 +628,7 @@
 <div class="search-results-panel" id="search-panel" style="display:none"></div>
 
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('view2d',this)"><span class="tab-icon">🗺️</span><span class="tab-label">Cave</span></div>
+  <div class="tab active" onclick="switchTab('view2d',this)"><span class="tab-icon">🗺</span><span class="tab-label">Cave</span></div>
   <div class="tab" onclick="switchTab('list',this)"><span class="tab-icon">📋</span><span class="tab-label">Liste</span></div>
   <div class="tab" onclick="switchTab('historique',this)"><span class="tab-icon">🥂</span><span class="tab-label">Dégustation</span></div>
   <div class="tab" onclick="switchTab('carte',this)"><span class="tab-icon">🌍</span><span class="tab-label">Carte</span></div>
@@ -936,7 +936,7 @@
 <div id="carte" class="content" style="padding:16px 20px">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
     <div>
-      <h2 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem">🗺️ Carte des vignobles</h2>
+      <h2 style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem">🌍️ Carte des vignobles</h2>
       <div style="color:var(--text2);font-size:0.75rem;margin-top:2px">102 régions · couches WMS officielles INAO + frontières pays</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -5391,16 +5391,10 @@ const APPELLATIONS = {
     { nom:'Rousset-les-Vignes',          type:'aoc',  lat:44.390, lng:5.058 },
     { nom:'Saint-Pantaléon-les-Vignes',  type:'aoc',  lat:44.395, lng:5.066 },
     { nom:'Valréas',                     type:'aoc',  lat:44.384, lng:4.992 },
-    // AOC génériques
-    { nom:'Côtes du Rhône Villages',     type:'aoc',  lat:44.300, lng:4.870 },
-    { nom:'Côtes du Rhône',              type:'aoc',  lat:44.100, lng:4.700 },
   ],
 
   // ─── ALSACE ────────────────────────────────────────────────
   'alsace': [
-    // AOC principales
-    { nom:'Alsace AOC',                type:'aoc',  lat:48.200, lng:7.440 },
-    { nom:"Crémant d'Alsace",          type:'aoc',  lat:48.100, lng:7.390 },
     // Grands Crus (51 AOC distinctes — chacun est une AOC à part entière)
     { nom:'Rangen',                    type:'cru',  lat:47.806, lng:7.219 },
     { nom:'Zinnkoepflé',               type:'cru',  lat:47.886, lng:7.249 },
@@ -5429,11 +5423,6 @@ const APPELLATIONS = {
 
   // ─── VALLÉE DE LA LOIRE ────────────────────────────────────
   'loire': [
-    // Zones
-    { nom:'Pays Nantais',              type:'zone', lat:47.200, lng:-1.550 },
-    { nom:'Anjou-Saumur',              type:'zone', lat:47.320, lng:-0.450 },
-    { nom:'Touraine',                  type:'zone', lat:47.350, lng: 0.700 },
-    { nom:'Centre-Loire',              type:'zone', lat:47.350, lng: 2.850 },
     // AOC — Pays Nantais
     { nom:'Muscadet',                  type:'aoc',  lat:47.171, lng:-1.350 },
     { nom:'Muscadet-Sèvre et Maine',   type:'aoc',  lat:47.153, lng:-1.368 },
@@ -5484,8 +5473,6 @@ const APPELLATIONS = {
 
   // ─── LANGUEDOC ─────────────────────────────────────────────
   'languedoc': [
-    // Zone générique
-    { nom:'Languedoc AOC',             type:'aoc',  lat:43.500, lng: 3.250 },
     // AOC spécifiques
     { nom:'Picpoul de Pinet',          type:'aoc',  lat:43.437, lng: 3.549 },
     { nom:'Faugères',                  type:'aoc',  lat:43.520, lng: 3.272 },
@@ -5516,8 +5503,6 @@ const APPELLATIONS = {
   // ─── ROUSSILLON ────────────────────────────────────────────
   'roussillon': [
     // AOC
-    { nom:'Côtes du Roussillon',       type:'aoc',  lat:42.690, lng: 2.780 },
-    { nom:'Côtes du Roussillon Villages',type:'aoc',lat:42.760, lng: 2.760 },
     { nom:'Maury',                     type:'aoc',  lat:42.810, lng: 2.648 },
     { nom:'Maury Sec',                 type:'aoc',  lat:42.813, lng: 2.650 },
     { nom:'Collioure',                 type:'aoc',  lat:42.524, lng: 3.083 },
@@ -5535,7 +5520,6 @@ const APPELLATIONS = {
   // ─── PROVENCE ──────────────────────────────────────────────
   'provence': [
     // AOC
-    { nom:'Côtes de Provence',         type:'aoc',  lat:43.450, lng: 6.150 },
     { nom:'Coteaux d\'Aix-en-Provence',type:'aoc',  lat:43.527, lng: 5.441 },
     { nom:'Coteaux Varois en Provence',type:'aoc',  lat:43.440, lng: 5.990 },
     { nom:'Bandol',                    type:'aoc',  lat:43.130, lng: 5.755 },
@@ -5593,9 +5577,6 @@ const APPELLATIONS = {
 
   // ─── BEAUJOLAIS ────────────────────────────────────────────
   'beaujolais': [
-    // AOC génériques
-    { nom:'Beaujolais',                type:'aoc',  lat:46.068, lng: 4.678 },
-    { nom:'Beaujolais-Villages',       type:'aoc',  lat:46.148, lng: 4.633 },
     // Crus du Beaujolais (10 AOC distinctes)
     { nom:'Saint-Amour',               type:'cru',  lat:46.306, lng: 4.700 },
     { nom:'Juliénas',                  type:'cru',  lat:46.254, lng: 4.698 },
@@ -5622,7 +5603,6 @@ const APPELLATIONS = {
   // ─── SAVOIE ────────────────────────────────────────────────
   'savoie': [
     // AOC
-    { nom:'Vin de Savoie',             type:'aoc',  lat:45.688, lng: 5.934 },
     { nom:'Roussette de Savoie',       type:'aoc',  lat:45.743, lng: 5.882 },
     { nom:'Seyssel',                   type:'aoc',  lat:45.949, lng: 5.836 },
     { nom:'Crépy',                     type:'aoc',  lat:46.310, lng: 6.332 },
@@ -5641,7 +5621,6 @@ const APPELLATIONS = {
   // ─── CORSE ─────────────────────────────────────────────────
   'corse': [
     // AOC
-    { nom:'Vin de Corse',              type:'aoc',  lat:42.050, lng: 9.100 },
     { nom:'Patrimonio',                type:'aoc',  lat:42.700, lng: 9.369 },
     { nom:'Ajaccio',                   type:'aoc',  lat:41.950, lng: 8.758 },
     { nom:'Muscat du Cap Corse',       type:'aoc',  lat:42.980, lng: 9.420 },
