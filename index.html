@@ -1397,9 +1397,11 @@ function loadFromSheets() {
           }
         });
         wineData = data.map(w => {
-          const cave  = parseInt(w.cave)  || 1;
-          const floor = parseInt(w.floor) || 1;
-          const slot  = parseInt(w.slot)  || 1;
+          const cave  = parseInt(w.cave);
+          const floor = parseInt(w.floor);
+          const slot  = parseInt(w.slot);
+          // Ignorer les lignes sans emplacement valide (évite les fantômes cave=1 floor=1 slot=1)
+          if(!cave || !floor || !slot) return null;
           const key   = `${cave}_${floor}_${slot}`;
           const id    = String(w.id || '');
           const resolvedImage = imgGet('wine_' + id) || w.image || localImageById[id] || localImageBySlot[key] || '';
@@ -1417,7 +1419,7 @@ function loadFromSheets() {
             image: resolvedImage,
             _prixEstime: parseFloat(w.prix_marche || w._prixEstime || pm.prix_marche || '') || ''
           };
-        });
+        }).filter(w => w !== null); // retirer les lignes invalides
         localStorage.setItem('caveData', JSON.stringify(wineData));
         updateHeader();
         renderCave2D();
