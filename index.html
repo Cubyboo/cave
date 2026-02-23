@@ -310,7 +310,9 @@
   .badge-rosé         { background: rgba(200,100,120,0.18);color: #e8a0b0; border: 1px solid rgba(160,80,100,0.5); }
   .badge-effervescent { background: rgba(100,160,220,0.15);color: #90c8f0; border: 1px solid rgba(80,120,180,0.4); }
   .badge-vdn          { background: rgba(160,80,200,0.18); color: #d0a0f0; border: 1px solid rgba(120,60,160,0.4); }
-  .badge-magnum       { background: rgba(80,50,100,0.25);  color: #c0a0e8; border: 1px solid rgba(80,50,130,0.5); }
+  .badge-magnum             { background: rgba(80,50,100,0.25);  color: #c0a0e8;  border: 1px solid rgba(80,50,130,0.5); }
+  .badge-liquoreux-rouge    { background: rgba(90,26,10,0.30);   color: #d06040;  border: 1px solid rgba(120,40,10,0.6); }
+  .badge-liquoreux-blanc    { background: rgba(200,96,16,0.22);  color: #f0a050;  border: 1px solid rgba(180,80,10,0.5); }
   .format-badge { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 0.65rem; letter-spacing: 0.5px; text-transform: uppercase; background: rgba(201,168,76,0.07); color: var(--text2); border: 1px solid var(--border); }
   .rating-stars { color: var(--gold); letter-spacing: -1px; }
 
@@ -701,6 +703,10 @@
       <option value="rosé">Rosé</option>
       <option value="effervescent">Effervescent</option>
       <option value="vdn">VDN</option>
+      <option value="liquoreux-rouge">Liquoreux Rouge</option>
+      <option value="liquoreux-blanc">Liquoreux Blanc</option>
+      <option value="liquoreux-rouge">Liquoreux Rouge</option>
+      <option value="liquoreux-blanc">Liquoreux Blanc</option>
       <option value="magnum">Magnum</option>
     </select>
     <select id="sortBy" onchange="renderList()">
@@ -764,6 +770,8 @@
           <option value="rosé">Rosé</option>
           <option value="effervescent">Effervescent (Champagne, Crémant…)</option>
           <option value="vdn">VDN (Muscat, Banyuls, Rivesaltes…)</option>
+          <option value="liquoreux-rouge">Liquoreux Rouge (Porto Ruby, Banyuls Rimage…)</option>
+          <option value="liquoreux-blanc">Liquoreux Blanc (Sauternes, Jurançon, Monbazillac…)</option>
           <option value="magnum">Magnum</option>
         </select>
       </div>
@@ -1035,6 +1043,8 @@
           <option value="rosé">Rosé</option>
           <option value="effervescent">Effervescent</option>
           <option value="vdn">VDN</option>
+          <option value="liquoreux-rouge">Liquoreux Rouge</option>
+          <option value="liquoreux-blanc">Liquoreux Blanc</option>
         </select>
       </div>
       <div class="form-row">
@@ -1321,7 +1331,7 @@ let wineData = JSON.parse(localStorage.getItem('caveData') || '[]');
 let currentCave = 1;
 let addingToSlot = null;
 
-const TYPE_LABELS   = { rouge:'Rouge', blanc:'Blanc', 'rosé':'Rosé', effervescent:'Effervescent', vdn:'VDN', magnum:'Magnum' };
+const TYPE_LABELS   = { rouge:'Rouge', blanc:'Blanc', 'rosé':'Rosé', effervescent:'Effervescent', vdn:'VDN', 'liquoreux-rouge':'Liquoreux Rouge', 'liquoreux-blanc':'Liquoreux Blanc', magnum:'Magnum' };
 const FORMAT_LABELS = { '75cl':'75 cl','37.5cl':'37,5 cl','62cl':'62 cl','150cl':'Magnum 150 cl','300cl':'Double Magnum','autre':'Autre' };
 const WINE_COLORS = {
   rouge:        { fill:'#8a1828', stroke:'#c04060', small:'#5a1020' },
@@ -2444,9 +2454,9 @@ function renderStats() {
   }
 
   // Type
-  const typeOrder = ['rouge','blanc','rosé','effervescent','vdn','magnum'];
-  const typeNames = {rouge:'Rouge',blanc:'Blanc','rosé':'Rosé',effervescent:'Effervescent',vdn:'VDN',magnum:'Magnum'};
-  const typeColors = {rouge:'background:linear-gradient(90deg,#5a1020,#9e2a3f)',blanc:'background:linear-gradient(90deg,#7a5a10,#c9a84c)','rosé':'background:linear-gradient(90deg,#8a3050,#c06080)',effervescent:'background:linear-gradient(90deg,#204060,#5090c0)',vdn:'background:linear-gradient(90deg,#502080,#9040c0)',magnum:'background:linear-gradient(90deg,#4a2870,#9060c0)'};
+  const typeOrder = ['rouge','blanc','rosé','effervescent','vdn','liquoreux-rouge','liquoreux-blanc','magnum'];
+  const typeNames = {rouge:'Rouge',blanc:'Blanc','rosé':'Rosé',effervescent:'Effervescent',vdn:'VDN','liquoreux-rouge':'Liq. Rouge','liquoreux-blanc':'Liq. Blanc',magnum:'Magnum'};
+  const typeColors = {rouge:'background:linear-gradient(90deg,#5a1020,#9e2a3f)',blanc:'background:linear-gradient(90deg,#7a5a10,#c9a84c)','rosé':'background:linear-gradient(90deg,#8a3050,#c06080)',effervescent:'background:linear-gradient(90deg,#204060,#5090c0)',vdn:'background:linear-gradient(90deg,#502080,#9040c0)','liquoreux-rouge':'background:linear-gradient(90deg,#3a0800,#8b2500)','liquoreux-blanc':'background:linear-gradient(90deg,#7a3a00,#c86010)',magnum:'background:linear-gradient(90deg,#4a2870,#9060c0)'};
   const maxT = Math.max(1,...Object.values(types));
   document.getElementById('chartType').innerHTML = typeOrder.map(t=>`
     <div class="bar-row">
@@ -3573,6 +3583,14 @@ const ACCORDS_AUTO = {
     plats: ["Foie gras","Chocolat noir","Fromage persille","Desserts"],
     mots: ["foie gras","chocolat","roquefort","stilton","desserts","sucre"]
   },
+  "liquoreux-rouge": {
+    plats: ["Chocolat noir","Fromage persillé","Figues rôties","Cerises confites","Desserts chocolat"],
+    mots: ["chocolat","roquefort","stilton","figues","cerises","desserts","sucre"]
+  },
+  "liquoreux-blanc": {
+    plats: ["Foie gras","Roquefort","Tarte Tatin","Desserts fruités","Melon","Abricot"],
+    mots: ["foie gras","roquefort","tarte","sucre","melon","abricot","peche","dessert"]
+  },
   "magnum": {
     plats: ["Grandes tablees","Repas de fete","Viandes rotis","Plateau de fromages"],
     mots: ["fete","tablée","viande","fromages"]
@@ -3663,7 +3681,7 @@ function rechercherParVin(id) {
 }
 
 function wineCardHtml(w) {
-  const tLabel = {rouge:'Rouge',blanc:'Blanc','rosé':'Rosé',effervescent:'Effervescent',vdn:'VDN',magnum:'Magnum'}[w.type] || w.type;
+  const tLabel = {rouge:'Rouge',blanc:'Blanc','rosé':'Rosé',effervescent:'Effervescent',vdn:'VDN','liquoreux-rouge':'Liquoreux Rouge','liquoreux-blanc':'Liquoreux Blanc',magnum:'Magnum'}[w.type] || w.type;
   return `<div style="display:flex;gap:12px;align-items:center;padding:10px;background:var(--bg3);border-radius:3px;margin-bottom:8px;border:1px solid var(--border)">
     ${(imgGet('wine_'+w.id)||w.image)?`<img src="${imgGet('wine_'+w.id)||w.image}" style="width:36px;height:50px;object-fit:contain;border-radius:2px;flex-shrink:0">`:'<div style="width:36px;height:50px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">🍷</div>'}
     <div style="flex:1;min-width:0">
@@ -3761,6 +3779,8 @@ const APOGEE_AUTO = {
   "rose":                  { min: 1,  max: 3  },
   "effervescent":          { min: 2,  max: 8  },
   "vdn":                   { min: 5,  max: 20 },
+  "liquoreux-rouge":       { min: 8,  max: 30 },
+  "liquoreux-blanc":       { min: 5,  max: 25 },
 };
 
 function getApogeeAuto(wine) {
@@ -4799,6 +4819,8 @@ const TYPE_COLORS_CARTE = {
   rosé: '#e8a0b0',
   effervescent: '#90c8f0',
   vdn: '#d0a0f0',
+  'liquoreux-rouge': '#8b2500',
+  'liquoreux-blanc': '#e8900a',
   magnum: '#c0a0e8'
 };
 
