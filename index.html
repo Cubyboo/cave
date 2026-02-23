@@ -1423,8 +1423,8 @@ function loadFromSheets() {
         renderCave2D();
         showNotif('Cave synchronisée ✓');
         loadHistoriqueFromSheets();
-        // Estimation automatique des vins sans prix marché (en arrière-plan)
-        setTimeout(() => estimerTousLesVinsAuto(), 2000);
+        // Estimation automatique désactivée — trop risquée (peut déclencher saveData en arrière-plan)
+        // Pour estimer les prix, utiliser le bouton manuel dans l'onglet Stats
       } else {
         showNotif('Sheet vide — données locales conservées');
       }
@@ -2365,9 +2365,12 @@ Aucun texte autour. Juste le tableau.`;
         estimés++;
       });
 
-      saveData();
-      renderList();
-      renderStats();
+      // Sécurité : ne sauvegarder que si wineData est cohérent
+      if(wineData.length > 0) {
+        saveData();
+        renderList();
+        renderStats();
+      }
 
     } catch(e) {
       console.warn('Batch estimation échouée', e);
