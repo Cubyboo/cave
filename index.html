@@ -627,7 +627,7 @@
 <div class="search-results-panel" id="search-panel" style="display:none"></div>
 
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('view2d',this)"><span class="tab-icon">️</span>🗺<span class="tab-label">Cave</span></div>
+  <div class="tab active" onclick="switchTab('view2d',this)"><span class="tab-icon">🗺</span><span class="tab-label">Cave</span></div>
   <div class="tab" onclick="switchTab('list',this)"><span class="tab-icon">📋</span><span class="tab-label">Liste</span></div>
   <div class="tab" onclick="switchTab('historique',this)"><span class="tab-icon">🥂</span><span class="tab-label">Dégustation</span></div>
   <div class="tab" onclick="switchTab('carte',this)"><span class="tab-icon">🌍</span><span class="tab-label">Carte</span></div>
@@ -5049,10 +5049,10 @@ function geoCentroid(geometry) {
 // cru  = Grand Cru / cru classé, AOC distincte à part entière (point violet, italique)
 function addAppelLabel(group, lat, lng, nom, type) {
   const S = {
-    zone: { dot:false, r:0,   stroke:'',        fill:'',        txtColor:'#5ab4e0', bg:'rgba(10,25,45,0.72)',  size:'0.60rem', weight:'800', italic:false, upper:true  },
-    aoc:  { dot:true,  r:5,   stroke:'#6b1020', fill:'#9b2030', txtColor:'#7dd4f5', bg:'rgba(8,22,40,0.82)',  size:'0.65rem', weight:'700', italic:false, upper:false },
-    cru:  { dot:true,  r:3.5, stroke:'#3a0868', fill:'#6a18b0', txtColor:'#a8e0ff', bg:'rgba(10,18,38,0.82)', size:'0.60rem', weight:'600', italic:true,  upper:false },
-  }[type] || { dot:true, r:4, stroke:'#444', fill:'#666', txtColor:'#7dd4f5', bg:'rgba(8,20,38,0.80)', size:'0.62rem', weight:'600', italic:false, upper:false };
+    zone: { dot:false, r:0,   stroke:'',        fill:'',        txtColor:'#b0b8c4', bg:'rgba(14,10,11,0.72)', size:'0.60rem', weight:'800', italic:false, upper:true  },
+    aoc:  { dot:true,  r:5,   stroke:'#6b1020', fill:'#9b2030', txtColor:'#c8d0d8', bg:'rgba(14,10,11,0.82)', size:'0.65rem', weight:'700', italic:false, upper:false },
+    cru:  { dot:true,  r:3.5, stroke:'#3a0868', fill:'#6a18b0', txtColor:'#d8dde3', bg:'rgba(14,10,11,0.82)', size:'0.60rem', weight:'600', italic:true,  upper:false },
+  }[type] || { dot:true, r:4, stroke:'#444', fill:'#666', txtColor:'#c8d0d8', bg:'rgba(14,10,11,0.80)', size:'0.62rem', weight:'600', italic:false, upper:false };
 
   if (S.dot) {
     const dot = L.circleMarker([lat, lng], {
@@ -5632,7 +5632,15 @@ function showAppellations(regionKey, niveauMax) {
   }
   if (!regionKey) return;
 
-  const apps = APPELLATIONS[regionKey];
+  // Mapping clés WINE_REGION_POLYGONS → clés APPELLATIONS
+  const KEY_MAP = {
+    'val_de_loire': 'loire',
+    'rhone_nord':   'cotes-du-rhone',
+    'rhone_sud':    'cotes-du-rhone',
+    'sud_ouest':    'sud-ouest',
+  };
+  const appelKey = KEY_MAP[regionKey] || regionKey;
+  const apps = APPELLATIONS[appelKey];
   if (!apps || !apps.length) return;
 
   leafletMap._appelRegion = regionKey;
@@ -5822,7 +5830,8 @@ function selectCarteRegion(key, label) {
   carteSelectedRegion = key;
   const wines = wineData.filter(w => getRegionKey(w) === key);
   const region = WINE_REGION_POLYGONS[key];
-  const allApps = APPELLATIONS[key] || [];
+  const _appelKeyMap = {'val_de_loire':'loire','rhone_nord':'cotes-du-rhone','rhone_sud':'cotes-du-rhone','sud_ouest':'sud-ouest'};
+  const allApps = APPELLATIONS[_appelKeyMap[key] || key] || [];
   const nbAoc = allApps.filter(a=>a.type==='aoc').length;
   const nbCru  = allApps.filter(a=>a.type==='cru').length;
   const nbApp  = region?.appellations ? region.appellations.length : nbAoc;
