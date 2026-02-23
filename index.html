@@ -532,85 +532,103 @@
     /* Cartes à la place du tableau */
     .wine-table { display: none; }
     .wine-cards { display: flex; }
-    /* ── Caves de vieillissement vitrées ───────────────────────── */
+    /* ── Cave de vieillissement vitrée ─────────────────────────── */
 
-  /* Conteneur centré en vue unique */
   #caves-container {
     display: flex;
     justify-content: center;
     width: 100%;
   }
 
-  /* Unité cave — colonne unique, largeur fixe sur PC */
   .cave-unit {
     display: flex;
     flex-direction: column;
-    width: 100%;
-    max-width: 520px;
+    width: 460px;
+    flex-shrink: 0;
   }
 
-  /* Bandeau température — intégré AU-DESSUS dans le cadre de la cave */
+  /* Panneau supérieur — métal brossé avec nom + temp */
   .cave-header-panel {
-    background: var(--bg2);
+    background: linear-gradient(180deg, var(--bg3) 0%, var(--bg2) 100%);
     border: 1px solid var(--border2);
-    border-bottom: none;
+    border-bottom: 2px solid var(--gold);
     border-radius: var(--radius) var(--radius) 0 0;
-    padding: 8px 14px;
+    padding: 10px 18px;
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
 
-  /* Numéro de cave discret */
-  .cave-num {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 0.75rem;
-    color: var(--text3);
-    letter-spacing: 2px;
+  .cave-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.8rem;
+    color: var(--gold);
+    letter-spacing: 3px;
     text-transform: uppercase;
   }
 
-  /* Thermostat style afficheur numérique */
+  /* Afficheur température style LED */
   .cave-temp {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
+    background: #050304;
+    border: 1px solid #2a2028;
+    border-radius: 3px;
+    padding: 4px 9px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.8);
   }
   .cave-temp-val {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
     color: #a8d8ea;
-    letter-spacing: 1px;
-    line-height: 1;
+    letter-spacing: 2px;
+    text-shadow: 0 0 8px rgba(168,216,234,0.7);
   }
-  .cave-temp-icon { font-size: 0.85rem; opacity: 0.55; }
+  .cave-temp-icon { font-size: 0.75rem; opacity: 0.5; }
 
-  /* Cadre cave vitré — s'intègre dans la palette bordeaux/noir du site */
+  /* Corps de la cave — effet vitrine */
   .cave-frame {
     position: relative;
-    border: 1px solid var(--border2);
+    border: 2px solid var(--border2);
     border-top: none;
-    border-radius: 0 0 var(--radius) var(--radius);
+    border-radius: 0 0 4px 4px;
     overflow: hidden;
-    box-shadow: var(--shadow);
     background: var(--bg);
+    box-shadow:
+      var(--shadow),
+      inset 0 0 40px rgba(0,0,0,0.6);
   }
 
-  /* Voile vitré sur la cave */
+  /* Vitre — reflet diagonal façon porte vitrée */
   .cave-glass-reflection {
-    position: absolute; inset: 0; z-index: 10; pointer-events: none;
-    background: linear-gradient(
-      135deg,
+    position: absolute; inset: 0; z-index: 20; pointer-events: none;
+    background:
+      linear-gradient(
+        118deg,
+        rgba(255,255,255,0.055) 0%,
+        rgba(255,255,255,0.02)  18%,
+        transparent             35%,
+        transparent             65%,
+        rgba(0,0,0,0.06)        100%
+      );
+  }
+  /* Reflet secondaire haut-gauche */
+  .cave-glass-reflection::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 35%; height: 100%;
+    background: linear-gradient(90deg,
       rgba(255,255,255,0.03) 0%,
-      transparent 50%,
-      rgba(0,0,0,0.08) 100%
+      transparent 100%
     );
   }
 
   .cave-inner-wrap { padding: 0; }
 
   @media (max-width: 768px) {
-    .cave-unit { max-width: 100%; }
+    .cave-unit { width: 100%; }
   }
     .cave-selector { flex-wrap: wrap; gap: 8px; }
     .cave-legend { flex-wrap: wrap; gap: 6px; }
@@ -773,7 +791,7 @@
     <!-- Cave 1 -->
     <div class="cave-unit" id="cave-unit-1">
       <div class="cave-header-panel">
-        <span class="cave-num">Cave de vieillissement &thinsp;№&thinsp;1</span>
+        <span class="cave-label">Cave de Vieillissement &thinsp;№&thinsp;1</span>
         <div class="cave-temp">
           <span class="cave-temp-icon">❄</span>
           <span class="cave-temp-val">12°C</span>
@@ -790,7 +808,7 @@
     <!-- Cave 2 -->
     <div class="cave-unit" id="cave-unit-2" style="display:none">
       <div class="cave-header-panel">
-        <span class="cave-num">Cave de vieillissement &thinsp;№&thinsp;2</span>
+        <span class="cave-label">Cave de Vieillissement &thinsp;№&thinsp;2</span>
         <div class="cave-temp">
           <span class="cave-temp-icon">❄</span>
           <span class="cave-temp-val">12°C</span>
@@ -1722,8 +1740,9 @@ function renderCaveToSvg(svgId, caveNum) {
   const svg    = document.getElementById(svgId);
   if(!svg) return;
   const floors = CAVE_CONFIG[caveNum].floors;
-  const GAP    = 6;
+  const GAP    = 5;
 
+  // Positions X des bouteilles dans une rangée
   function layerPositions(front, back) {
     const seq = [];
     let f = 0, b = 0;
@@ -1743,64 +1762,85 @@ function renderCaveToSvg(svgId, caveNum) {
   let maxLayerW = 0;
   floors.forEach(f => {
     const pos = layerPositions(f.front, f.back);
-    if(pos.length) { const last = pos[pos.length-1]; if(last.cx+last.r > maxLayerW) maxLayerW = last.cx+last.r; }
+    if(pos.length) {
+      const last = pos[pos.length-1];
+      if(last.cx + last.r > maxLayerW) maxLayerW = last.cx + last.r;
+    }
   });
 
-  const layerH  = R_BIG * 2;
-  const floorH  = f => f.double ? layerH + ROW_GAP + layerH + SHELF_H + FLOOR_GAP : layerH + SHELF_H + FLOOR_GAP;
-  const totalW  = PAD_H + maxLayerW + PAD_H;
-  const totalH  = PAD_V + floors.reduce((s,f) => s + floorH(f), 0) + PAD_V;
+  const layerH = R_BIG * 2;
+  const floorH = f => f.double
+    ? layerH + ROW_GAP + layerH + SHELF_H + FLOOR_GAP
+    : layerH + SHELF_H + FLOOR_GAP;
 
-  // Toujours responsive — width 100%, height proportionnelle via viewBox
+  const WALL  = 14; // épaisseur montants latéraux
+  const totalW = WALL + PAD_H + maxLayerW + PAD_H + WALL;
+  const totalH = PAD_V + floors.reduce((s,f) => s + floorH(f), 0) + PAD_V;
+
   svg.setAttribute('viewBox', `0 0 ${totalW} ${totalH}`);
   svg.setAttribute('preserveAspectRatio', 'xMidYMin meet');
-  svg.style.width  = '100%';
-  svg.style.height = 'auto';
+  svg.style.width   = '100%';
+  svg.style.height  = 'auto';
   svg.style.display = 'block';
-  // Stocker la hauteur intrinsèque pour l'alignement bas des 2 caves
-  svg.dataset.intrinsicH = totalH;
-  svg.dataset.intrinsicW = totalW;
 
-  // ID unique par cave pour les defs (évite conflits quand les 2 caves sont affichées)
-  const uid = 'c' + caveNum;
+  const uid  = 'c' + caveNum;
+  const ox   = WALL + PAD_H; // offset X des bouteilles
 
-  let html = `
-    <defs>
-      <filter id="sg${uid}" x="-20%" y="-20%" width="140%" height="140%">
-        <feGaussianBlur stdDeviation="1.6" result="blur"/>
-        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-      <linearGradient id="wood${uid}" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%"   stop-color="#c8a050"/>
-        <stop offset="40%"  stop-color="#b08838"/>
-        <stop offset="100%" stop-color="#9a7028"/>
-      </linearGradient>
-      <linearGradient id="glassFade${uid}" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%"   stop-color="rgba(255,255,255,0.04)"/>
-        <stop offset="50%"  stop-color="rgba(255,255,255,0.00)"/>
-        <stop offset="100%" stop-color="rgba(255,255,255,0.02)"/>
-      </linearGradient>
-    </defs>
-    <!-- Fond cave -->
-    <rect width="${totalW}" height="${totalH}" fill="#0e0a0b"/>
-    <!-- Reflet vitre -->
-    <rect width="${totalW}" height="${totalH}" fill="url(#glassFade${uid})" style="pointer-events:none"/>
-    <!-- Montants verticaux -->
-    <rect x="0"             y="0" width="${PAD_H-8}" height="${totalH}" fill="#16100f"/>
-    <rect x="${totalW-PAD_H+8}" y="0" width="${PAD_H-8}" height="${totalH}" fill="#16100f"/>
-    <!-- Filet doré montants -->
-    <line x1="${PAD_H-9}" y1="0" x2="${PAD_H-9}" y2="${totalH}" stroke="rgba(201,168,76,0.15)" stroke-width="1"/>
-    <line x1="${totalW-PAD_H+8}" y1="0" x2="${totalW-PAD_H+8}" y2="${totalH}" stroke="rgba(201,168,76,0.15)" stroke-width="1"/>
+  let html = `<defs>
+    <filter id="sg${uid}" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1.4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Bois chêne clair -->
+    <linearGradient id="wd${uid}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#c8a050"/>
+      <stop offset="35%"  stop-color="#b08838"/>
+      <stop offset="70%"  stop-color="#a87c30"/>
+      <stop offset="100%" stop-color="#c09040"/>
+    </linearGradient>
+    <!-- Montant métal brossé -->
+    <linearGradient id="mt${uid}" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#1a1218"/>
+      <stop offset="40%"  stop-color="#252028"/>
+      <stop offset="70%"  stop-color="#1e1a20"/>
+      <stop offset="100%" stop-color="#141014"/>
+    </linearGradient>
+    <!-- Fond cave — dégradé froid -->
+    <linearGradient id="bg${uid}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#0e0c10"/>
+      <stop offset="100%" stop-color="#08080a"/>
+    </linearGradient>
+    <!-- Reflet vitre diagonal -->
+    <linearGradient id="gl${uid}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="rgba(255,255,255,0.06)"/>
+      <stop offset="30%"  stop-color="rgba(255,255,255,0.015)"/>
+      <stop offset="60%"  stop-color="rgba(0,0,0,0)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0.04)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fond cave -->
+  <rect x="${WALL}" y="0" width="${totalW - WALL*2}" height="${totalH}" fill="url(#bg${uid})"/>
+
+  <!-- Montant gauche -->
+  <rect x="0" y="0" width="${WALL}" height="${totalH}" fill="url(#mt${uid})"/>
+  <line x1="${WALL}" y1="0" x2="${WALL}" y2="${totalH}" stroke="rgba(201,168,76,0.18)" stroke-width="1"/>
+  <line x1="2" y1="0" x2="2" y2="${totalH}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+
+  <!-- Montant droit -->
+  <rect x="${totalW - WALL}" y="0" width="${WALL}" height="${totalH}" fill="url(#mt${uid})"/>
+  <line x1="${totalW - WALL}" y1="0" x2="${totalW - WALL}" y2="${totalH}" stroke="rgba(201,168,76,0.18)" stroke-width="1"/>
+  <line x1="${totalW - 3}" y1="0" x2="${totalW - 3}" y2="${totalH}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
   `;
 
-  // Numéros d'étages — côté gauche, centrés sur chaque étage
+  // Numéros d'étage dans le montant gauche
   let yLbl = PAD_V;
   floors.forEach((floor, idx) => {
-    const fH = floorH(floor);
-    const midY = yLbl + fH/2 - FLOOR_GAP/2;
-    const etageNum = idx + 1;
-    html += `<text x="${PAD_H/2-1}" y="${midY+5}" text-anchor="middle" font-size="9"
-      fill="rgba(201,168,76,0.45)" font-family="'Cormorant Garamond',serif">${etageNum}</text>`;
+    const fH   = floorH(floor);
+    const midY = yLbl + (fH - FLOOR_GAP) / 2;
+    html += `<text x="${WALL/2}" y="${midY + 4}" text-anchor="middle"
+      font-size="8" fill="rgba(201,168,76,0.5)"
+      font-family="'Cormorant Garamond',serif">${idx + 1}</text>`;
     yLbl += fH;
   });
 
@@ -1811,118 +1851,137 @@ function renderCaveToSvg(svgId, caveNum) {
     const fH     = floorH(floor);
     const pos    = layerPositions(floor.front, floor.back);
 
-    // Fond de l'espace bouteilles
-    html += `<rect x="${PAD_H-4}" y="${yTop-2}" width="${maxLayerW+8}" height="${fH-FLOOR_GAP+2}"
-      fill="${floor.double ? '#0c090b' : '#0a0709'}" rx="1"/>`;
+    // Fond espace bouteilles — légèrement plus sombre
+    html += `<rect x="${WALL + 1}" y="${yTop - 2}"
+      width="${totalW - WALL*2 - 2}" height="${fH - FLOOR_GAP + 2}"
+      fill="rgba(0,0,0,0.25)"/>`;
 
     for(let layer = 0; layer < layers; layer++) {
-      const yCenter    = yTop + layer*(layerH+ROW_GAP) + R_BIG;
-      const slotOffset = layer*(floor.front+floor.back);
+      const yCenter    = yTop + layer * (layerH + ROW_GAP) + R_BIG;
+      const slotOffset = layer * (floor.front + floor.back);
 
       pos.forEach(p => {
-        const slot  = slotOffset + (p.isFront ? p.li+1 : floor.front+p.li+1);
+        const slot  = slotOffset + (p.isFront ? p.li + 1 : floor.front + p.li + 1);
         const wine  = getWineAtSlot(caveNum, floor.id, slot);
         const col   = wine ? (WINE_COLORS[wine.type] || WINE_COLORS.empty) : WINE_COLORS.empty;
         const empty = !wine;
-        const isMagnumBottle = !empty && (wine.format==='150cl'||wine.format==='300cl');
-        const cx      = PAD_H + p.cx;
-        const cy      = yCenter;
-        const isFront = floor.double && layer===1 ? !p.isFront : p.isFront;
-        const r       = isFront ? R_BIG : R_SMALL;
+        const isMag = !empty && (wine.format === '150cl' || wine.format === '300cl');
+        const cx    = ox + p.cx;
+        const cy    = yCenter;
+        const isFront = floor.double && layer === 1 ? !p.isFront : p.isFront;
+        const r     = isFront ? R_BIG : R_SMALL;
 
-        if(isMagnumBottle && isFront)
-          html += `<circle cx="${cx}" cy="${cy}" r="${r+3}" fill="none" stroke="${col.stroke}"
-            stroke-width="1.5" opacity="0.7" style="pointer-events:none" filter="url(#sg${uid})"/>`;
+        if(isMag && isFront)
+          html += `<circle cx="${cx}" cy="${cy}" r="${r + 3.5}" fill="none"
+            stroke="${col.stroke}" stroke-width="1.5" opacity="0.65"
+            style="pointer-events:none" filter="url(#sg${uid})"/>`;
 
         html += `<circle cx="${cx}" cy="${cy}" r="${r}"
           fill="${col.fill}" stroke="${col.stroke}"
-          stroke-width="${empty?0.6:(isFront?1.4:1)}"
-          opacity="${empty?0.4:1}"
-          ${!empty?`filter="url(#sg${uid})"`:''}
+          stroke-width="${empty ? 0.5 : (isFront ? 1.4 : 1)}"
+          opacity="${empty ? 0.38 : 1}"
+          ${!empty ? `filter="url(#sg${uid})"` : ''}
           style="cursor:pointer"
           onclick="handleBottleClick(event,${caveNum},${floor.id},${slot})"
           data-cave="${caveNum}" data-floor="${floor.id}" data-slot="${slot}"/>`;
 
         if(isFront) {
-          html += `<circle cx="${cx}" cy="${cy}" r="${r*0.27}"
-            fill="${empty?'#100a0e':col.small}" opacity="${empty?0.3:0.85}"
-            style="pointer-events:none"/>`;
+          html += `<circle cx="${cx}" cy="${cy}" r="${r * 0.27}"
+            fill="${empty ? '#0c080e' : col.small}"
+            opacity="${empty ? 0.28 : 0.82}" style="pointer-events:none"/>`;
           if(!empty)
-            html += `<path d="M ${cx-r*0.5} ${cy-r*0.4} A ${r*0.6} ${r*0.6} 0 0 1 ${cx+r*0.26} ${cy-r*0.66}"
-              stroke="rgba(255,255,255,0.18)" stroke-width="2" fill="none" stroke-linecap="round"
-              style="pointer-events:none"/>`;
-          if(isMagnumBottle)
-            html += `<text x="${cx}" y="${cy+r*0.5}" text-anchor="middle" font-size="${r*0.52}"
-              fill="${col.stroke}" opacity="0.9" font-family="serif" font-weight="bold"
-              style="pointer-events:none">M</text>`;
+            html += `<path d="M ${cx - r*0.5} ${cy - r*0.4} A ${r*0.6} ${r*0.6} 0 0 1 ${cx + r*0.26} ${cy - r*0.66}"
+              stroke="rgba(255,255,255,0.17)" stroke-width="1.8" fill="none"
+              stroke-linecap="round" style="pointer-events:none"/>`;
+          if(isMag)
+            html += `<text x="${cx}" y="${cy + r*0.5}" text-anchor="middle"
+              font-size="${r * 0.52}" fill="${col.stroke}" opacity="0.9"
+              font-family="serif" font-weight="bold" style="pointer-events:none">M</text>`;
         } else {
           if(!empty)
-            html += `<circle cx="${cx-r*0.3}" cy="${cy-r*0.33}" r="${r*0.22}"
-              fill="rgba(255,255,255,0.13)" style="pointer-events:none"/>`;
+            html += `<circle cx="${cx - r*0.3}" cy="${cy - r*0.32}" r="${r*0.22}"
+              fill="rgba(255,255,255,0.12)" style="pointer-events:none"/>`;
         }
       });
     }
 
     // Clayette bois clair vernis
     const shelfY = yTop + fH - FLOOR_GAP - SHELF_H;
-    html += `<rect x="${PAD_H-8}" y="${shelfY}" width="${maxLayerW+16}" height="${SHELF_H+2}"
-      fill="url(#wood${uid})" rx="1"/>`;
-    html += `<rect x="${PAD_H-8}" y="${shelfY}" width="${maxLayerW+16}" height="1.5"
-      fill="rgba(255,240,190,0.22)" rx="1" style="pointer-events:none"/>`;
-    html += `<rect x="${PAD_H-8}" y="${shelfY+SHELF_H+2}" width="${maxLayerW+16}" height="3"
-      fill="rgba(0,0,0,0.5)" rx="1" style="pointer-events:none"/>`;
+    html += `<rect x="${WALL}" y="${shelfY}"
+      width="${totalW - WALL*2}" height="${SHELF_H + 2}"
+      fill="url(#wd${uid})"/>`;
+    // Reflet vernis
+    html += `<rect x="${WALL}" y="${shelfY}" width="${totalW - WALL*2}" height="1.5"
+      fill="rgba(255,245,200,0.25)" style="pointer-events:none"/>`;
+    // Ombre sous la clayette
+    html += `<rect x="${WALL}" y="${shelfY + SHELF_H + 2}"
+      width="${totalW - WALL*2}" height="4"
+      fill="rgba(0,0,0,0.55)" style="pointer-events:none"/>`;
 
     yTop += fH;
   });
 
+  // Reflet vitre diagonal — par-dessus tout
+  html += `<rect x="${WALL}" y="0" width="${totalW - WALL*2}" height="${totalH}"
+    fill="url(#gl${uid})" style="pointer-events:none"/>`;
+
+  // Ligne de condensation en bas
+  html += `<rect x="${WALL}" y="${totalH - 3}" width="${totalW - WALL*2}" height="3"
+    fill="rgba(168,216,234,0.06)" style="pointer-events:none"/>`;
+
   svg.innerHTML = html;
 
-  // Stats dans le header
-  const count = wineData.filter(w=>w.cave==caveNum).length;
-  const cap   = CAVE_CONFIG[caveNum].floors.reduce((s,f)=>s+f.slots,0);
-  const statsEl = document.getElementById('cave'+caveNum+'-stats');
-  if(statsEl) statsEl.textContent = count + ' / ' + cap + ' bouteilles';
+  // Stats header
+  const count = wineData.filter(w => w.cave == caveNum).length;
+  const cap   = CAVE_CONFIG[caveNum].floors.reduce((s,f) => s + f.slots, 0);
+  const el    = document.getElementById('cave' + caveNum + '-stats');
+  if(el) el.textContent = count + '\u202f/\u202f' + cap;
 
   // Tooltip
   svg.querySelectorAll('circle[data-cave]').forEach(el => {
-    el.addEventListener('mouseenter', (e) => {
+    el.addEventListener('mouseenter', e => {
       const cave  = parseInt(el.dataset.cave);
       const floor = parseInt(el.dataset.floor);
       const slot  = parseInt(el.dataset.slot);
       const wine  = getWineAtSlot(cave, floor, slot);
       const tt    = document.getElementById('tooltip');
-      const floorData = CAVE_CONFIG[cave].floors.find(f=>f.id===floor);
+      const fd    = CAVE_CONFIG[cave].floors.find(f => f.id === floor);
       if(wine) {
-        document.getElementById('tt-name').innerHTML = wine.nom + (wine.annee ? ` <span style="color:var(--text2);font-size:0.82rem">${wine.annee}</span>` : '');
+        document.getElementById('tt-name').innerHTML = wine.nom +
+          (wine.annee ? ` <span style="color:var(--text2);font-size:0.82rem">${wine.annee}</span>` : '');
         document.getElementById('tt-info').innerHTML =
-          `<span class="type-badge badge-${wine.type}" style="font-size:0.7rem">${TYPE_LABELS[wine.type]||wine.type}</span>
-          ${wine.domaine?`<br><i style="color:var(--cream)">${wine.domaine}</i>`:''}
-          <br>${wine.region||'—'}
-          ${wine.prix?`<br>${wine.prix} €`:''}
-          ${wine.note?`<br>${'★'.repeat(parseInt(wine.note))}`:''}
-          <br><small style="color:#4a3840">Ét.${floor}·#${slot}</small>`;
+          `<span class="type-badge badge-${wine.type}" style="font-size:0.7rem">${TYPE_LABELS[wine.type]||wine.type}</span>` +
+          (wine.domaine ? `<br><i style="color:var(--cream)">${wine.domaine}</i>` : '') +
+          `<br>${wine.region||'—'}` +
+          (wine.prix ? `<br>${wine.prix}\u202f€` : '') +
+          (wine.note ? `<br>${'★'.repeat(parseInt(wine.note))}` : '') +
+          `<br><small style="color:#4a3840">Ét.${floor}\u00b7#${slot}</small>`;
         const imgWrap = document.getElementById('tt-img-wrap');
         const imgEl   = document.getElementById('tt-img');
-        const img = imgGet('wine_'+wine.id)||wine.image||'';
-        if(img){imgEl.src=img;imgWrap.style.display='block';}
-        else imgWrap.style.display='none';
+        const img     = imgGet('wine_' + wine.id) || wine.image || '';
+        if(img) { imgEl.src = img; imgWrap.style.display = 'block'; }
+        else imgWrap.style.display = 'none';
       } else {
-        document.getElementById('tt-img-wrap').style.display='none';
-        document.getElementById('tt-name').innerHTML='<span class="tt-empty">Emplacement vide</span>';
-        document.getElementById('tt-info').innerHTML=`Étage ${floor}·#${slot}<br><small style="color:#5a4050">Cliquer pour ajouter</small>`;
+        document.getElementById('tt-img-wrap').style.display = 'none';
+        document.getElementById('tt-name').innerHTML = '<span class="tt-empty">Emplacement vide</span>';
+        document.getElementById('tt-info').innerHTML =
+          `Étage ${floor}\u00b7#${slot}<br><small style="color:#5a4050">Cliquer pour ajouter</small>`;
       }
-      tt.style.display='block';
-      tt.style.left=(e.clientX+16)+'px';
-      tt.style.top=(e.clientY-12)+'px';
+      tt.style.display = 'block';
+      tt.style.left    = (e.clientX + 16) + 'px';
+      tt.style.top     = (e.clientY - 12) + 'px';
     });
     el.addEventListener('mousemove', e => {
-      const tt=document.getElementById('tooltip');
-      tt.style.left=(e.clientX+16)+'px';
-      tt.style.top=(e.clientY-12)+'px';
+      const tt = document.getElementById('tooltip');
+      tt.style.left = (e.clientX + 16) + 'px';
+      tt.style.top  = (e.clientY - 12) + 'px';
     });
-    el.addEventListener('mouseleave', () => { document.getElementById('tooltip').style.display='none'; });
+    el.addEventListener('mouseleave', () => {
+      document.getElementById('tooltip').style.display = 'none';
+    });
   });
 }
+
 
 // renderCave2D
 function renderCave2D() {
