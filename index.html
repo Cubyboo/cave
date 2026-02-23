@@ -1462,7 +1462,35 @@ function degImg(d)     { return imgGet('deg_'  + d.id)    || d.image    || ''; }
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_GkA2thpGf_tCdgMtoVYt5-xANAztBu6Rmks9SE5-9yF8_jdbBu7iXbgS13_5iqH_6Q/exec';
 
-let wineData = JSON.parse(localStorage.getItem('caveData') || '[]');
+// ── Initialisation de wineData depuis localStorage ─────────────────────────
+// Déduplication immédiate au démarrage : si le localStorage contient des doublons
+// (suite à un bug de sync précédent), ils sont nettoyés avant tout traitement
+let wineData = (function() {
+  try {
+    const raw = JSON.parse(localStorage.getItem('caveData') || '[]');
+    if(!Array.isArray(raw) || raw.length === 0) return [];
+    const seenSlot = new Set(), seenId = new Set(), clean = [];
+    for(const w of raw) {
+      const slotKey = `${w.cave}_${w.floor}_${w.slot}`;
+      const idKey   = w.id ? String(w.id).trim() : null;
+      if(seenSlot.has(slotKey) || (idKey && seenId.has(idKey))) {
+        console.warn('[CAVE] doublon localStorage supprimé au démarrage :', slotKey, w.nom);
+        continue;
+      }
+      seenSlot.add(slotKey);
+      if(idKey) seenId.add(idKey);
+      clean.push(w);
+    }
+    if(clean.length !== raw.length) {
+      console.warn(`[CAVE] localStorage nettoyé : ${raw.length} → ${clean.length} vins`);
+      localStorage.setItem('caveData', JSON.stringify(clean));
+    }
+    return clean;
+  } catch(e) {
+    console.error('[CAVE] Erreur lecture localStorage:', e);
+    return [];
+  }
+})();
 let currentCave = 1;
 let addingToSlot = null;
 
@@ -1509,29 +1537,90 @@ function setSyncIndicator(state) {
 // ── File d'attente pour les sauvegardes échouées ──────────────────────
 let _pendingSave = false;
 let _saveDebounceTimer = null;
-// Horodatage de la dernière modification locale — pour détecter les conflits avec le Sheet
+let _loadInProgress = false;  // ← NOUVEAU : empêche les appels loadFromSheets simultanés
+// Horodatage de la dernière modification locale
 let _localDataTs = parseInt(localStorage.getItem('_localDataTs') || '0');
 
-// ── saveData : persiste localement + déclenche sync Sheet après debounce ─────
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// DÉDUPLICATION — appelée avant TOUTE sauvegarde vers le Sheet
+// Supprime les doublons par (cave, floor, slot) et par id
+// En cas de doublon, garde le dernier entré (le plus récent)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function _deduplicateWineData() {
+  const seenId   = new Map(); // id → index dans le tableau final
+  const seenSlot = new Map(); // "cave_floor_slot" → index dans le tableau final
+  const deduped  = [];
+
+  for(const w of wineData) {
+    const slotKey = `${w.cave}_${w.floor}_${w.slot}`;
+    const idKey   = w.id ? String(w.id).trim() : null;
+
+    let dominated = false;
+
+    // Conflit d'ID : garder le dernier (écraser l'ancien)
+    if(idKey && seenId.has(idKey)) {
+      const prev = seenId.get(idKey);
+      deduped.splice(prev, 1, w);  // remplace l'ancienne entrée
+      // Mettre à jour les index après remplacement
+      seenId.set(idKey, deduped.length - 1);
+      dominated = true;
+    }
+
+    // Conflit de slot : garder le dernier
+    if(seenSlot.has(slotKey)) {
+      const prev = seenSlot.get(slotKey);
+      if(!dominated) {
+        deduped.splice(prev, 1, w);
+        seenSlot.set(slotKey, deduped.length - 1);
+        if(idKey) seenId.set(idKey, deduped.length - 1);
+        dominated = true;
+      }
+    }
+
+    if(!dominated) {
+      const idx = deduped.length;
+      deduped.push(w);
+      if(idKey) seenId.set(idKey, idx);
+      seenSlot.set(slotKey, idx);
+    }
+  }
+
+  const before = wineData.length;
+  wineData = deduped;
+  if(deduped.length !== before) {
+    console.warn(`[CAVE] Déduplication : ${before} → ${deduped.length} vins (${before - deduped.length} doublons supprimés)`);
+  }
+  return deduped.length !== before; // retourne true si des doublons ont été supprimés
+}
+
+// ── saveData : déduplique + persiste localement + déclenche sync Sheet ─────
 function saveData() {
-  // Horodater la modification locale
+  // Dédupliquer AVANT de sauvegarder (empêche la propagation de doublons vers le Sheet)
+  _deduplicateWineData();
+
   _localDataTs = Date.now();
   localStorage.setItem('_localDataTs', String(_localDataTs));
   localStorage.setItem('caveData', JSON.stringify(wineData));
   updateHeader();
-  // Debounce : n'envoyer qu'une seule fois après 1.5s d'inactivité
   clearTimeout(_saveDebounceTimer);
-  _saveDebounceTimer = setTimeout(() => _doSyncToSheets(), 1500);
+  _saveDebounceTimer = setTimeout(() => {
+    _saveDebounceTimer = null;  // ← Réinitialiser le timer ici pour que le guard fonctionne
+    _doSyncToSheets();
+  }, 1500);
 }
 
-// ── _doSyncToSheets : envoie l'état complet de wineData vers Google Sheets ───
+// ── _doSyncToSheets : envoie l'état complet dédupliqué vers Google Sheets ───
 function _doSyncToSheets() {
+  // Nouvelle déduplication au moment de l'envoi (sécurité supplémentaire)
+  _deduplicateWineData();
+
   setSyncIndicator('saving');
   _pendingSave = true;
-  // Inclure l'horodatage pour que le Sheet sache quelle version est la plus récente
+  const snapshot = JSON.stringify(wineData); // snapshot immutable pour l'envoi
   fetch(SCRIPT_URL, {
     method: 'POST',
-    body: JSON.stringify({ action: 'save', data: wineData, clientTs: _localDataTs })
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ action: 'save', data: JSON.parse(snapshot), clientTs: _localDataTs })
   })
   .then(r => {
     if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -1540,6 +1629,7 @@ function _doSyncToSheets() {
   .then(() => {
     _pendingSave = false;
     setSyncIndicator('ok');
+    localStorage.removeItem('_pendingSync');
   })
   .catch(e => {
     console.warn('Sync Google Sheets échouée', e);
@@ -1551,65 +1641,65 @@ function _doSyncToSheets() {
 }
 
 // ── Normaliser les noms de champs Sheet → camelCase JS ───────────────────────
-// Google Sheets peut renvoyer les colonnes en camelCase ou snake_case selon la version
-// Cette fonction unifie les deux formes pour éviter les champs manquants après rechargement
 function _normalizeWineFields(w) {
   const n = Object.assign({}, w);
-  // apogeeDebut / apogee_debut → toujours apogeeDebut
   if(n.apogee_debut !== undefined && n.apogeeDebut === undefined) { n.apogeeDebut = n.apogee_debut; delete n.apogee_debut; }
-  if(n.apogee_fin !== undefined && n.apogeeFin === undefined)     { n.apogeeFin   = n.apogee_fin;   delete n.apogee_fin;   }
-  // dateAjout / date_ajout
-  if(n.date_ajout !== undefined && n.dateAjout === undefined)     { n.dateAjout   = n.date_ajout;   delete n.date_ajout;   }
-  // S'assurer que l'ID est toujours une string non vide
+  if(n.apogee_fin   !== undefined && n.apogeeFin   === undefined) { n.apogeeFin   = n.apogee_fin;   delete n.apogee_fin;   }
+  if(n.date_ajout   !== undefined && n.dateAjout   === undefined) { n.dateAjout   = n.date_ajout;   delete n.date_ajout;   }
   if(n.id !== undefined) n.id = String(n.id).trim();
   return n;
 }
 
-// ── loadFromSheets : récupère le Sheet et fusionne intelligemment ─────────────
-// Stratégie "client gagne si plus récent" :
-//   • Si un save est en attente (debounce actif ou fetch en cours), ne PAS écraser wineData
-//   • Sinon, le Sheet fait autorité SAUF pour les images (toujours résolues par ID)
-//   • Les positions cave/floor/slot du Sheet remplacent toujours localStorage
-//     → garantit que les déplacements effectués sur un autre appareil sont bien pris en compte
+// ── loadFromSheets : récupère le Sheet et applique une fusion propre ──────────
+// Règles :
+//   1. Un seul appel actif à la fois (_loadInProgress)
+//   2. Si un save local est en vol, on ne recharge PAS (client plus récent)
+//   3. Le Sheet fait autorité pour cave/floor/slot
+//   4. Les images sont toujours résolues par ID (jamais par slot)
+//   5. Déduplication appliquée sur les données du Sheet avant fusion
 function loadFromSheets() {
-  // Afficher le spinner de synchronisation
+  // GUARD 1 : éviter les appels simultanés (double-callback JSONP)
+  if(_loadInProgress) {
+    console.warn('[CAVE] loadFromSheets déjà en cours — ignoré');
+    return;
+  }
+  _loadInProgress = true;
+
   const overlay = document.getElementById('sync-loading-overlay');
-  if(overlay) { overlay.classList.remove('hidden'); }
+  if(overlay) overlay.classList.remove('hidden');
   showNotif('Synchronisation en cours…');
+
   const cbName = 'caveCallback_' + Date.now();
   const timeout = setTimeout(() => {
+    _loadInProgress = false;
     if(overlay) overlay.classList.add('hidden');
     showNotif('Mode hors ligne — données locales', true);
     delete window[cbName];
     const s = document.getElementById('jsonp-script');
     if(s) s.remove();
   }, 8000);
+
   window[cbName] = function(sheetData) {
     clearTimeout(timeout);
+    _loadInProgress = false;
     if(overlay) overlay.classList.add('hidden');
     try {
       if(Array.isArray(sheetData) && sheetData.length > 0) {
 
-        // ── GUARD : Si un save local est en attente, le client est plus récent ───
-        // Ne pas écraser les positions fraîchement modifiées avec une version périmée du Sheet
+        // GUARD 2 : Si une sauvegarde est en vol, le client est plus récent → ignorer
         if(_pendingSave || _saveDebounceTimer) {
-          showNotif('Sync ignorée — sauvegarde locale en attente ✓');
+          console.log('[CAVE] loadFromSheets ignoré — sauvegarde locale en attente');
+          showNotif('Données locales conservées (sauvegarde en cours) ✓');
           loadHistoriqueFromSheets();
           return;
         }
 
-        // ── Images : résolution par ID (priorité absolue) ─────────────────────
-        // IMPORTANT : on n'utilise PLUS localImageBySlot pour les vins (slot a pu changer)
-        // On résout uniquement par wine_<id> pour éviter les confusions après déplacement
+        // ── Récupérer les images et prix marché depuis localStorage/imageStore ──
         const localData = JSON.parse(localStorage.getItem('caveData') || '[]');
         const localImageById = {};
         localData.forEach(w => {
-          if(w.id && (w.image || imgGet('wine_' + String(w.id)))) {
-            localImageById[String(w.id)] = imgGet('wine_' + String(w.id)) || w.image || '';
-          }
+          if(w.id) localImageById[String(w.id)] = imgGet('wine_' + String(w.id)) || w.image || '';
         });
-
-        // ── Prix marché : préservés depuis localStorage par ID ────────────────
         const localPrixMarche = {};
         localData.forEach(w => {
           if(w.id && (w.prix_marche || w.prix_marche_manuel)) {
@@ -1624,30 +1714,42 @@ function loadFromSheets() {
           }
         });
 
-        // ── Construire wineData depuis Sheet (source de vérité pour cave/floor/slot) ──
-        wineData = sheetData.map(raw => {
-          const w   = _normalizeWineFields(raw);
+        // ── Construire wineData depuis Sheet avec déduplication ──────────────
+        // ── STRATÉGIE DÉDUPLICATION : DERNIER GAGNE (last-write-wins) ──────────
+        // Pourquoi DERNIER et non PREMIER ?
+        // Quand le Sheet est corrompu (ex: 133 lignes), les lignes dupliquées
+        // viennent d'une 2ème écriture faite APRÈS un déplacement.
+        // La 2ème occurrence = la position correcte (après déplacement).
+        // Garder le PREMIER = remettre l'ancienne position → vin "disparaît".
+        // Garder le DERNIER = bonne position = comportement attendu.
+        // Pour un Sheet propre (80 lignes), first=last → résultat identique.
+        const bySlot = new Map(); // slotKey → entrée construite
+        const byId   = new Map(); // id → slotKey
+
+        for(const raw of sheetData) {
+          const w     = _normalizeWineFields(raw);
           const cave  = parseInt(w.cave)  || 1;
           const floor = parseInt(w.floor) || 1;
           const slot  = parseInt(w.slot)  || 1;
-          const id    = String(w.id || '');
+          const id    = String(w.id || '').trim();
+          const slotKey = `${cave}_${floor}_${slot}`;
 
-          // Image : ID d'abord (imageStore), puis champ du Sheet, jamais par slot
+          // Ignorer les lignes sans nom (lignes vides du Sheet)
+          if(!w.nom) continue;
+
+          // Résolution image par ID uniquement (jamais par slot)
           const resolvedImage = (id ? imgGet('wine_' + id) : '') || w.image || (id ? localImageById[id] : '') || '';
           if(resolvedImage && id) imgSave('wine_' + id, resolvedImage);
 
           const pm = (id ? localPrixMarche[id] : null) || {};
-          return {
+          const entry = {
             ...w,
-            cave,
-            floor,
-            slot,
+            cave, floor, slot,
             annee:  parseInt(w.annee)  || '',
             prix:   parseFloat(w.prix) || '',
             note:   w.note || '',
             image:  resolvedImage,
-            _prixEstime: parseFloat(w.prix_marche || w._prixEstime || pm.prix_marche || '') || '',
-            // Préserver les prix marché détaillés depuis localStorage si absents du Sheet
+            _prixEstime:          parseFloat(w.prix_marche || w._prixEstime || pm.prix_marche || '') || '',
             prix_marche:          w.prix_marche          || pm.prix_marche          || '',
             prix_marche_manuel:   w.prix_marche_manuel   || pm.prix_marche_manuel   || '',
             prix_marche_min:      w.prix_marche_min      || pm.prix_marche_min      || '',
@@ -1655,22 +1757,41 @@ function loadFromSheets() {
             prix_marche_tendance: w.prix_marche_tendance || pm.prix_marche_tendance || '',
             prix_marche_date:     w.prix_marche_date     || pm.prix_marche_date     || ''
           };
-        });
 
-        // Mettre à jour l'horodatage local pour correspondre à ce que le Sheet a
+          // Si doublon de slot : le NOUVEAU remplace l'ancien (last-write-wins)
+          if(bySlot.has(slotKey)) {
+            console.warn('[CAVE] doublon slot dans Sheet — gardé le DERNIER :', slotKey, w.nom);
+          }
+          // Si doublon d'id : retirer l'ancienne entrée (son slot libéré)
+          if(id && byId.has(id)) {
+            const oldSlotKey = byId.get(id);
+            bySlot.delete(oldSlotKey);
+            console.warn('[CAVE] doublon id dans Sheet — gardé le DERNIER :', id, w.nom);
+          }
+
+          bySlot.set(slotKey, entry);
+          if(id) byId.set(id, slotKey);
+        }
+
+        const merged = Array.from(bySlot.values());
+        if(merged.length < sheetData.length) {
+          console.warn(`[CAVE] Sheet dédupliqué : ${sheetData.length} → ${merged.length} vins (${sheetData.length - merged.length} doublons)`);
+        }
+
+        wineData = merged;
         _localDataTs = Date.now();
         localStorage.setItem('_localDataTs', String(_localDataTs));
         localStorage.setItem('caveData', JSON.stringify(wineData));
         updateHeader();
         renderCave2D();
-        showNotif('Cave synchronisée ✓');
+        showNotif('Cave synchronisée — ' + wineData.length + ' vins ✓');
         loadHistoriqueFromSheets();
         setTimeout(() => estimerTousLesVinsAuto(), 2000);
       } else {
         showNotif('Sheet vide — données locales conservées');
       }
     } catch(e) {
-      console.error('loadFromSheets error:', e);
+      console.error('[CAVE] loadFromSheets error:', e);
       showNotif('Erreur de données — données locales conservées', true);
     } finally {
       delete window[cbName];
@@ -3320,11 +3441,20 @@ window.addEventListener('load', () => {
   renderCave2D();
   initAuth();
   if(sessionStorage.getItem('cave_auth') === '1') {
+    // Démarrer le chargement depuis le Sheet
     loadFromSheets();
-    // Retenter une sync échouée lors de la précédente session
+    // IMPORTANT : retenter la sync échouée UNIQUEMENT après que loadFromSheets a fini
+    // (évite la race condition qui envoyait wineData périmé PENDANT le chargement du Sheet)
+    // On attend 10s pour être sûr que loadFromSheets est terminé (timeout interne = 8s)
     if(localStorage.getItem('_pendingSync') === '1') {
       localStorage.removeItem('_pendingSync');
-      setTimeout(() => { setSyncIndicator('saving'); _doSyncToSheets(); }, 3000);
+      setTimeout(() => {
+        if(!_loadInProgress) {
+          console.log('[CAVE] Retry sync différée : envoi des données locales après chargement Sheet');
+          setSyncIndicator('saving');
+          _doSyncToSheets();
+        }
+      }, 10000);
     }
   }
 });
