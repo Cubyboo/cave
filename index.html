@@ -1880,7 +1880,7 @@ function renderCaveToSvg(svgId, caveNum) {
           fill="${col.fill}" stroke="${col.stroke}"
           stroke-width="${empty ? 0.5 : (isFront ? 1.4 : 1)}"
           opacity="${empty ? 0.38 : 1}"
-          ${!empty ? `filter="url(#sg${uid})"` : ''}
+          ${!empty ? 'filter="url(#sg' + uid + ')"' : ''}
           style="cursor:pointer"
           onclick="handleBottleClick(event,${caveNum},${floor.id},${slot})"
           data-cave="${caveNum}" data-floor="${floor.id}" data-slot="${slot}"/>`;
@@ -5550,6 +5550,7 @@ const APPELLATIONS = {
   ],
 
   // ─── BORDEAUX ──────────────────────────────────────────────
+  'bordeaux': [
     // Zones
     { nom:'Médoc',                     type:'zone', lat:45.350, lng:-0.920 },
     { nom:'Rive droite',               type:'zone', lat:44.940, lng:-0.180 },
