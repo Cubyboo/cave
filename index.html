@@ -534,81 +534,96 @@
     .wine-cards { display: flex; }
     #cave-svg-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
-  /* ── Armoire à vin ── */
+  /* ── Caves réfrigérées ── */
   .cave-unit { display:flex; flex-direction:column; }
 
+  /* Panneau température au-dessus de la cave */
   .cave-header-panel {
-    background: linear-gradient(135deg, #1a1a1e 0%, #111114 100%);
-    border: 1px solid #333340;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
     border-bottom: none;
-    border-radius: 6px 6px 0 0;
-    padding: 14px 18px;
+    border-radius: var(--radius) var(--radius) 0 0;
+    padding: 12px 18px;
   }
   .cave-header-inner { display:flex; align-items:center; justify-content:space-between; }
-  .cave-title { font-family:'Playfair Display',serif; font-size:1rem; color:var(--cream); letter-spacing:2px; text-transform:uppercase; }
-  .cave-subtitle { font-size:0.72rem; color:var(--text3); letter-spacing:1px; text-transform:uppercase; margin-top:3px; }
+  .cave-title {
+    font-family:'Playfair Display',serif; font-size:0.95rem;
+    color:var(--gold); letter-spacing:2px; text-transform:uppercase;
+  }
+  .cave-subtitle { font-size:0.7rem; color:var(--text3); letter-spacing:1px; margin-top:2px; }
 
-  .cave-temp { display:flex; flex-direction:column; align-items:center; gap:2px; }
-  .cave-temp-icon { font-size:1.1rem; }
-  .cave-temp-val { font-family:'Playfair Display',serif; font-size:1.1rem; color:#7ec8e3; letter-spacing:1px; }
-  .cave-temp-lbl { font-size:0.6rem; color:var(--text3); text-transform:uppercase; letter-spacing:1.5px; }
+  /* Affichage température style thermostat */
+  .cave-temp {
+    display:flex; align-items:center; gap:10px;
+    background:var(--bg3); border:1px solid var(--border);
+    border-radius:var(--radius-sm); padding:6px 12px;
+  }
+  .cave-temp-display { display:flex; flex-direction:column; align-items:flex-end; }
+  .cave-temp-val {
+    font-family:'Playfair Display',serif; font-size:1.4rem;
+    color:#a8d8ea; line-height:1; letter-spacing:1px;
+  }
+  .cave-temp-lbl { font-size:0.58rem; color:var(--text3); text-transform:uppercase; letter-spacing:1.5px; margin-top:1px; }
+  .cave-temp-icon { font-size:1.3rem; opacity:0.7; }
 
+  /* Cadre cave réfrigérée — s'intègre dans le site */
   .cave-frame {
     position: relative;
-    background: linear-gradient(180deg, #0d0d10 0%, #090909 100%);
-    border: 2px solid #2a2a2e;
-    border-top: 3px solid #3a3a40;
-    border-radius: 0 0 4px 4px;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-top: 2px solid var(--border2);
+    border-radius: 0 0 var(--radius) var(--radius);
     overflow: hidden;
     cursor: pointer;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.7), inset 0 0 60px rgba(0,0,0,0.5);
-    transition: border-color 0.3s;
+    box-shadow: var(--shadow), inset 0 0 80px rgba(0,0,0,0.4);
+    transition: border-color 0.25s;
   }
-  .cave-frame:hover { border-color: #4a4a52; }
-  .cave-frame.focused { border-color: var(--gold); box-shadow: 0 8px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(201,168,76,0.3), inset 0 0 60px rgba(0,0,0,0.5); }
+  .cave-frame:hover { border-color: var(--gold); }
+  .cave-frame.focused {
+    border-color: var(--gold);
+    box-shadow: var(--shadow), 0 0 0 1px rgba(201,168,76,0.2);
+  }
 
-  /* Reflet vitré */
+  /* Reflet vitré discret */
   .cave-glass-reflection {
-    position:absolute; top:0; left:0; right:0; bottom:0; z-index:10;
-    background: linear-gradient(135deg,
-      rgba(255,255,255,0.04) 0%,
-      rgba(255,255,255,0.01) 40%,
-      transparent 60%,
-      rgba(255,255,255,0.02) 100%);
+    position:absolute; top:0; left:0; right:0; height:40%; z-index:10;
+    background: linear-gradient(180deg, rgba(201,168,76,0.025) 0%, transparent 100%);
     pointer-events:none;
   }
 
-  /* Montants latéraux inox brossé */
+  /* Montants latéraux — reprennent la couleur du site */
   .cave-side {
-    position:absolute; top:0; bottom:0; width:12px; z-index:5;
-    background: linear-gradient(90deg, #1a1a1e, #2a2a30, #1a1a1e);
+    position:absolute; top:0; bottom:0; width:10px; z-index:5;
+    background: linear-gradient(90deg, var(--bg3), var(--bg4), var(--bg3));
+    border-right: 1px solid var(--border);
     pointer-events:none;
   }
-  .cave-side-left  { left:0; }
-  .cave-side-right { right:0; }
+  .cave-side-left  { left:0; border-right:1px solid var(--border); }
+  .cave-side-right { right:0; border-right:none; border-left:1px solid var(--border); }
 
-  /* Poignée */
+  /* Poignée dorée */
   .cave-handle {
-    position:absolute; top:50%; left:8px; transform:translateY(-50%);
-    width:4px; height:60px; z-index:6;
-    background: linear-gradient(180deg, #3a3a40, #555560, #3a3a40);
-    border-radius:2px;
-    box-shadow: 1px 0 3px rgba(0,0,0,0.6);
+    position:absolute; top:50%; left:6px; transform:translateY(-50%);
+    width:3px; height:50px; z-index:6;
+    background: linear-gradient(180deg, var(--border2), var(--gold3), var(--border2));
+    border-radius:2px; opacity:0.6;
     pointer-events:none;
   }
-  .cave-handle-right { left:auto; right:8px; }
+  .cave-handle-right { left:auto; right:6px; }
 
-  .cave-inner-wrap { padding: 16px 20px; }
+  .cave-inner-wrap { padding: 14px 18px; }
 
-  /* Mobile : une cave à la fois */
+  /* Sélecteur de cave */
+  .cave-view-selector { display:flex; gap:8px; }
+
+  /* Mobile */
   @media (max-width: 900px) {
     #caves-container { flex-direction:column; }
     #cave-unit-2 { display:none; }
     #cave-unit-1 { display:flex; }
-    #cave-mobile-selector { display:flex !important; }
   }
   @media (min-width: 901px) {
-    #cave-mobile-selector { display:none !important; }
+    #cave-mobile-btns { display:none !important; }
   }
     .cave-selector { flex-wrap: wrap; gap: 8px; }
     .cave-legend { flex-wrap: wrap; gap: 6px; }
@@ -749,38 +764,40 @@
 <!-- ===== 2D CAVE VIEW ===== -->
 <div id="view2d" class="content active">
 
-  <!-- Légende commune -->
-  <div class="cave-legend" style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:18px;padding:10px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:0.75rem">
-    <span style="color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;font-size:0.65rem;margin-right:4px">Légende</span>
-    <div class="legend-item"><div class="legend-big" style="background:#8a1828"></div> <span style="color:#e06878">Rouge</span></div>
-    <div class="legend-item"><div class="legend-big" style="background:#a88018"></div> <span style="color:#e8c870">Blanc</span></div>
-    <div class="legend-item"><div class="legend-big" style="background:#b84068"></div> <span style="color:#e8a0b0">Rosé</span></div>
-    <div class="legend-item"><div class="legend-big" style="background:#1e4870"></div> <span style="color:#90c8f0">Effervescent</span></div>
-    <div class="legend-item"><div class="legend-big" style="background:#b8901a"></div> <span style="color:#f5d97a">VDN</span></div>
-    <div class="legend-item"><div class="legend-big" style="background:#c06020"></div> <span style="color:#f0a850">Liquoreux</span></div>
-    <div class="legend-item"><div class="legend-big" style="background:#1a1014;border:1.5px solid #4a3040"></div> <span style="color:#6a5a50">Vide</span></div>
-    <div class="legend-item"><div style="width:16px;height:16px;border-radius:50%;background:transparent;border:2.5px solid #c9a84c;box-shadow:0 0 6px rgba(201,168,76,0.6)"></div> <span style="color:#c9a84c">Magnum</span></div>
-    <!-- Bouton mobile -->
-    <div class="cave-selector" style="margin-left:auto;display:flex;gap:8px" id="cave-mobile-selector">
-      <button class="cave-btn active" onclick="selectCave(1,this)" id="cave-btn-1">Cave 1</button>
-      <button class="cave-btn" onclick="selectCave(2,this)" id="cave-btn-2">Cave 2</button>
+  <!-- Barre de contrôle -->
+  <div class="cave-selector" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px">
+    <button class="cave-btn active" id="cave-btn-1" onclick="selectCaveView(1,this)">Cave 1</button>
+    <button class="cave-btn" id="cave-btn-2" onclick="selectCaveView(2,this)">Cave 2</button>
+    <button class="cave-btn" id="cave-btn-both" onclick="selectCaveView('both',this)">Les 2 caves</button>
+    <div class="cave-legend" style="margin-left:auto;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <div class="legend-item"><div class="legend-big" style="background:#8a1828"></div><span style="color:#e06878">Rouge</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#a88018"></div><span style="color:#e8c870">Blanc</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#b84068"></div><span style="color:#e8a0b0">Rosé</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#1e4870"></div><span style="color:#90c8f0">Effervescent</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#b8901a"></div><span style="color:#f5d97a">VDN</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#c06020"></div><span style="color:#f0a850">Liquoreux</span></div>
+      <div class="legend-item"><div class="legend-big" style="background:#1a1014;border:1.5px solid #4a3040"></div><span style="color:#6a5a50">Vide</span></div>
+      <div class="legend-item"><div style="width:14px;height:14px;border-radius:50%;border:2px solid #c9a84c"></div><span style="color:#c9a84c">Magnum</span></div>
     </div>
   </div>
 
-  <!-- Vue double cave (desktop) / simple (mobile) -->
-  <div id="caves-container" style="display:flex;gap:24px;align-items:flex-start;width:100%">
+  <!-- Caves -->
+  <div id="caves-container" style="display:flex;gap:20px;align-items:flex-start;width:100%">
+
     <!-- Cave 1 -->
     <div class="cave-unit" id="cave-unit-1" style="flex:1;min-width:0">
       <div class="cave-header-panel">
         <div class="cave-header-inner">
           <div>
-            <div class="cave-title">Cave Climatisée <span style="color:var(--gold)">№ 1</span></div>
-            <div class="cave-subtitle" id="cave1-stats">— bouteilles</div>
+            <div class="cave-title">Cave Réfrigérée &nbsp;<span style="color:var(--cream);font-style:italic">№ 1</span></div>
+            <div class="cave-subtitle" id="cave1-stats">chargement…</div>
           </div>
           <div class="cave-temp">
-            <span class="cave-temp-icon">🌡</span>
-            <span class="cave-temp-val">12°C</span>
-            <span class="cave-temp-lbl">Température</span>
+            <span class="cave-temp-icon">❄️</span>
+            <div class="cave-temp-display">
+              <span class="cave-temp-val">12°C</span>
+              <span class="cave-temp-lbl">Température</span>
+            </div>
           </div>
         </div>
       </div>
@@ -796,17 +813,19 @@
     </div>
 
     <!-- Cave 2 -->
-    <div class="cave-unit" id="cave-unit-2" style="flex:1;min-width:0">
+    <div class="cave-unit" id="cave-unit-2" style="flex:1;min-width:0;display:none">
       <div class="cave-header-panel">
         <div class="cave-header-inner">
           <div>
-            <div class="cave-title">Cave Climatisée <span style="color:var(--gold)">№ 2</span></div>
-            <div class="cave-subtitle" id="cave2-stats">— bouteilles</div>
+            <div class="cave-title">Cave Réfrigérée &nbsp;<span style="color:var(--cream);font-style:italic">№ 2</span></div>
+            <div class="cave-subtitle" id="cave2-stats">chargement…</div>
           </div>
           <div class="cave-temp">
-            <span class="cave-temp-icon">🌡</span>
-            <span class="cave-temp-val">12°C</span>
-            <span class="cave-temp-lbl">Température</span>
+            <span class="cave-temp-icon">❄️</span>
+            <div class="cave-temp-display">
+              <span class="cave-temp-val">12°C</span>
+              <span class="cave-temp-lbl">Température</span>
+            </div>
           </div>
         </div>
       </div>
@@ -820,8 +839,8 @@
         <div class="cave-handle cave-handle-right"></div>
       </div>
     </div>
-  </div>
 
+  </div>
 </div>
 
 <!-- ===== LIST VIEW ===== -->
@@ -1677,19 +1696,27 @@ window.addEventListener('load', function() {
   } catch(e) {}
 });
 
-function selectCave(n, btn) {
-  currentCave = n;
-  // Sur mobile : montrer/cacher les unités
-  document.getElementById('cave-unit-1').style.display = (n===1||window.innerWidth>900) ? 'flex' : 'none';
-  document.getElementById('cave-unit-2').style.display = (n===2||window.innerWidth>900) ? 'flex' : 'none';
-  document.querySelectorAll('.cave-btn').forEach(b=>b.classList.remove('active'));
+let caveView = 1; // 1, 2, ou 'both'
+
+function selectCaveView(v, btn) {
+  caveView = v;
+  currentCave = (v === 'both') ? 1 : v;
+  document.querySelectorAll('.cave-btn').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
+  const u1 = document.getElementById('cave-unit-1');
+  const u2 = document.getElementById('cave-unit-2');
+  if(v === 1)      { u1.style.display='flex'; u2.style.display='none'; }
+  else if(v === 2) { u1.style.display='none'; u2.style.display='flex'; }
+  else             { u1.style.display='flex'; u2.style.display='flex'; }
   renderCave2D();
 }
 
+// Compatibilité avec les appels existants à selectCave
+function selectCave(n, btn) { selectCaveView(n, btn); }
+
 function focusCave(n) {
   currentCave = n;
-  document.querySelectorAll('.cave-frame').forEach(f=>f.classList.remove('focused'));
+  document.querySelectorAll('.cave-frame').forEach(f => f.classList.remove('focused'));
   const unit = document.getElementById('cave-unit-' + n);
   if(unit) unit.querySelector('.cave-frame').classList.add('focused');
 }
@@ -1809,36 +1836,24 @@ function renderCaveToSvg(svgId, caveNum) {
         <feGaussianBlur stdDeviation="1.8" result="blur"/>
         <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
-      <!-- Gradient bois clair chêne vernis -->
+      <!-- Gradient clayette bois clair vernis -->
       <linearGradient id="woodGrain" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%"   stop-color="#c8a45a"/>
-        <stop offset="30%"  stop-color="#b8923e"/>
-        <stop offset="60%"  stop-color="#c09848"/>
-        <stop offset="100%" stop-color="#a07828"/>
-      </linearGradient>
-      <!-- Gradient montants inox -->
-      <linearGradient id="inoxSide" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%"   stop-color="#1a1a1e"/>
-        <stop offset="50%"  stop-color="#2e2e34"/>
-        <stop offset="100%" stop-color="#1a1a1e"/>
+        <stop offset="0%"   stop-color="#d4a85c"/>
+        <stop offset="25%"  stop-color="#c09040"/>
+        <stop offset="65%"  stop-color="#b8883a"/>
+        <stop offset="100%" stop-color="#a07030"/>
       </linearGradient>
     </defs>
-    <!-- Fond inox noir mat -->
-    <rect width="${totalW}" height="${totalH}" fill="#0a0a0c"/>
-    <!-- Grille subtile fond -->
-    <pattern id="gridPat" width="20" height="20" patternUnits="userSpaceOnUse">
-      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="0.5"/>
-    </pattern>
-    <rect width="${totalW}" height="${totalH}" fill="url(#gridPat)"/>
+    <!-- Fond dans les tons du site -->
+    <rect width="${totalW}" height="${totalH}" fill="#0e0a0b"/>
   `;
 
-  // Montants latéraux inox brossé
+  // Montants latéraux dans les tons bordeaux/bois du site
   const sideH = totalH - PAD_V * 2;
-  html += `<rect x="${PAD_H-14}" y="${PAD_V}" width="8" height="${sideH}" fill="url(#inoxSide)" rx="1"/>`;
-  html += `<rect x="${PAD_H+maxLayerW+6}" y="${PAD_V}" width="8" height="${sideH}" fill="url(#inoxSide)" rx="1"/>`;
-  // Ligne lumineuse sur les montants
-  html += `<rect x="${PAD_H-12}" y="${PAD_V}" width="1" height="${sideH}" fill="rgba(255,255,255,0.08)" rx="1"/>`;
-  html += `<rect x="${PAD_H+maxLayerW+11}" y="${PAD_V}" width="1" height="${sideH}" fill="rgba(255,255,255,0.08)" rx="1"/>`;
+  html += `<rect x="${PAD_H-14}" y="${PAD_V}" width="8" height="${sideH}" fill="#1a1014" rx="1"/>
+           <rect x="${PAD_H+maxLayerW+6}" y="${PAD_V}" width="8" height="${sideH}" fill="#1a1014" rx="1"/>
+           <rect x="${PAD_H-13}" y="${PAD_V}" width="1" height="${sideH}" fill="rgba(201,168,76,0.08)"/>
+           <rect x="${PAD_H+maxLayerW+12}" y="${PAD_V}" width="1" height="${sideH}" fill="rgba(201,168,76,0.08)"/>`;
 
   let yTop = PAD_V;
 
@@ -1992,23 +2007,11 @@ function renderCaveToSvg(svgId, caveNum) {
   });
 }
 
-// renderCave2D — appelle renderCaveToSvg pour les 2 caves
+// renderCave2D — appelle renderCaveToSvg selon la vue active
 function renderCave2D() {
-  const isDesktop = window.innerWidth > 900;
-  // Cave 1 toujours rendue
-  renderCaveToSvg('caveSvg', 1);
-  // Cave 2 rendue seulement si visible
-  if(isDesktop || currentCave === 2) {
-    renderCaveToSvg('caveSvg2', 2);
-  }
-  // Sur mobile, afficher uniquement la cave sélectionnée
-  if(!isDesktop) {
-    document.getElementById('cave-unit-1').style.display = currentCave===1 ? 'flex' : 'none';
-    document.getElementById('cave-unit-2').style.display = currentCave===2 ? 'flex' : 'none';
-  } else {
-    document.getElementById('cave-unit-1').style.display = 'flex';
-    document.getElementById('cave-unit-2').style.display = 'flex';
-  }
+  const v = typeof caveView !== 'undefined' ? caveView : 1;
+  if(v === 1 || v === 'both') renderCaveToSvg('caveSvg', 1);
+  if(v === 2 || v === 'both') renderCaveToSvg('caveSvg2', 2);
 }
 
 // =====================================================================
