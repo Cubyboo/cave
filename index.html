@@ -2273,7 +2273,8 @@ function renderCave2D() {
 
   svg.innerHTML = html;
 
-  // ── Tooltip au survol (desktop uniquement) + clic → fiche ───
+
+  // ── Tooltip au survol (desktop uniquement) ──────────────────
   svg.querySelectorAll('circle[data-cave]').forEach(el => {
     el.addEventListener('mouseenter', (e) => {
       if(isMobile()) return; // tooltip uniquement sur desktop
