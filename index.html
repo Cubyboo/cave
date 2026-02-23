@@ -640,6 +640,9 @@
     <div class="stat-item"><b id="hdr-c1">0</b>cave 1</div>
     <div class="stat-item"><b id="hdr-c2">0</b>cave 2</div>
     <div class="stat-item"><b id="hdr-val">0 €</b>valeur</div>
+    <div class="stat-item">
+      <button onclick="syncToSheets()" title="Sauvegarder vers Google Sheets" style="background:rgba(201,168,76,0.15);border:1px solid var(--gold);color:var(--gold);padding:5px 12px;border-radius:20px;cursor:pointer;font-family:inherit;font-size:0.75rem;letter-spacing:1px">💾 Sync</button>
+    </div>
   </div>
 </header>
 
@@ -1344,17 +1347,36 @@ const WINE_COLORS = {
 };
 
 function saveData() {
-  localStorage.setItem('caveData', JSON.stringify(wineData));
-  updateHeader();
-  // Sécurité critique : ne jamais envoyer un tableau vide au sheet (effacement accidentel)
-  if(wineData.length === 0) {
-    console.warn('saveData: wineData vide — sync Sheets ignorée pour protéger les données');
+  // Sécurité absolue : ne jamais écraser avec un tableau vide
+  if(!wineData || wineData.length === 0) {
+    console.warn('saveData: wineData vide — sauvegarde annulée');
     return;
   }
+  localStorage.setItem('caveData', JSON.stringify(wineData));
+  updateHeader();
+  // La sync vers Google Sheets est MANUELLE uniquement (bouton "Synchroniser")
+  // pour éviter tout effacement accidentel en arrière-plan
+}
+
+function syncToSheets() {
+  if(!wineData || wineData.length === 0) {
+    showNotif('Aucune donnée à synchroniser', true);
+    return;
+  }
+  showNotif('Synchronisation vers Sheets…');
   fetch(SCRIPT_URL, {
     method: 'POST',
     body: JSON.stringify({ action: 'save', data: wineData })
-  }).catch(e => console.warn('Sync Google Sheets échouée', e));
+  })
+  .then(r => r.text())
+  .then(t => {
+    if(t === 'SKIPPED_EMPTY') showNotif('Sync ignorée (données vides)', true);
+    else showNotif('Sheets mis à jour ✓ (' + wineData.length + ' vins)');
+  })
+  .catch(e => {
+    console.warn('Sync Sheets échouée', e);
+    showNotif('Sync Sheets échouée', true);
+  });
 }
 
 function loadFromSheets() {
